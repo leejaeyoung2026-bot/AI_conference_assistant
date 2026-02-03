@@ -255,7 +255,7 @@
                     <div class="setting-group">
                         <label>앙상블 서버 URL</label>
                         <div class="server-url-wrapper">
-                            <input type="text" id="ensembleServerUrl" placeholder="http://localhost:8000" value="http://localhost:8000">
+                            <input type="text" id="ensembleServerUrl" placeholder="https://ai-conference-assistant.onrender.com" value="https://ai-conference-assistant.onrender.com">
                             <button type="button" class="btn btn-sm btn-test-connection" id="testEnsembleConnection">
                                 <i class="fas fa-plug"></i> 연결 테스트
                             </button>
@@ -268,11 +268,11 @@
                     <div class="setting-group">
                         <label>빠른 설정 (원클릭)</label>
                         <div class="preset-buttons">
+                            <button type="button" class="btn btn-sm btn-preset" data-url="https://ai-conference-assistant.onrender.com" id="presetCloud">
+                                <i class="fas fa-cloud"></i> 클라우드 서버
+                            </button>
                             <button type="button" class="btn btn-sm btn-preset" data-url="http://localhost:8000" id="presetLocal">
                                 <i class="fas fa-laptop"></i> 로컬 서버
-                            </button>
-                            <button type="button" class="btn btn-sm btn-preset" data-url="http://192.168.0.100:8000" id="presetLan">
-                                <i class="fas fa-network-wired"></i> LAN 서버
                             </button>
                             <button type="button" class="btn btn-sm btn-preset" data-url="" id="presetCustom">
                                 <i class="fas fa-edit"></i> 직접 입력
