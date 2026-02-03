@@ -414,6 +414,8 @@ class EnhancedMeetingApp {
     async startRecording() {
         if (this.state.isRecording) return;
 
+        console.log('[App] 녹음 시작 요청');
+
         // UI 즉시 업데이트 (버벅임 방지)
         this.updateButtonStates('starting');
 
@@ -425,11 +427,17 @@ class EnhancedMeetingApp {
             }
 
             // 오디오 녹음 시작
-            await this.audioRecorder.start();
+            const audioStarted = await this.audioRecorder.start();
+            // audioRecorder.start()는 void 또는 boolean을 반환할 수 있음 (구현에 따라 다름)
+            // 현재 구현에서는 항상 true를 반환하거나 에러를 던지지 않음 (에러는 내부적으로 처리됨)
 
-            // 발화자 감지 초기화
-            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) {
-                this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
+            // 발화자 감지 초기화 (실패해도 녹음은 계속되어야 함)
+            try {
+                if (this.state.enableSpeakerDetection && this.audioRecorder.stream) {
+                    this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
+                }
+            } catch (sdError) {
+                console.warn('[StartRecording] 발화자 감지 초기화 실패:', sdError);
             }
 
             // 상태 업데이트
@@ -441,18 +449,30 @@ class EnhancedMeetingApp {
             // 타이머 시작
             this.startTimer();
 
-            // UI 업데이트
+            // UI 업데이트 (확실하게 처리)
+            console.log('[App] 녹음 상태로 UI 변경');
             this.updateButtonStates('recording');
             this.updateRecordingStatus('recording');
 
             // 컨텍스트 업데이트
-            this.updateContext();
+            try {
+                this.updateContext();
+            } catch (ctxError) {
+                console.warn('[StartRecording] 컨텍스트 업데이트 실패:', ctxError);
+            }
 
             this.showToast('녹음이 시작되었습니다', 'success');
 
         } catch (error) {
             console.error('[StartRecording Error]', error);
             this.showToast(error.message || '녹음 시작에 실패했습니다', 'error');
+            
+            // 실패 시 상태 복구
+            this.state.isRecording = false;
+            this.stopTimer();
+            if (this.speechManager) this.speechManager.stop();
+            if (this.audioRecorder) this.audioRecorder.stop();
+            
             this.updateButtonStates('idle');
         }
     }
