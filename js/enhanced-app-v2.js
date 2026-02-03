@@ -426,10 +426,17 @@ class EnhancedMeetingApp {
                 throw new Error('음성인식을 시작할 수 없습니다');
             }
 
-            // 오디오 녹음 시작
-            const audioStarted = await this.audioRecorder.start();
-            // audioRecorder.start()는 void 또는 boolean을 반환할 수 있음 (구현에 따라 다름)
-            // 현재 구현에서는 항상 true를 반환하거나 에러를 던지지 않음 (에러는 내부적으로 처리됨)
+            // 오디오 녹음 시작 (실패해도 음성인식은 계속 진행)
+            try {
+                const audioStarted = await this.audioRecorder.start();
+                if (audioStarted === false) {
+                    console.warn('[StartRecording] 오디오 레코더 시작 실패 (반환값 false)');
+                    this.showToast('오디오 녹음을 시작할 수 없으나, 음성 인식은 진행됩니다.', 'warning');
+                }
+            } catch (audioError) {
+                console.error('[StartRecording] 오디오 레코더 오류:', audioError);
+                this.showToast('오디오 녹음 초기화 실패 (음성 인식만 진행됨)', 'warning');
+            }
 
             // 발화자 감지 초기화 (실패해도 녹음은 계속되어야 함)
             try {
