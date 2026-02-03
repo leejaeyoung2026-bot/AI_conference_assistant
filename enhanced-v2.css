@@ -1,0 +1,698 @@
+/**
+ * Enhanced CSS v2.0
+ * LAI 회의 AI 어시스턴트 v5.0 스타일
+ * 발화자 구분 및 새로운 기능 스타일
+ */
+
+/* ===== 버전 배지 ===== */
+.version-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 12px;
+}
+
+.beta-badge {
+    background: #f59e0b;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* ===== 발화자 표시 ===== */
+.speaker-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--bg-card, #334155);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.speaker-indicator.primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.speaker-indicator.secondary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.speaker-icon {
+    font-size: 16px;
+}
+
+.speaker-label {
+    font-size: 12px;
+}
+
+/* ===== 발화자 설정 컨트롤 ===== */
+.speaker-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(59, 130, 246, 0.08);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.speaker-controls .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.speaker-controls .btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary-color, #6366f1);
+    color: var(--primary-color, #6366f1);
+}
+
+.speaker-controls .btn-outline:hover {
+    background: var(--primary-color, #6366f1);
+    color: white;
+}
+
+.speaker-hint-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.speaker-hint {
+    font-size: 12px;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.speaker-hint-detail {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    line-height: 1.4;
+    opacity: 0.8;
+}
+
+/* 폴백 노트 스타일 */
+.fallback-note {
+    display: block;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 4px 4px 0;
+    color: var(--warning-color, #f59e0b);
+}
+
+/* ===== 트랜스크립트 아이템 - 발화자별 스타일 ===== */
+.transcript-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transcript-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 주발표자 스타일 */
+.transcript-item.primary {
+    flex-direction: row;
+}
+
+.transcript-item.primary .transcript-content {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px 12px 12px 12px;
+}
+
+/* 참석자 스타일 (질문/코멘트) */
+.transcript-item.secondary {
+    flex-direction: row-reverse;
+}
+
+.transcript-item.secondary .transcript-content {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+    border-right: 3px solid #10b981;
+    border-radius: 12px 4px 12px 12px;
+    text-align: right;
+}
+
+/* 질문 스타일 */
+.transcript-item.question .transcript-content {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
+    border-color: #f59e0b;
+}
+
+/* 코멘트 스타일 */
+.transcript-item.comment .transcript-content {
+    background: rgba(100, 116, 139, 0.1);
+    border-style: dashed;
+}
+
+.transcript-speaker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.transcript-speaker .speaker-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.transcript-speaker.primary .speaker-icon {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.transcript-speaker.secondary .speaker-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.transcript-speaker .speaker-label {
+    font-size: 10px;
+    color: var(--text-muted, #64748b);
+}
+
+.transcript-content {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 12px;
+}
+
+.transcript-text {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--text-primary, #f8fafc);
+}
+
+.transcript-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    flex-wrap: wrap;
+}
+
+.transcript-item.secondary .transcript-meta {
+    justify-content: flex-end;
+}
+
+/* 배지 스타일 */
+.badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.badge-question {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+/* 질문 토글 배지 - 클릭 가능 */
+.badge-question-toggle {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    border: 1px dashed rgba(100, 116, 139, 0.3);
+}
+
+.badge-question-toggle:hover {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.4);
+    transform: scale(1.05);
+}
+
+.badge-question-toggle.active {
+    background: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    font-weight: 600;
+}
+
+.badge-question-toggle.active:hover {
+    background: rgba(245, 158, 11, 0.35);
+}
+
+.badge-comment {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+}
+
+.badge-corrected {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+/* ===== 내보내기 버튼 그룹 ===== */
+.export-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-info {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #2563eb;
+}
+
+.btn-info:disabled {
+    background: #475569;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* ===== 설정 모달 확장 ===== */
+.speaker-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.legend-item .legend-icon {
+    font-size: 16px;
+}
+
+.legend-item.primary {
+    color: #60a5fa;
+}
+
+.legend-item.secondary {
+    color: #34d399;
+}
+
+.ensemble-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(100, 116, 139, 0.1);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary, #94a3b8);
+    margin-top: 12px;
+}
+
+.ensemble-status i {
+    color: #64748b;
+}
+
+/* ===== 질문 아이템 ===== */
+.question-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 3px solid #f59e0b;
+}
+
+.question-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.question-text {
+    flex: 1;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary, #f8fafc);
+}
+
+.question-time {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    flex-shrink: 0;
+}
+
+/* ===== AI 답변 아이템 ===== */
+.ai-answer-item {
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.answer-question {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+}
+
+.answer-question .label {
+    font-weight: 700;
+    color: #f59e0b;
+    font-size: 14px;
+}
+
+.answer-question p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-primary, #f8fafc);
+}
+
+.answer-content {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--primary-color, #6366f1);
+}
+
+.answer-content .label {
+    font-weight: 700;
+    color: var(--primary-color, #6366f1);
+    font-size: 14px;
+}
+
+.answer-content p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-primary, #f8fafc);
+    line-height: 1.6;
+}
+
+.answer-sources {
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sources-label {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    margin-right: 8px;
+}
+
+.source-link {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border-radius: 4px;
+    font-size: 11px;
+    text-decoration: none;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    transition: background 0.2s ease;
+}
+
+.source-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* ===== 회의 요약 ===== */
+.summary-content {
+    padding: 16px;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 12px;
+    border-left: 3px solid var(--primary-color, #6366f1);
+}
+
+.summary-content p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-primary, #f8fafc);
+}
+
+.summary-time {
+    display: block;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    text-align: right;
+}
+
+/* ===== 토스트 ===== */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--bg-card, #334155);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary, #f8fafc);
+    font-size: 14px;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast i {
+    font-size: 16px;
+}
+
+.toast-success {
+    border-left: 4px solid #10b981;
+}
+
+.toast-success i {
+    color: #10b981;
+}
+
+.toast-error {
+    border-left: 4px solid #ef4444;
+}
+
+.toast-error i {
+    color: #ef4444;
+}
+
+.toast-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.toast-warning i {
+    color: #f59e0b;
+}
+
+.toast-info {
+    border-left: 4px solid #3b82f6;
+}
+
+.toast-info i {
+    color: #3b82f6;
+}
+
+/* ===== 컨트롤 버튼 확장 ===== */
+.control-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+/* ===== 상태 표시 확장 ===== */
+.status-indicator.paused .status-dot {
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-indicator.paused .status-text {
+    color: #f59e0b;
+}
+
+/* ===== 현재 음성 표시 ===== */
+.speech-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    border-left: 3px solid #3b82f6;
+}
+
+.speech-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary, #f8fafc);
+}
+
+.speech-indicator {
+    color: #3b82f6;
+    font-weight: bold;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* ===== 빈 상태 ===== */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted, #64748b);
+}
+
+.empty-state i {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.api-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .panel {
+        width: 100%;
+    }
+
+    .export-buttons {
+        flex-wrap: wrap;
+        margin-left: 0;
+        margin-top: 12px;
+    }
+
+    .stats-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .control-buttons {
+        flex-direction: column;
+    }
+
+    .control-buttons .btn {
+        width: 100%;
+    }
+
+    .speaker-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .transcript-item.secondary {
+        flex-direction: row;
+    }
+
+    .transcript-item.secondary .transcript-content {
+        text-align: left;
+        border-left: 3px solid #10b981;
+        border-right: none;
+        border-radius: 4px 12px 12px 12px;
+    }
+
+    .transcript-item.secondary .transcript-meta {
+        justify-content: flex-start;
+    }
+}

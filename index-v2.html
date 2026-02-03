@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회의 AI 어시스턴트 v5.0 - 앙상블 STT 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/enhanced-v2.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 헤더 -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-microphone-alt"></i>
+                <h1>회의 AI 어시스턴트</h1>
+                <span class="version-badge">v5.0</span>
+            </div>
+            <div class="header-controls">
+                <div class="meeting-timer">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer">00:00:00</span>
+                </div>
+                <!-- 발화자 표시 -->
+                <div class="speaker-indicator primary" id="speakerIndicator">
+                    <span class="speaker-icon">👤</span>
+                    <span class="speaker-label">발표자</span>
+                </div>
+                <button class="btn btn-settings" id="settingsBtn" title="설정">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 왼쪽: 음성인식 패널 -->
+            <section class="panel transcription-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-comment-dots"></i> 실시간 음성인식</h2>
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">대기 중</span>
+                    </div>
+                </div>
+
+                <!-- 음성 시각화 -->
+                <div class="voice-visualizer" id="voiceVisualizer">
+                    <div class="visualizer-bars">
+                        <span></span><span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+
+                <!-- 컨트롤 버튼 -->
+                <div class="control-buttons">
+                    <button class="btn btn-primary btn-large" id="startBtn">
+                        <i class="fas fa-play"></i>
+                        <span>녹음 시작</span>
+                    </button>
+                    <button class="btn btn-warning btn-large" id="pauseBtn" disabled>
+                        <i class="fas fa-pause"></i>
+                        <span>일시정지</span>
+                    </button>
+                    <button class="btn btn-danger btn-large" id="stopBtn" disabled>
+                        <i class="fas fa-stop"></i>
+                        <span>녹음 중지</span>
+                    </button>
+                </div>
+
+                <!-- 발화자 설정 버튼 -->
+                <div class="speaker-controls">
+                    <button class="btn btn-sm btn-outline" id="setPrimarySpeakerBtn" title="현재 발화자를 주발표자로 설정">
+                        <i class="fas fa-user-check"></i>
+                        <span>주발표자 설정</span>
+                    </button>
+                    <div class="speaker-hint-box">
+                        <span class="speaker-hint">💡 회의 시작 시 주발표자를 설정하세요</span>
+                        <small class="speaker-hint-detail">
+                            녹음 시작 후, 주발표자가 말할 때 버튼을 클릭하면<br>
+                            음성 특성을 학습하여 발표자/참석자를 자동 구분합니다.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- 실시간 텍스트 표시 -->
+                <div class="transcript-container">
+                    <div class="current-speech" id="currentSpeech">
+                        <p class="placeholder">녹음 버튼을 눌러 회의를 시작하세요...</p>
+                    </div>
+                    <div class="transcript-history" id="transcriptHistory">
+                        <!-- 인식된 텍스트가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 오른쪽: AI 분석 패널 -->
+            <section class="panel analysis-panel">
+                <!-- 질문 감지 영역 -->
+                <div class="sub-panel questions-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-question-circle"></i> 감지된 질문</h2>
+                        <span class="badge" id="questionCount">0</span>
+                    </div>
+                    <div class="questions-list" id="questionsList">
+                        <div class="empty-state">
+                            <i class="fas fa-comment-slash"></i>
+                            <p>감지된 질문이 없습니다</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI 답변 영역 -->
+                <div class="sub-panel ai-answers-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-robot"></i> AI 답변</h2>
+                        <span class="badge badge-ai" id="answerCount">0</span>
+                    </div>
+                    <div class="ai-answers-list" id="aiAnswersList">
+                        <div class="empty-state">
+                            <i class="fas fa-magic"></i>
+                            <p>질문이 감지되면 Gemini 2.5 Flash가 답변합니다</p>
+                            <small class="api-hint">🔍 검색 기반 답변 · 📎 출처 링크 제공</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 회의 요약 영역 -->
+                <div class="sub-panel summary-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-file-alt"></i> 회의 요약</h2>
+                        <span class="badge badge-summary" id="summaryStatus">대기</span>
+                    </div>
+                    <div class="meeting-summary" id="meetingSummary">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>회의가 진행되면 자동 요약됩니다</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 하단 통계 바 -->
+        <footer class="stats-bar">
+            <div class="stat-item">
+                <i class="fas fa-file-alt"></i>
+                <span>총 단어: <strong id="totalWords">0</strong></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-paragraph"></i>
+                <span>총 문장: <strong id="totalSentences">0</strong></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-question"></i>
+                <span>질문 수: <strong id="totalQuestions">0</strong></span>
+            </div>
+
+            <div class="export-buttons">
+                <button class="btn btn-secondary btn-sm" id="clearBtn">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>기록 삭제</span>
+                </button>
+                <button class="btn btn-info btn-sm" id="exportAudioBtn" disabled>
+                    <i class="fas fa-file-audio"></i>
+                    <span>음성 내보내기</span>
+                </button>
+                <button class="btn btn-export" id="exportBtn">
+                    <i class="fas fa-download"></i>
+                    <span>회의록 내보내기</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> 설정</h3>
+                <button class="btn-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Gemini API 설정 섹션 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-robot"></i> Gemini AI 설정</h4>
+                    <div class="setting-group">
+                        <label>Gemini API 키</label>
+                        <div class="api-key-input-wrapper">
+                            <input type="password" id="geminiApiKey" placeholder="API 키를 입력하세요">
+                            <button type="button" class="btn-toggle-visibility" id="toggleApiKeyVisibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="setting-hint">
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
+                                <i class="fas fa-external-link-alt"></i> Google AI Studio에서 API 키 발급받기
+                            </a>
+                        </small>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="autoAnswer" checked>
+                            질문 감지 시 자동 AI 답변
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>AI 응답 스타일</label>
+                        <select id="aiResponseStyle">
+                            <option value="concise">간결하게</option>
+                            <option value="detailed">상세하게</option>
+                            <option value="bullet">요점 정리</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableGrounding" checked>
+                            🔍 Google 검색 기반 답변 (출처 링크 제공)
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableAutoSummary" checked>
+                            📝 주기적 회의 요약
+                        </label>
+                    </div>
+                    <div class="model-info">
+                        <i class="fas fa-microchip"></i>
+                        <span>Gemini 2.5 Flash 모델 사용 중</span>
+                    </div>
+                    <div class="api-status" id="apiStatus">
+                        <span class="status-dot"></span>
+                        <span class="status-text">API 키 미설정</span>
+                    </div>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <!-- 앙상블 STT 설정 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-layer-group"></i> 앙상블 STT 설정 <span class="beta-badge">BETA</span></h4>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableEnsemble">
+                            🔗 앙상블 STT 서버 연결
+                        </label>
+                        <small class="setting-hint">3대 오픈소스 STT 모델을 병렬로 실행합니다</small>
+                        <small class="setting-hint fallback-note">⚠️ 서버 연결 실패 시 자동으로 브라우저 기본 음성인식(Web Speech API)으로 전환됩니다</small>
+                    </div>
+                    <div class="setting-group">
+                        <label>앙상블 서버 URL</label>
+                        <div class="server-url-wrapper">
+                            <input type="text" id="ensembleServerUrl" placeholder="http://localhost:8000" value="http://localhost:8000">
+                            <button type="button" class="btn btn-sm btn-test-connection" id="testEnsembleConnection">
+                                <i class="fas fa-plug"></i> 연결 테스트
+                            </button>
+                        </div>
+                        <small class="setting-hint">
+                            지원 모델: SenseVoice-Small, Faster-Whisper, Qwen3-ASR
+                        </small>
+                    </div>
+                    <!-- 원클릭 서버 설정 프리셋 -->
+                    <div class="setting-group">
+                        <label>빠른 설정 (원클릭)</label>
+                        <div class="preset-buttons">
+                            <button type="button" class="btn btn-sm btn-preset" data-url="http://localhost:8000" id="presetLocal">
+                                <i class="fas fa-laptop"></i> 로컬 서버
+                            </button>
+                            <button type="button" class="btn btn-sm btn-preset" data-url="http://192.168.0.100:8000" id="presetLan">
+                                <i class="fas fa-network-wired"></i> LAN 서버
+                            </button>
+                            <button type="button" class="btn btn-sm btn-preset" data-url="" id="presetCustom">
+                                <i class="fas fa-edit"></i> 직접 입력
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ensemble-status" id="ensembleStatus">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="ensembleStatusText">앙상블 서버 미연결 - Web Speech API 사용 중</span>
+                    </div>
+                    <!-- 서버 연결 도움말 -->
+                    <div class="server-help-card" id="serverHelpCard">
+                        <div class="help-header">
+                            <i class="fas fa-question-circle"></i>
+                            <span>앙상블 서버 설정 가이드</span>
+                            <button type="button" class="btn-toggle-help" id="toggleServerHelp">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="help-content" id="serverHelpContent" style="display: none;">
+                            <ol>
+                                <li>Python 3.9+ 환경에서 FastAPI 서버를 실행합니다</li>
+                                <li>필요 패키지: <code>pip install fastapi uvicorn sensevoice faster-whisper transformers</code></li>
+                                <li>서버 실행: <code>uvicorn main:app --host 0.0.0.0 --port 8000</code></li>
+                                <li>위 "연결 테스트" 버튼으로 연결을 확인합니다</li>
+                            </ol>
+                            <a href="#" class="help-link" id="downloadServerTemplate">
+                                <i class="fas fa-download"></i> 서버 템플릿 코드 보기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <!-- 발화자 감지 설정 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-users"></i> 발화자 감지 설정</h4>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableSpeakerDetection" checked>
+                            👤 발화자 자동 구분
+                        </label>
+                        <small class="setting-hint">
+                            주발표자와 참석자(질문/코멘트)를 자동으로 구분합니다
+                        </small>
+                    </div>
+                    <div class="speaker-legend">
+                        <div class="legend-item primary">
+                            <span class="legend-icon">👤</span>
+                            <span>주발표자 - 파란색 말풍선</span>
+                        </div>
+                        <div class="legend-item secondary">
+                            <span class="legend-icon">👥</span>
+                            <span>참석자 (질문/코멘트) - 초록색 말풍선</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <!-- 회의 컨텍스트 설정 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-clipboard-list"></i> 회의 컨텍스트</h4>
+                    <div class="setting-group">
+                        <label>회의 주제 / 프로젝트명</label>
+                        <textarea id="meetingContext" rows="3"
+                            placeholder="예: 바리시티닙 LAI 제형 1개월 지속성 시험&#10;주요 키워드: LogP, Cmax, 생체이용률, Phase 2"></textarea>
+                        <small class="setting-hint">회의 주제와 관련 키워드를 입력하면 음성 인식 정확도가 향상됩니다</small>
+                    </div>
+                    <div class="setting-group">
+                        <label>우선 인식 용어 (쉼표로 구분)</label>
+                        <input type="text" id="priorityTerms" placeholder="예: 바리시티닙, XYZ-123, LAI 제형, 지속성 시험">
+                        <small class="setting-hint">자주 사용할 전문 용어나 약물 코드를 등록하세요</small>
+                    </div>
+                    <div class="context-status" id="contextStatus">
+                        <i class="fas fa-info-circle"></i>
+                        <span>컨텍스트 미설정 - 기본 보정 모드</span>
+                    </div>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <!-- 전문용어 보정 설정 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-flask"></i> 전문용어 보정</h4>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableCorrection" checked>
+                            음성인식 결과 AI 보정
+                        </label>
+                        <small class="setting-hint">전문용어를 정확하게 인식합니다 (예: "바리스틴" → "바리시티닙")</small>
+                    </div>
+                    <div class="setting-group">
+                        <label>전문 분야</label>
+                        <select id="correctionPersona">
+                            <option value="pharma">💊 제약/약학</option>
+                            <option value="chemistry">⚗️ 화학</option>
+                            <option value="biotech">🧬 바이오테크</option>
+                            <option value="general">🔬 일반 과학</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enableNBest" checked>
+                            다중 후보 분석 (N-Best)
+                        </label>
+                        <small class="setting-hint">여러 음성 인식 후보 중 문맥에 맞는 것을 선택합니다</small>
+                    </div>
+                    <div class="setting-group">
+                        <label>보정 버퍼 간격 (초)</label>
+                        <div class="slider-container">
+                            <input type="range" id="correctionInterval" min="3" max="10" value="5" step="1">
+                            <span id="correctionIntervalValue">5초</span>
+                        </div>
+                    </div>
+                    <div class="correction-examples">
+                        <span class="example-label">보정 예시:</span>
+                        <span class="example-item">"보급해" → "LogP"</span>
+                        <span class="example-item">"씨맥스" → "Cmax"</span>
+                    </div>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <!-- 기본 설정 섹션 -->
+                <div class="setting-section">
+                    <h4><i class="fas fa-sliders-h"></i> 기본 설정</h4>
+                    <div class="setting-group">
+                        <label>언어 설정</label>
+                        <select id="languageSelect">
+                            <option value="ko-KR">한국어</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="ja-JP">日本語</option>
+                            <option value="zh-CN">中文 (简体)</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>질문 감지 민감도</label>
+                        <div class="slider-container">
+                            <input type="range" id="sensitivityRange" min="1" max="5" value="3">
+                            <span id="sensitivityValue">보통</span>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="soundAlert" checked>
+                            질문 감지 시 알림음
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 토스트 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 스크립트 로드 -->
+    <script src="js/speech-recognition.js"></script>
+    <script src="js/ai-analysis.js"></script>
+    <script src="js/gemini-api.js"></script>
+    <script src="js/text-corrector.js"></script>
+    <script src="js/audio-recorder.js"></script>
+    <script src="js/speaker-detection.js"></script>
+    <script src="js/meeting-export.js"></script>
+    <script src="js/ensemble-stt.js"></script>
+    <script src="js/gemini-ensemble-corrector.js"></script>
+    <script src="js/enhanced-app-v2.js"></script>
+</body>
+
+</html>
