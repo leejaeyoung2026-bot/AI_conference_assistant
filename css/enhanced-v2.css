@@ -294,6 +294,7 @@ body {
     gap: 20px;
     padding: 20px;
     overflow: hidden;
+    min-height: 0; /* 중요: flex 자식의 최소 높이 제약 해제 */
 }
 
 /* ========================================
@@ -309,6 +310,7 @@ body {
     overflow: hidden;
     box-shadow: var(--shadow-md);
     transition: box-shadow var(--transition-normal);
+    min-height: 0; /* 중요: 내부 스크롤을 위한 설정 */
 }
 
 .panel:hover {
@@ -653,6 +655,8 @@ body {
     flex-direction: column;
     gap: 12px;
     background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+    min-height: 0; /* 스크롤 작동을 위한 필수 설정 */
+    max-height: 100%;
 }
 
 .current-speech {
@@ -837,7 +841,8 @@ body {
     background: transparent;
     border: none;
     box-shadow: none;
-    overflow: visible;
+    overflow: hidden;
+    min-height: 0; /* 스크롤 작동을 위한 필수 설정 */
 }
 
 .sub-panel {
@@ -849,7 +854,8 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 0;
+    min-height: 150px;
+    max-height: 100%;
     transition: all var(--transition-normal);
 }
 
@@ -862,6 +868,8 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
+    min-height: 0; /* 스크롤 작동을 위한 필수 설정 */
+    max-height: 100%;
 }
 
 .question-item {
@@ -1645,54 +1653,110 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 @media (max-width: 768px) {
     .app-header {
-        padding: 0 16px;
+        padding: 0 12px;
         height: 56px;
+        flex-shrink: 0;
     }
     
-    .logo h1 {
-        display: none;
-    }
-    
-    .header-controls {
-        gap: 10px;
-    }
-    
-    .main-content {
-        padding: 12px;
-        gap: 12px;
-        grid-template-rows: 1fr auto;
-    }
-    
-    .analysis-panel {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .sub-panel {
-        min-height: 200px;
-    }
-    
-    .control-buttons {
-        padding: 12px;
+    .logo {
         gap: 8px;
     }
     
+    .logo h1 {
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .logo i {
+        font-size: 1.2rem;
+    }
+    
+    .header-controls {
+        gap: 8px;
+    }
+    
+    .meeting-timer {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .main-content {
+        padding: 8px;
+        gap: 8px;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(350px, 1fr) minmax(250px, auto);
+        overflow: auto;
+    }
+    
+    .transcription-panel {
+        min-height: 350px;
+    }
+    
+    .analysis-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: none;
+    }
+    
+    .sub-panel {
+        min-height: 180px;
+        max-height: 250px;
+    }
+    
+    .control-buttons {
+        padding: 10px;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+    
     .btn-large {
-        padding: 10px 20px;
-        font-size: 0.9rem;
+        padding: 10px 14px;
+        font-size: 0.85rem;
         min-width: auto;
+        flex: 1;
+    }
+    
+    .btn-large span {
+        display: none;
+    }
+    
+    .btn-large i {
+        margin: 0;
+    }
+    
+    .speaker-controls {
+        padding: 8px 12px;
+    }
+    
+    .speaker-hint-box {
+        display: none;
     }
     
     .stats-bar {
         flex-wrap: wrap;
         height: auto;
-        padding: 12px 16px;
-        gap: 12px;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    
+    .stat-item {
+        font-size: 0.75rem;
     }
     
     .export-buttons {
         width: 100%;
         justify-content: flex-end;
+        gap: 6px;
+    }
+    
+    .export-buttons .btn-sm {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .export-buttons .btn-sm span {
+        display: none;
     }
     
     .modal-content {
@@ -1703,16 +1767,21 @@ input[type="range"]::-webkit-slider-thumb:hover {
     }
     
     .toast-container {
-        left: 16px;
-        right: 16px;
-        bottom: 16px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
         max-width: none;
     }
 }
 
 @media (max-width: 480px) {
     .app-header {
-        padding: 0 12px;
+        padding: 0 8px;
+        height: 50px;
+    }
+    
+    .logo h1 {
+        font-size: 0.85rem;
     }
     
     .version-badge {
@@ -1720,33 +1789,71 @@ input[type="range"]::-webkit-slider-thumb:hover {
     }
     
     .meeting-timer {
-        padding: 4px 10px;
-        font-size: 0.95rem;
+        padding: 3px 6px;
+        font-size: 0.8rem;
     }
     
     .speaker-indicator {
         display: none;
     }
     
+    .btn-settings {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+    }
+    
     .main-content {
-        padding: 8px;
+        padding: 6px;
+        gap: 6px;
+        grid-template-rows: minmax(300px, 1fr) minmax(200px, auto);
     }
     
     .panel-header {
-        padding: 12px 14px;
+        padding: 10px 12px;
+    }
+    
+    .panel-header h2 {
+        font-size: 0.85rem;
     }
     
     .transcript-container {
-        padding: 12px;
+        padding: 10px;
     }
     
     .transcript-item {
-        padding: 10px 12px;
-        gap: 8px;
+        padding: 8px 10px;
+        gap: 6px;
     }
     
     .transcript-speaker {
-        min-width: 48px;
+        min-width: 40px;
+    }
+    
+    .speaker-icon {
+        font-size: 1rem;
+    }
+    
+    .transcript-text {
+        font-size: 0.9rem;
+    }
+    
+    .control-buttons {
+        padding: 8px;
+    }
+    
+    .btn-large {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .sub-panel {
+        min-height: 150px;
+        max-height: 200px;
+    }
+    
+    .questions-list, .ai-answers-list, .meeting-summary {
+        padding: 10px;
     }
 }
 

@@ -168,6 +168,9 @@ class EnhancedMeetingApp {
         this.updateContextStatusUI();
         this.updateEnsembleStatusUI();
         
+        // 보정 버퍼 간격 초기화
+        this.initCorrectionIntervalUI();
+        
         console.log('[EnhancedMeetingApp] 앱 초기화 완료 v5.0');
     }
 
@@ -295,6 +298,21 @@ class EnhancedMeetingApp {
                 const labels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
                 if (this.elements.sensitivityValue) {
                     this.elements.sensitivityValue.textContent = labels[value - 1];
+                }
+                this.saveSettings();
+            });
+        }
+
+        // 보정 버퍼 간격 설정 (수정됨: 동기화 문제 해결)
+        if (this.elements.correctionInterval) {
+            this.elements.correctionInterval.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (this.elements.correctionIntervalValue) {
+                    this.elements.correctionIntervalValue.textContent = `${value}초`;
+                }
+                // TextCorrector에 간격 적용
+                if (this.textCorrector) {
+                    this.textCorrector.minCorrectionInterval = value * 1000;
                 }
                 this.saveSettings();
             });
@@ -468,6 +486,11 @@ class EnhancedMeetingApp {
                 console.warn('[StartRecording] 컨텍스트 업데이트 실패:', ctxError);
             }
 
+            // 1분 주기 자동 요약 타이머 시작
+            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) {
+                this.startAutoSummaryTimer();
+            }
+
             this.showToast('녹음이 시작되었습니다', 'success');
 
         } catch (error) {
@@ -498,6 +521,9 @@ class EnhancedMeetingApp {
 
         // 타이머 중지
         this.stopTimer();
+        
+        // 자동 요약 타이머 중지
+        this.stopAutoSummaryTimer();
 
         // 상태 업데이트
         this.state.isRecording = false;
@@ -785,8 +811,8 @@ class EnhancedMeetingApp {
 
         this.elements.transcriptHistory.appendChild(item);
         
-        // 스크롤 하단으로
-        this.elements.transcriptHistory.scrollTop = this.elements.transcriptHistory.scrollHeight;
+        // 스크롤 하단으로 (부드러운 스크롤)
+        this.scrollToBottom(this.elements.transcriptHistory);
     }
 
     /**
@@ -925,7 +951,7 @@ class EnhancedMeetingApp {
         `;
 
         this.elements.questionsList.appendChild(item);
-        this.elements.questionsList.scrollTop = this.elements.questionsList.scrollHeight;
+        this.scrollToBottom(this.elements.questionsList);
     }
 
     /**
@@ -964,7 +990,7 @@ class EnhancedMeetingApp {
         `;
 
         this.elements.aiAnswersList.appendChild(item);
-        this.elements.aiAnswersList.scrollTop = this.elements.aiAnswersList.scrollHeight;
+        this.scrollToBottom(this.elements.aiAnswersList);
     }
 
     /**
@@ -1078,6 +1104,60 @@ class EnhancedMeetingApp {
     }
 
     /**
+     * 1분 주기 자동 요약 타이머 시작
+     */
+    startAutoSummaryTimer() {
+        this.stopAutoSummaryTimer(); // 기존 타이머 정리
+        
+        console.log('[AutoSummary] 1분 주기 자동 요약 타이머 시작');
+        
+        // 60초 간격으로 요약 생성
+        this.state.autoSummaryTimer = setInterval(async () => {
+            if (!this.state.isRecording || this.state.isPaused) return;
+            
+            const transcriptCount = this.data.fullTranscript.length;
+            if (transcriptCount < 3) {
+                console.log('[AutoSummary] 트랜스크립트 부족, 요약 건너뜀');
+                return;
+            }
+            
+            try {
+                console.log('[AutoSummary] 주기적 요약 생성 시작...');
+                
+                // 최근 트랜스크립트 수집
+                const recentTranscripts = this.data.fullTranscript
+                    .slice(-20) // 최근 20개
+                    .map(t => t.text)
+                    .join('\n');
+                
+                // GeminiAPI에 회의 내용 추가 및 요약 요청
+                this.geminiAPI.addToMeetingTranscript(recentTranscripts, new Date());
+                await this.geminiAPI.generateMeetingSummary(recentTranscripts);
+                
+                // 요약 상태 배지 업데이트
+                if (this.elements.summaryStatus) {
+                    this.elements.summaryStatus.textContent = '업데이트됨';
+                    this.elements.summaryStatus.classList.add('active');
+                }
+                
+            } catch (error) {
+                console.error('[AutoSummary] 주기적 요약 생성 실패:', error);
+            }
+        }, 60000); // 60초 = 1분
+    }
+
+    /**
+     * 자동 요약 타이머 중지
+     */
+    stopAutoSummaryTimer() {
+        if (this.state.autoSummaryTimer) {
+            clearInterval(this.state.autoSummaryTimer);
+            this.state.autoSummaryTimer = null;
+            console.log('[AutoSummary] 자동 요약 타이머 중지');
+        }
+    }
+
+    /**
      * 타이머 표시 업데이트
      */
     updateTimerDisplay() {
@@ -1115,7 +1195,7 @@ class EnhancedMeetingApp {
     }
 
     /**
-     * HTML 회의록 내보내기 (Gemini 스마트 요약 포함)
+     * HTML 회의록 내보내기 (Gemini 스마트 요약 - 총괄 요약/결정 사항/액션 아이템만 포함)
      */
     async exportHTML() {
         // 회의 정보 설정
@@ -1127,12 +1207,14 @@ class EnhancedMeetingApp {
             duration: this.elements.timer?.textContent || '00:00:00'
         });
 
+        let smartSummary = null;
+
         // Gemini API를 통한 스마트 요약 생성
         if (this.geminiAPI.isConfigured && this.data.fullTranscript.length > 0) {
             this.showToast('AI가 회의록을 분석하고 있습니다...', 'info');
             
             try {
-                const smartSummary = await this.generateSmartMeetingSummary();
+                smartSummary = await this.generateSmartMeetingSummary();
                 if (smartSummary) {
                     this.meetingExporter.setSummary(smartSummary);
                 }
@@ -1141,9 +1223,10 @@ class EnhancedMeetingApp {
             }
         }
 
-        const success = this.meetingExporter.downloadHTML('meeting_notes');
+        // 스마트 회의록 (원본 대화 로그 제외, 요약만 포함)
+        const success = this.meetingExporter.downloadSmartHTML('meeting_report', smartSummary);
         if (success) {
-            this.showToast('HTML 회의록이 다운로드됩니다', 'success');
+            this.showToast('회의 리포트가 다운로드됩니다', 'success');
         }
     }
 
@@ -1179,7 +1262,7 @@ ${questionsText ? `[감지된 질문들]\n${questionsText}\n` : ''}
 ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
 
 ---
-**다음 형식으로 작성해주세요:**
+**다음 형식으로 작성해주세요 (원본 대화 로그는 포함하지 마세요):**
 
 ## 📋 회의 개요
 회의의 전반적인 목적과 논의 흐름을 2-3문장으로 요약
@@ -1200,9 +1283,10 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
 ## 💡 키워드
 #키워드1 #키워드2 #키워드3
 
-**지침:**
+**중요 지침:**
 - 한국어로 작성
 - 명확하고 간결하게
+- 원본 대화 로그는 포함하지 마세요
 - 실제 회의 내용에 없는 내용은 추측하지 말 것`;
 
         try {
@@ -1593,7 +1677,32 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
         return div.innerHTML;
     }
 
+    /**
+     * 부드러운 자동 스크롤 (auto-scroll to bottom)
+     */
+    scrollToBottom(element) {
+        if (!element) return;
+        
+        // requestAnimationFrame을 사용하여 DOM 업데이트 후 스크롤
+        requestAnimationFrame(() => {
+            element.scrollTo({
+                top: element.scrollHeight,
+                behavior: 'smooth'
+            });
+        });
+    }
+
     // ========== 앙상블 STT 서버 설정 ==========
+
+    /**
+     * 보정 버퍼 간격 UI 초기화
+     */
+    initCorrectionIntervalUI() {
+        if (this.elements.correctionInterval && this.elements.correctionIntervalValue) {
+            const currentValue = this.elements.correctionInterval.value;
+            this.elements.correctionIntervalValue.textContent = `${currentValue}초`;
+        }
+    }
 
     /**
      * 앙상블 서버 관련 이벤트 리스너 설정

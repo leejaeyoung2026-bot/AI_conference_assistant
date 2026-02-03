@@ -10,11 +10,13 @@
 class GeminiAPI {
     constructor() {
         this.apiKey = '';
-        // Gemini 2.5 Flash 모델 (최신 안정 버전)
-        // Gemini 모델 설정
-        // Gemini 모델 설정
-        this.model = 'gemini-2.0-flash';     // 요약용 (속도 우선)
-        this.qaModel = 'gemini-2.0-flash';   // QA용
+        // Gemini 모델 설정 (역할별 분담)
+        // - 음성인식 보정: gemini-2.5-flash-preview-05-20 (빠른 처리)
+        // - 실시간 요약: gemini-2.0-flash (안정적인 요약)
+        // - QA 답변: gemini-2.0-flash (검색 기반 답변)
+        this.model = 'gemini-2.0-flash';                      // 요약용 (안정적)
+        this.qaModel = 'gemini-2.0-flash';                    // QA용 (검색 기반)
+        this.correctionModel = 'gemini-2.0-flash';  // 보정용 (빠른 처리)
 
 
         // 시스템 프롬프트 (회의 컨텍스트 관리)

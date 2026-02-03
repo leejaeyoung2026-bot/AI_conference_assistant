@@ -340,13 +340,13 @@
                     <div class="setting-group">
                         <label>회의 주제 / 프로젝트명</label>
                         <textarea id="meetingContext" rows="3"
-                            placeholder="예: 바리시티닙 LAI 제형 1개월 지속성 시험&#10;주요 키워드: LogP, Cmax, 생체이용률, Phase 2"></textarea>
+                            placeholder="예: 신제품 개발 회의&#10;주요 키워드: 시장분석, ROI, 출시일정"></textarea>
                         <small class="setting-hint">회의 주제와 관련 키워드를 입력하면 음성 인식 정확도가 향상됩니다</small>
                     </div>
                     <div class="setting-group">
                         <label>우선 인식 용어 (쉼표로 구분)</label>
-                        <input type="text" id="priorityTerms" placeholder="예: 바리시티닙, XYZ-123, LAI 제형, 지속성 시험">
-                        <small class="setting-hint">자주 사용할 전문 용어나 약물 코드를 등록하세요</small>
+                        <input type="text" id="priorityTerms" placeholder="예: 프로젝트명, 제품코드, 전문용어">
+                        <small class="setting-hint">자주 사용할 전문 용어나 코드를 등록하세요</small>
                     </div>
                     <div class="context-status" id="contextStatus">
                         <i class="fas fa-info-circle"></i>
@@ -372,6 +372,8 @@
                             <option value="pharma">💊 제약/약학</option>
                             <option value="chemistry">⚗️ 화학</option>
                             <option value="biotech">🧬 바이오테크</option>
+                            <option value="food">🍽️ 식품</option>
+                            <option value="it">💻 IT/소프트웨어</option>
                             <option value="general">🔬 일반 과학</option>
                         </select>
                     </div>
@@ -385,14 +387,15 @@
                     <div class="setting-group">
                         <label>보정 버퍼 간격 (초)</label>
                         <div class="slider-container">
-                            <input type="range" id="correctionInterval" min="3" max="10" value="5" step="1">
+                            <input type="range" id="correctionInterval" min="3" max="20" value="5" step="1">
                             <span id="correctionIntervalValue">5초</span>
                         </div>
+                        <small class="setting-hint">AI 보정 요청 간격 (3~20초, 짧을수록 빠르지만 API 비용 증가)</small>
                     </div>
                     <div class="correction-examples">
                         <span class="example-label">보정 예시:</span>
-                        <span class="example-item">"보급해" → "LogP"</span>
-                        <span class="example-item">"씨맥스" → "Cmax"</span>
+                        <span class="example-item">"에이피아이" → "API"</span>
+                        <span class="example-item">"유아이" → "UI"</span>
                     </div>
                 </div>
 

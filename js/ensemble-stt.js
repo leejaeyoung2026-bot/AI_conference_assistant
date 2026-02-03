@@ -14,7 +14,7 @@ class EnsembleSTTSystem {
     constructor(options = {}) {
         // 기본 설정
         this.config = {
-            serverUrl: options.serverUrl || 'http://localhost:8000',
+            serverUrl: options.serverUrl || 'https://ai-conference-assistant.onrender.com',
             chunkDuration: options.chunkDuration || 5000, // 5초 단위
             enableEnsemble: options.enableEnsemble !== false,
             fallbackToWebSpeech: options.fallbackToWebSpeech !== false,
@@ -439,6 +439,104 @@ class EnsembleSTTSystem {
 
         if (this.onEnsembleResultCallback) {
             this.onEnsembleResultCallback(simulatedResult);
+        }
+    }
+
+    /**
+     * Mock 테스트: 3개 모델에서 각각 다른 유사 결과가 들어온 상황 시뮬레이션
+     * @returns {Object} Mock 앙상블 결과
+     */
+    static generateMockEnsembleData() {
+        // 3개 모델이 각각 다르게 인식한 예시 데이터
+        return {
+            models: {
+                senseVoice: {
+                    text: '오늘 회의 주제는 에이피아이 연동 기능입니다',
+                    confidence: 0.85,
+                    events: ['speech']
+                },
+                fasterWhisper: {
+                    text: '오늘 회의 주제는 API 연동 기능입니다',
+                    confidence: 0.92,
+                    events: []
+                },
+                qwenASR: {
+                    text: '오늘 회의 주제는 에이 피 아이 연동 기능입니다',
+                    confidence: 0.88,
+                    events: []
+                }
+            },
+            speaker: {
+                type: 'primary',
+                isPrimary: true,
+                id: 'speaker_mock_001'
+            },
+            events: ['speech'],
+            timestamp: new Date()
+        };
+    }
+
+    /**
+     * Mock 테스트 실행: 앙상블 보정 프로세스 검증
+     * @param {GeminiEnsembleCorrector} corrector - Gemini 앙상블 보정기
+     * @returns {Promise<Object>} 보정된 결과
+     */
+    static async runMockTest(corrector) {
+        const mockData = EnsembleSTTSystem.generateMockEnsembleData();
+        
+        console.log('[MockTest] === 앙상블 보정 테스트 시작 ===');
+        console.log('[MockTest] 입력 데이터:');
+        console.log('  - SenseVoice:', mockData.models.senseVoice.text);
+        console.log('  - Faster-Whisper:', mockData.models.fasterWhisper.text);
+        console.log('  - Qwen3-ASR:', mockData.models.qwenASR.text);
+        
+        if (!corrector || !corrector.geminiAPI?.isConfigured) {
+            console.warn('[MockTest] Gemini API가 설정되지 않았습니다. 기본 선택 로직을 사용합니다.');
+            
+            // Gemini 없이 기본 선택 로직 테스트
+            const bestCandidate = corrector ? corrector.selectBestCandidate(mockData) : {
+                text: mockData.models.fasterWhisper.text,
+                confidence: mockData.models.fasterWhisper.confidence,
+                model: 'Faster-Whisper'
+            };
+            
+            console.log('[MockTest] 결과 (기본 선택):');
+            console.log('  - 선택된 텍스트:', bestCandidate.text);
+            console.log('  - 모델:', bestCandidate.model);
+            console.log('  - 신뢰도:', bestCandidate.confidence);
+            
+            return {
+                success: true,
+                method: 'basic_selection',
+                input: mockData,
+                output: bestCandidate
+            };
+        }
+        
+        try {
+            // Gemini 앙상블 보정 실행
+            console.log('[MockTest] Gemini 보정 시작...');
+            const correctedResult = await corrector.correctEnsembleResult(mockData);
+            
+            console.log('[MockTest] 결과 (Gemini 보정):');
+            console.log('  - 보정된 텍스트:', correctedResult.text);
+            console.log('  - 신뢰도:', correctedResult.confidence);
+            console.log('[MockTest] === 테스트 완료 ===');
+            
+            return {
+                success: true,
+                method: 'gemini_correction',
+                input: mockData,
+                output: correctedResult
+            };
+        } catch (error) {
+            console.error('[MockTest] 보정 실패:', error);
+            return {
+                success: false,
+                method: 'gemini_correction',
+                input: mockData,
+                error: error.message
+            };
         }
     }
 

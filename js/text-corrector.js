@@ -180,7 +180,7 @@ class TextCorrector {
     getPersonaPrompt() {
         const basePrompts = {
             pharma: `제약회사 연구원의 음성을 텍스트로 변환한 결과를 보정하는 전문가입니다.
-전문 용어: 약물명(바리시티닙, 토파시티닙 등), 화학적 특성(LogP, pKa, IC50), 
+전문 용어: 약물명, 화학적 특성(LogP, pKa, IC50), 
 약동학(Cmax, Tmax, AUC), 분자생물학(PCR, ELISA, CRISPR), 임상(Phase 1/2/3)`,
 
             chemistry: `화학 연구원의 음성을 텍스트로 변환한 결과를 보정하는 전문가입니다.
@@ -191,7 +191,15 @@ class TextCorrector {
 전문 용어: 유전자(DNA, RNA, mRNA), 단백질(항체, 효소, 수용체),
 기술(CRISPR, CAR-T, 유전자치료), 세포(세포배양, 형질감염)`,
 
-            general: `과학 연구 회의의 음성인식 결과를 보정하는 전문가입니다.`
+            food: `식품 분야 전문가의 음성을 텍스트로 변환한 결과를 보정하는 전문가입니다.
+전문 용어: 영양성분(단백질, 탄수화물, 지방, 비타민), 식품체학(pH, Brix, 수분함량),
+제조공정(HACCP, GMP, 살균, 냉동), 분석(HPLC, GC, 맛 센서)`,
+
+            it: `IT/소프트웨어 분야 전문가의 음성을 텍스트로 변환한 결과를 보정하는 전문가입니다.
+전문 용어: 개발(API, SDK, REST, GraphQL, CI/CD), 클라우드(AWS, GCP, Azure, Kubernetes),
+데이터(SQL, NoSQL, ETL, ML), UI/UX(프론트엔드, 백엔드, 반응형)`,
+
+            general: `전문 회의의 음성인식 결과를 보정하는 전문가입니다.`
         };
 
         let prompt = basePrompts[this.persona] || basePrompts.general;
@@ -347,7 +355,7 @@ ${text}
             const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
 
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiAPI.apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiAPI.apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -416,7 +424,7 @@ ${previousSentences.length > 0 ? `[이전 대화 내용]:\n${previousSentences.m
             const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
 
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiAPI.apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiAPI.apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

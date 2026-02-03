@@ -14,14 +14,17 @@ class GeminiEnsembleCorrector {
         this.geminiAPI = geminiAPI;
         this.enabled = true;
         
-        // LAI 제형 개발 컨텍스트
+        // 회의 컨텍스트 (일반화)
         this.meetingContext = {
-            topic: 'LAI 제형 개발',
+            topic: '전문 회의',
             keywords: [
-                '바리시티닙', 'PLGA', '방출프로필', '초기버스트', '지속형',
-                '분자량', '치환도', 'LogP', 'Closed system', 'Flow system',
-                '미니피그', 'in vitro', 'in vivo', '3.5%', '18개', '30일', '3주',
-                'Cmax', 'Tmax', 'AUC', 't1/2', 'HPLC', 'LC-MS'
+                // 일반 전문 용어
+                'API', 'ROI', 'KPI', 'R&D', 'QA', 'QC',
+                'in vitro', 'in vivo', 'ex vivo',
+                // 분석 관련
+                'HPLC', 'LC-MS', 'GC', 'NMR',
+                // 과학 기초
+                'pH', 'pKa', 'LogP', 'Cmax', 'Tmax', 'AUC', 't1/2'
             ],
             summary: ''
         };
@@ -193,7 +196,7 @@ class GeminiEnsembleCorrector {
         const speakerInfo = speaker?.isPrimary ? '주발표자' : '질문자/참석자';
         const historyContext = this.correctionHistory.slice(-3).map(h => h.text).join(' | ');
 
-        return `당신은 LAI(Long-Acting Injectable) 제형 개발 전문 회의의 음성인식 보정 전문가입니다.
+        return `당신은 전문 회의의 음성인식 보정 전문가입니다.
 
 ## 회의 컨텍스트
 - 주제: ${this.meetingContext.topic}
@@ -216,11 +219,7 @@ ${events.length > 0 ? `## 감지된 이벤트\n${events.join(', ')}` : ''}
 ## 지시사항
 1. 세 모델의 차이점을 분석하세요.
 2. 회의 주제와 전문 용어 키워드에 가장 부합하는 논리적인 문장을 하나로 합성하세요.
-3. 전문 용어의 정확한 표기에 주의하세요:
-   - "바리스틴" → "바리시티닙"
-   - "로그피" → "LogP"
-   - "씨맥스" → "Cmax"
-   - "플라지에이" → "PLGA"
+3. 전문 용어의 정확한 표기에 주의하세요 (사용자 지정 우선 인식 용어 참고)
 4. 수치 데이터는 반드시 보존하세요 (예: 3.5%, 18개, 30일).
 5. ${speakerInfo}의 발화 스타일을 고려하세요.
 
