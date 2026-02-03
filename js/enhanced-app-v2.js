@@ -606,6 +606,8 @@ class EnhancedMeetingApp {
      */
     updateRecordingStatus(status) {
         const indicator = this.elements.statusIndicator;
+        const visualizer = this.elements.voiceVisualizer;
+        
         if (!indicator) return;
 
         const statusDot = indicator.querySelector('.status-dot');
@@ -619,15 +621,19 @@ class EnhancedMeetingApp {
             case 'sound-detected':
                 indicator.classList.add('recording');
                 if (statusText) statusText.textContent = '녹음 중';
+                // 시각화 활성화
+                if (visualizer) visualizer.classList.add('active');
                 break;
             case 'paused':
                 indicator.classList.add('paused');
                 if (statusText) statusText.textContent = '일시정지';
+                if (visualizer) visualizer.classList.remove('active');
                 break;
             case 'stopped':
             default:
                 indicator.classList.add('idle');
                 if (statusText) statusText.textContent = '대기 중';
+                if (visualizer) visualizer.classList.remove('active');
                 break;
         }
     }
@@ -1109,20 +1115,119 @@ class EnhancedMeetingApp {
     }
 
     /**
-     * HTML 회의록 내보내기
+     * HTML 회의록 내보내기 (Gemini 스마트 요약 포함)
      */
-    exportHTML() {
+    async exportHTML() {
         // 회의 정보 설정
+        const meetingTitle = this.elements.meetingContext?.value?.split('\n')[0] || 'AI 회의 도우미 회의록';
+        
         this.meetingExporter.setMeetingInfo({
-            title: this.elements.meetingContext?.value?.split('\n')[0] || 'LAI 제형 개발 회의',
+            title: meetingTitle,
             date: new Date(this.state.startTime || Date.now()),
             duration: this.elements.timer?.textContent || '00:00:00'
         });
+
+        // Gemini API를 통한 스마트 요약 생성
+        if (this.geminiAPI.isConfigured && this.data.fullTranscript.length > 0) {
+            this.showToast('AI가 회의록을 분석하고 있습니다...', 'info');
+            
+            try {
+                const smartSummary = await this.generateSmartMeetingSummary();
+                if (smartSummary) {
+                    this.meetingExporter.setSummary(smartSummary);
+                }
+            } catch (error) {
+                console.error('[ExportHTML] 스마트 요약 생성 실패:', error);
+            }
+        }
 
         const success = this.meetingExporter.downloadHTML('meeting_notes');
         if (success) {
             this.showToast('HTML 회의록이 다운로드됩니다', 'success');
         }
+    }
+
+    /**
+     * Gemini를 통한 스마트 회의 요약 생성
+     */
+    async generateSmartMeetingSummary() {
+        if (!this.geminiAPI.isConfigured) return null;
+        
+        const transcriptText = this.data.fullTranscript
+            .map(t => `[${t.timestamp.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})}] ${t.speaker?.isPrimary ? '발표자' : '참석자'}: ${t.text}`)
+            .join('\n');
+        
+        const questionsText = this.data.questions
+            .map(q => `- ${q.text}`)
+            .join('\n');
+        
+        const aiAnswersText = this.data.aiAnswers
+            .map(a => `Q: ${a.question}\nA: ${a.answer}`)
+            .join('\n\n');
+        
+        const context = this.elements.meetingContext?.value || '';
+        
+        const prompt = `당신은 전문 회의 서기입니다. 다음 회의 내용을 분석하여 체계적인 회의록 요약을 작성해주세요.
+
+[회의 주제/컨텍스트]
+${context || '일반 회의'}
+
+[회의 내용 전문]
+${transcriptText}
+
+${questionsText ? `[감지된 질문들]\n${questionsText}\n` : ''}
+${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
+
+---
+**다음 형식으로 작성해주세요:**
+
+## 📋 회의 개요
+회의의 전반적인 목적과 논의 흐름을 2-3문장으로 요약
+
+## 🎯 주요 논의 사항
+- 핵심 안건 1
+- 핵심 안건 2
+(필요에 따라 추가)
+
+## ✅ 결정 사항
+회의에서 확정되거나 합의된 내용 (없으면 "결정 사항 없음")
+
+## 📌 액션 아이템 (To-Do)
+- [ ] 할 일 1 (담당자 추정 시 명시)
+- [ ] 할 일 2
+(없으면 "후속 조치 필요 사항 없음")
+
+## 💡 키워드
+#키워드1 #키워드2 #키워드3
+
+**지침:**
+- 한국어로 작성
+- 명확하고 간결하게
+- 실제 회의 내용에 없는 내용은 추측하지 말 것`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiAPI.apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 2048
+                    }
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const summary = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                return summary || null;
+            }
+        } catch (error) {
+            console.error('[SmartSummary] 생성 실패:', error);
+        }
+        
+        return null;
     }
 
     /**

@@ -70,7 +70,8 @@ class AIAnalysisEngine {
             this.detectedQuestions.push(question);
 
             if (this.onQuestionDetected) {
-                this.onQuestionDetected(question);
+                // 텍스트만 전달 (객체 전달 시 [object Object] 문제 방지)
+                this.onQuestionDetected(question.text);
             }
         }
 

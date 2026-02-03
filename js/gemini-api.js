@@ -26,6 +26,7 @@ class GeminiAPI {
 
         // ========== 회의 컨텍스트 관리 ==========
         this.meetingSummary = '';            // 주기적으로 생성되는 회의 요약
+        this.meetingContext = '';            // 회의 주제/컨텍스트
         this.lastSummaryTime = 0;            // 마지막 요약 시간
         this.summaryInterval = 60000;        // 요약 간격 (1분)
         this.fullMeetingTranscript = [];     // 전체 회의 내용
@@ -127,6 +128,21 @@ class GeminiAPI {
         return this.enableGrounding;
     }
 
+    /**
+     * 회의 컨텍스트 설정
+     */
+    setContext(context) {
+        this.meetingContext = context || '';
+        console.log('[GeminiAPI] 회의 컨텍스트 설정됨:', context?.substring(0, 50) + '...');
+    }
+
+    /**
+     * 회의 컨텍스트 가져오기
+     */
+    getContext() {
+        return this.meetingContext || '';
+    }
+
     getSystemPrompt() {
         const styleInstructions = {
             concise: '간결하고 핵심적인 답변을 2-3문장으로 제공해주세요.',
@@ -142,8 +158,17 @@ class GeminiAPI {
 ${this.meetingSummary}`;
         }
 
+        let meetingContextSection = '';
+        if (this.meetingContext) {
+            meetingContextSection = `
+
+[회의 주제/컨텍스트]
+${this.meetingContext}`;
+        }
+
         return `당신은 회의 중 질문에 답변하는 전문 AI 어시스턴트입니다.
 특히 제약/바이오/화학 분야의 전문 지식을 갖추고 있습니다.
+${meetingContextSection}
 
 역할:
 - 회의 중 나온 질문에 대해 정확하고 도움이 되는 답변을 제공합니다
