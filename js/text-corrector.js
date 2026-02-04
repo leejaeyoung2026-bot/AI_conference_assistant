@@ -65,9 +65,13 @@ class TextCorrector {
     getTermDictionary() {
         // 지연 로딩: 기본 사전을 캐시하여 재생성 방지
         if (!this._baseDictionary) {
-            this._baseDictionary = {
-                // 예시: '바리스틴': '바리시티닙'
-            };
+        // 발음상 혼동될 수 있는 전문 용어 매핑 사전 (초기값)
+        this.dictionary = {
+            '에이피아이': 'API',
+            '유아이': 'UI',
+            '에스디케이': 'SDK',
+            '지피티': 'GPT'
+        };
             this._dictionaryLoaded = true;
         }
 
