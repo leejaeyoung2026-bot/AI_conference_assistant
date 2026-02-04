@@ -1437,43 +1437,7 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
         this.showToast('모든 기록이 삭제되었습니다', 'success');
     }
 
-    /**
-     * 컨텍스트 업데이트
-     */
-    updateContext() {
-        const context = this.elements.meetingContext?.value || '';
-        const terms = this.elements.priorityTerms?.value || '';
 
-        // TextCorrector 업데이트
-        if (this.textCorrector) {
-            this.textCorrector.setMeetingContext(context);
-            this.textCorrector.setPriorityTerms(terms.split(',').map(t => t.trim()).filter(t => t));
-        }
-
-        // GeminiAPI 업데이트
-        if (this.geminiAPI) {
-            this.geminiAPI.setContext(context);
-        }
-
-        this.updateContextStatusUI();
-    }
-
-    /**
-     * 컨텍스트 상태 UI 업데이트
-     */
-    updateContextStatusUI() {
-        if (!this.elements.contextStatus) return;
-
-        const hasContext = !!(this.elements.meetingContext?.value || this.elements.priorityTerms?.value);
-        
-        if (hasContext) {
-            this.elements.contextStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>컨텍스트 설정됨 - 전문용어 인식 활성화</span>';
-            this.elements.contextStatus.classList.add('active');
-        } else {
-            this.elements.contextStatus.innerHTML = '<i class="fas fa-info-circle"></i><span>컨텍스트 미설정 - 기본 보정 모드</span>';
-            this.elements.contextStatus.classList.remove('active');
-        }
-    }
 
     /**
      * API 상태 UI 업데이트
