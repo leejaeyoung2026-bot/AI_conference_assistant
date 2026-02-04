@@ -32,6 +32,12 @@ class GeminiEnsembleCorrector {
         // 사용자 우선 인식 용어
         this.priorityTerms = [];
 
+        // 5번 과업: 다중 언어 설정
+        this.languageContext = {
+            primary: 'ko-KR',
+            secondary: 'none'
+        };
+
         // 최근 보정 이력 (컨텍스트 유지용)
         this.correctionHistory = [];
         this.maxHistoryLength = 10;
@@ -76,6 +82,15 @@ class GeminiEnsembleCorrector {
      */
     setPriorityTerms(terms) {
         this.priorityTerms = Array.isArray(terms) ? terms : terms.split(',').map(t => t.trim());
+    }
+
+    /**
+     * 5번 과업: 언어 컨텍스트 설정
+     */
+    setLanguageContext(langContext) {
+        if (langContext.primary) this.languageContext.primary = langContext.primary;
+        if (langContext.secondary !== undefined) this.languageContext.secondary = langContext.secondary;
+        console.log('[GeminiEnsembleCorrector] 언어 컨텍스트 설정:', this.languageContext);
     }
 
     /**
@@ -196,11 +211,26 @@ class GeminiEnsembleCorrector {
         const speakerInfo = speaker?.isPrimary ? '주발표자' : '질문자/참석자';
         const historyContext = this.correctionHistory.slice(-3).map(h => h.text).join(' | ');
 
+        // 5번 과업: 언어 컨텍스트 포함
+        const langNames = {
+            'ko-KR': '한국어', 'en-US': '영어', 'ja-JP': '일본어',
+            'zh-CN': '중국어', 'de-DE': '독일어', 'fr-FR': '프랑스어', 'es-ES': '스페인어'
+        };
+        const primaryLang = langNames[this.languageContext.primary] || '한국어';
+        const secondaryLang = this.languageContext.secondary !== 'none' 
+            ? langNames[this.languageContext.secondary] 
+            : null;
+        
+        const languageInstruction = secondaryLang 
+            ? `- 언어: ${primaryLang} (주), ${secondaryLang} (보조) - 두 언어가 혼용될 수 있으며, 각 언어의 전문 용어를 정확히 인식하세요`
+            : `- 언어: ${primaryLang}`;
+
         return `당신은 전문 회의의 음성인식 보정 전문가입니다.
 
 ## 회의 컨텍스트
 - 주제: ${this.meetingContext.topic}
 - 발화자: ${speakerInfo}
+${languageInstruction}
 - 최근 대화: ${historyContext || '(없음)'}
 
 ## 필수 인식 키워드

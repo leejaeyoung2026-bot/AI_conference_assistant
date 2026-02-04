@@ -41,6 +41,7 @@ class EnhancedMeetingApp {
             wordCount: 0,
             sentenceCount: 0,
             language: 'ko-KR',
+            secondaryLanguage: 'none', // 5번 과업: 보조 언어
             autoAnswer: true,
             enableCorrection: true,
             enableGrounding: true,
@@ -55,7 +56,8 @@ class EnhancedMeetingApp {
             questions: [],
             aiAnswers: [],
             meetingSummaries: [],
-            speakerHistory: []
+            speakerHistory: [],
+            userMemos: [] // 6번 과업: 사용자 메모
         };
 
         // 초기화
@@ -146,6 +148,30 @@ class EnhancedMeetingApp {
             serverHelpContent: document.getElementById('serverHelpContent'),
             downloadServerTemplate: document.getElementById('downloadServerTemplate'),
 
+            // 앙상블 시각화 (3번 과업)
+            ensembleVisualizer: document.getElementById('ensembleVisualizer'),
+            textSenseVoice: document.getElementById('textSenseVoice'),
+            textWhisper: document.getElementById('textWhisper'),
+            textQwen: document.getElementById('textQwen'),
+            confSenseVoice: document.getElementById('confSenseVoice'),
+            confWhisper: document.getElementById('confWhisper'),
+            confQwen: document.getElementById('confQwen'),
+            ensembleFinalText: document.getElementById('ensembleFinalText'),
+
+            // 다중 언어 설정 (5번 과업)
+            secondaryLanguageSelect: document.getElementById('secondaryLanguageSelect'),
+            languageStatus: document.getElementById('languageStatus'),
+            languageStatusText: document.getElementById('languageStatusText'),
+
+            // 사용자 메모 패널 (6번 과업)
+            memoToggle: document.getElementById('memoToggle'),
+            memoContainer: document.getElementById('memoContainer'),
+            memoClose: document.getElementById('memoClose'),
+            memoHistory: document.getElementById('memoHistory'),
+            userMemoInput: document.getElementById('userMemoInput'),
+            saveMemoBtn: document.getElementById('saveMemoBtn'),
+            askAIBtn: document.getElementById('askAIBtn'),
+
             // 토스트
             toastContainer: document.getElementById('toastContainer')
         };
@@ -163,15 +189,18 @@ class EnhancedMeetingApp {
         this.setupAudioRecorderCallbacks();
         this.setupSpeakerDetectorCallbacks();
         this.setupEnsembleListeners();
+        this.setupLanguageListeners();     // 5번 과업
+        this.setupMemoListeners();         // 6번 과업
         this.loadSettings();
         this.updateApiStatusUI();
         this.updateContextStatusUI();
         this.updateEnsembleStatusUI();
+        this.updateLanguageStatusUI();     // 5번 과업
         
         // 보정 버퍼 간격 초기화
         this.initCorrectionIntervalUI();
         
-        console.log('[EnhancedMeetingApp] 앱 초기화 완료 v5.0');
+        console.log('[EnhancedMeetingApp] 앱 초기화 완료 v5.1');
     }
 
     /**
@@ -318,16 +347,26 @@ class EnhancedMeetingApp {
             });
         }
 
-        // 회의 컨텍스트
+        // 회의 컨텍스트 (7번 과업: 실시간 동기화 개선)
         if (this.elements.meetingContext) {
+            // input 이벤트로 실시간 반영
+            this.elements.meetingContext.addEventListener('input', () => {
+                this.updateContext();
+                this.updateContextStatusUI();
+            });
+            // change 이벤트로 저장
             this.elements.meetingContext.addEventListener('change', () => {
                 this.updateContext();
                 this.saveSettings();
             });
         }
 
-        // 우선 인식 용어
+        // 우선 인식 용어 (7번 과업: 실시간 동기화 개선)
         if (this.elements.priorityTerms) {
+            this.elements.priorityTerms.addEventListener('input', () => {
+                this.updateContext();
+                this.updateContextStatusUI();
+            });
             this.elements.priorityTerms.addEventListener('change', () => {
                 this.updateContext();
                 this.saveSettings();
@@ -1555,6 +1594,7 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
     saveSettings() {
         const settings = {
             language: this.state.language,
+            secondaryLanguage: this.state.secondaryLanguage, // 5번 과업
             apiKey: this.elements.geminiApiKey?.value || '',
             autoAnswer: this.state.autoAnswer,
             enableCorrection: this.state.enableCorrection,
@@ -1582,6 +1622,7 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
 
             // 상태 복원
             this.state.language = settings.language || 'ko-KR';
+            this.state.secondaryLanguage = settings.secondaryLanguage || 'none'; // 5번 과업
             this.state.autoAnswer = settings.autoAnswer !== false;
             this.state.enableCorrection = settings.enableCorrection !== false;
             this.state.enableGrounding = settings.enableGrounding !== false;
@@ -1590,6 +1631,7 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
 
             // UI 복원
             if (this.elements.languageSelect) this.elements.languageSelect.value = settings.language;
+            if (this.elements.secondaryLanguageSelect) this.elements.secondaryLanguageSelect.value = settings.secondaryLanguage || 'none'; // 5번 과업
             if (this.elements.geminiApiKey && settings.apiKey) {
                 this.elements.geminiApiKey.value = settings.apiKey;
                 this.geminiAPI.setApiKey(settings.apiKey);
@@ -1606,6 +1648,11 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
             // 모듈 설정 적용
             this.speechManager.setLanguage(this.state.language);
             this.textCorrector.enabled = this.state.enableCorrection;
+
+            // 7번 과업: 컨텍스트 즉시 적용
+            if (settings.meetingContext || settings.priorityTerms) {
+                this.updateContext();
+            }
 
             console.log('[Settings] 설정 불러오기 완료');
         } catch (error) {
@@ -1972,8 +2019,382 @@ async def websocket_endpoint(websocket: WebSocket):
             
             this.state.ensembleMode = settings.enabled || false;
             this.updateEnsembleStatusUI();
+            this.updateEnsembleVisualizerVisibility(); // 3번 과업
         } catch (error) {
             console.error('[Ensemble] 설정 불러오기 실패:', error);
+        }
+    }
+
+    // ========== 5번 과업: 다중 언어 설정 ==========
+
+    /**
+     * 언어 설정 리스너
+     */
+    setupLanguageListeners() {
+        // 주 언어 선택
+        if (this.elements.languageSelect) {
+            this.elements.languageSelect.addEventListener('change', (e) => {
+                this.state.language = e.target.value;
+                this.speechManager.setLanguage(this.state.language);
+                this.updateLanguageStatusUI();
+                this.updateCorrectorLanguageContext();
+                this.saveSettings();
+            });
+        }
+
+        // 보조 언어 선택
+        if (this.elements.secondaryLanguageSelect) {
+            this.elements.secondaryLanguageSelect.addEventListener('change', (e) => {
+                this.state.secondaryLanguage = e.target.value;
+                this.updateLanguageStatusUI();
+                this.updateCorrectorLanguageContext();
+                this.saveSettings();
+            });
+        }
+    }
+
+    /**
+     * 언어 상태 UI 업데이트
+     */
+    updateLanguageStatusUI() {
+        if (!this.elements.languageStatus || !this.elements.languageStatusText) return;
+
+        const langNames = {
+            'ko-KR': '한국어',
+            'en-US': 'English',
+            'ja-JP': '日本語',
+            'zh-CN': '中文',
+            'de-DE': 'Deutsch',
+            'fr-FR': 'Français',
+            'es-ES': 'Español',
+            'none': ''
+        };
+
+        const primaryLang = langNames[this.state.language] || this.state.language;
+        const secondaryLang = this.state.secondaryLanguage !== 'none' 
+            ? langNames[this.state.secondaryLanguage] 
+            : null;
+
+        if (secondaryLang) {
+            this.elements.languageStatus.classList.add('bilingual');
+            this.elements.languageStatusText.textContent = `다중 언어 모드: ${primaryLang} + ${secondaryLang}`;
+        } else {
+            this.elements.languageStatus.classList.remove('bilingual');
+            this.elements.languageStatusText.textContent = `단일 언어 모드: ${primaryLang}`;
+        }
+    }
+
+    /**
+     * 보정기에 언어 컨텍스트 전달
+     */
+    updateCorrectorLanguageContext() {
+        // GeminiEnsembleCorrector에 언어 정보 전달
+        if (this.ensembleCorrector) {
+            this.ensembleCorrector.setLanguageContext({
+                primary: this.state.language,
+                secondary: this.state.secondaryLanguage
+            });
+        }
+
+        // TextCorrector에도 언어 정보 전달
+        if (this.textCorrector) {
+            this.textCorrector.setLanguageContext({
+                primary: this.state.language,
+                secondary: this.state.secondaryLanguage
+            });
+        }
+
+        console.log('[Language] 언어 컨텍스트 업데이트:', {
+            primary: this.state.language,
+            secondary: this.state.secondaryLanguage
+        });
+    }
+
+    // ========== 6번 과업: 사용자 메모 패널 ==========
+
+    /**
+     * 메모 패널 리스너
+     */
+    setupMemoListeners() {
+        // 메모 토글 버튼
+        if (this.elements.memoToggle) {
+            this.elements.memoToggle.addEventListener('click', () => this.toggleMemoPanel());
+        }
+
+        // 메모 닫기 버튼
+        if (this.elements.memoClose) {
+            this.elements.memoClose.addEventListener('click', () => this.closeMemoPanel());
+        }
+
+        // 메모 저장 버튼
+        if (this.elements.saveMemoBtn) {
+            this.elements.saveMemoBtn.addEventListener('click', () => this.saveMemo());
+        }
+
+        // AI 질문 버튼
+        if (this.elements.askAIBtn) {
+            this.elements.askAIBtn.addEventListener('click', () => this.askAIFromMemo());
+        }
+
+        // 단축키: Ctrl+Enter로 전송
+        if (this.elements.userMemoInput) {
+            this.elements.userMemoInput.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    this.askAIFromMemo();
+                }
+            });
+        }
+    }
+
+    /**
+     * 메모 패널 토글
+     */
+    toggleMemoPanel() {
+        if (!this.elements.memoContainer) return;
+        
+        const isVisible = this.elements.memoContainer.style.display !== 'none';
+        this.elements.memoContainer.style.display = isVisible ? 'none' : 'flex';
+        
+        if (!isVisible && this.elements.userMemoInput) {
+            this.elements.userMemoInput.focus();
+        }
+    }
+
+    /**
+     * 메모 패널 닫기
+     */
+    closeMemoPanel() {
+        if (this.elements.memoContainer) {
+            this.elements.memoContainer.style.display = 'none';
+        }
+    }
+
+    /**
+     * 메모 저장
+     */
+    saveMemo() {
+        const text = this.elements.userMemoInput?.value?.trim();
+        if (!text) {
+            this.showToast('메모 내용을 입력하세요', 'warning');
+            return;
+        }
+
+        const memo = {
+            type: 'memo',
+            text: text,
+            timestamp: new Date()
+        };
+
+        this.data.userMemos.push(memo);
+        this.addMemoToHistory(memo);
+        this.elements.userMemoInput.value = '';
+        this.showToast('메모가 저장되었습니다', 'success');
+    }
+
+    /**
+     * AI에게 질문
+     */
+    async askAIFromMemo() {
+        const text = this.elements.userMemoInput?.value?.trim();
+        if (!text) {
+            this.showToast('질문 내용을 입력하세요', 'warning');
+            return;
+        }
+
+        if (!this.geminiAPI.isConfigured) {
+            this.showToast('Gemini API 키를 먼저 설정해주세요', 'error');
+            return;
+        }
+
+        const memo = {
+            type: 'ai-question',
+            text: text,
+            timestamp: new Date()
+        };
+
+        this.data.userMemos.push(memo);
+        this.addMemoToHistory(memo);
+        this.elements.userMemoInput.value = '';
+
+        // AI 답변 요청
+        this.showToast('AI가 답변을 생성 중입니다...', 'info');
+        await this.generateAIAnswer(text);
+    }
+
+    /**
+     * 메모 히스토리에 추가
+     */
+    addMemoToHistory(memo) {
+        if (!this.elements.memoHistory) return;
+
+        const item = document.createElement('div');
+        item.className = `memo-item ${memo.type === 'ai-question' ? 'ai-question' : ''}`;
+        
+        const timeStr = memo.timestamp.toLocaleTimeString('ko-KR', {
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        item.innerHTML = `
+            <div class="memo-item-header">
+                <span class="memo-type">${memo.type === 'ai-question' ? '🤖 AI 질문' : '📝 메모'}</span>
+                <span class="memo-time">${timeStr}</span>
+            </div>
+            <p class="memo-text">${this.escapeHtml(memo.text)}</p>
+        `;
+
+        this.elements.memoHistory.appendChild(item);
+        this.elements.memoHistory.scrollTop = this.elements.memoHistory.scrollHeight;
+    }
+
+    /**
+     * 사용자 메모를 회의 요약에 통합 (6번 과업 핵심)
+     */
+    getUserMemosForContext() {
+        if (this.data.userMemos.length === 0) return '';
+
+        return this.data.userMemos.map(m => {
+            const typeLabel = m.type === 'ai-question' ? '[질문]' : '[메모]';
+            return `${typeLabel} ${m.text}`;
+        }).join('\n');
+    }
+
+    // ========== 3번 과업: 앙상블 시각화 ==========
+
+    /**
+     * 앙상블 시각화 표시/숨김 토글
+     */
+    updateEnsembleVisualizerVisibility() {
+        if (!this.elements.ensembleVisualizer) return;
+        
+        this.elements.ensembleVisualizer.style.display = 
+            this.state.ensembleMode ? 'block' : 'none';
+    }
+
+    /**
+     * 앙상블 결과 시각화 업데이트
+     */
+    updateEnsembleVisualization(ensembleData) {
+        if (!this.elements.ensembleVisualizer || !this.state.ensembleMode) return;
+
+        const { models, finalText } = ensembleData;
+
+        // SenseVoice 결과
+        if (this.elements.textSenseVoice && models?.senseVoice) {
+            this.elements.textSenseVoice.textContent = models.senseVoice.text || '인식 대기...';
+            if (this.elements.confSenseVoice) {
+                const conf = models.senseVoice.confidence;
+                this.elements.confSenseVoice.textContent = conf ? `${(conf * 100).toFixed(0)}%` : '--';
+            }
+            document.getElementById('modelSenseVoice')?.classList.toggle('active', !!models.senseVoice.text);
+        }
+
+        // Faster-Whisper 결과
+        if (this.elements.textWhisper && models?.fasterWhisper) {
+            this.elements.textWhisper.textContent = models.fasterWhisper.text || '인식 대기...';
+            if (this.elements.confWhisper) {
+                const conf = models.fasterWhisper.confidence;
+                this.elements.confWhisper.textContent = conf ? `${(conf * 100).toFixed(0)}%` : '--';
+            }
+            document.getElementById('modelWhisper')?.classList.toggle('active', !!models.fasterWhisper.text);
+        }
+
+        // Qwen3-ASR 결과
+        if (this.elements.textQwen && models?.qwenASR) {
+            this.elements.textQwen.textContent = models.qwenASR.text || '인식 대기...';
+            if (this.elements.confQwen) {
+                const conf = models.qwenASR.confidence;
+                this.elements.confQwen.textContent = conf ? `${(conf * 100).toFixed(0)}%` : '--';
+            }
+            document.getElementById('modelQwen')?.classList.toggle('active', !!models.qwenASR.text);
+        }
+
+        // 최종 보정 결과
+        if (this.elements.ensembleFinalText && finalText) {
+            this.elements.ensembleFinalText.textContent = finalText;
+        }
+    }
+
+    /**
+     * 앙상블 시각화 초기화
+     */
+    resetEnsembleVisualization() {
+        if (this.elements.textSenseVoice) this.elements.textSenseVoice.textContent = '대기 중...';
+        if (this.elements.textWhisper) this.elements.textWhisper.textContent = '대기 중...';
+        if (this.elements.textQwen) this.elements.textQwen.textContent = '대기 중...';
+        if (this.elements.confSenseVoice) this.elements.confSenseVoice.textContent = '--';
+        if (this.elements.confWhisper) this.elements.confWhisper.textContent = '--';
+        if (this.elements.confQwen) this.elements.confQwen.textContent = '--';
+        if (this.elements.ensembleFinalText) this.elements.ensembleFinalText.textContent = '--';
+        
+        ['modelSenseVoice', 'modelWhisper', 'modelQwen'].forEach(id => {
+            document.getElementById(id)?.classList.remove('active');
+        });
+    }
+
+    // ========== 7번 과업: 컨텍스트 UI 버그 수정 ==========
+
+    /**
+     * 컨텍스트 업데이트 (수정: 실시간 반영)
+     */
+    updateContext() {
+        const context = this.elements.meetingContext?.value || '';
+        const terms = this.elements.priorityTerms?.value || '';
+        const termsArray = terms.split(',').map(t => t.trim()).filter(t => t);
+
+        // TextCorrector 업데이트
+        if (this.textCorrector) {
+            this.textCorrector.setMeetingContext(context);
+            this.textCorrector.setPriorityTerms(termsArray);
+        }
+
+        // GeminiAPI 업데이트
+        if (this.geminiAPI) {
+            this.geminiAPI.setContext(context);
+        }
+
+        // GeminiEnsembleCorrector 업데이트
+        if (this.ensembleCorrector) {
+            this.ensembleCorrector.setContext({
+                topic: context.split('\n')[0] || '전문 회의',
+                summary: context
+            });
+            this.ensembleCorrector.setPriorityTerms(termsArray);
+        }
+
+        // 즉시 UI 업데이트 (7번 과업 핵심)
+        this.updateContextStatusUI();
+
+        console.log('[Context] 업데이트됨:', { context: context.substring(0, 50), terms: termsArray });
+    }
+
+    /**
+     * 컨텍스트 상태 UI 업데이트 (수정: 즉시 반영)
+     */
+    updateContextStatusUI() {
+        if (!this.elements.contextStatus) return;
+
+        const contextValue = this.elements.meetingContext?.value?.trim() || '';
+        const termsValue = this.elements.priorityTerms?.value?.trim() || '';
+        const hasContext = !!(contextValue || termsValue);
+        
+        if (hasContext) {
+            // 설정된 내용 미리보기 생성
+            let preview = '';
+            if (contextValue) {
+                preview = contextValue.split('\n')[0].substring(0, 30);
+                if (contextValue.length > 30) preview += '...';
+            }
+            if (termsValue) {
+                const termCount = termsValue.split(',').filter(t => t.trim()).length;
+                preview += preview ? ` (용어 ${termCount}개)` : `용어 ${termCount}개`;
+            }
+            
+            this.elements.contextStatus.innerHTML = `<i class="fas fa-check-circle"></i><span>컨텍스트 설정됨: ${this.escapeHtml(preview)}</span>`;
+            this.elements.contextStatus.classList.add('active');
+        } else {
+            this.elements.contextStatus.innerHTML = '<i class="fas fa-info-circle"></i><span>컨텍스트 미설정 - 기본 보정 모드</span>';
+            this.elements.contextStatus.classList.remove('active');
         }
     }
 }

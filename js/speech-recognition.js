@@ -1,7 +1,8 @@
 /**
- * Speech Recognition Module v2.0
+ * Speech Recognition Module v2.1
  * Web Speech API를 사용한 실시간 음성인식 모듈
  * N-Best 다중 후보 지원
+ * 1번 과업: 모바일 환경 최적화 (iOS Safari/Android Chrome)
  */
 
 class SpeechRecognitionManager {
@@ -27,9 +28,12 @@ class SpeechRecognitionManager {
         this._isRestarting = false;         // 재시작 중 플래그
 
         this.buffer = '';                   // 텍스트 버퍼 (삭제 예정)
-        // this.bufferTimer = null;         // 버퍼 타이머 (삭제)
-        // this.bufferInterval = 5000;      // 버퍼 간격 (삭제)
-        // this.onBufferFullCallback = null;// 버퍼 가득 참 콜백 (삭제)
+
+        // 1번 과업: 모바일 환경 감지
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        this.isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        this.audioContext = null;           // 오디오 컨텍스트 (모바일용)
+        this.micPermissionGranted = false;  // 마이크 권한 상태
 
         this.init();
     }
@@ -242,8 +246,76 @@ class SpeechRecognitionManager {
         // 기능 제거됨
     }
 
-    // 음성인식 시작 (최적화)
-    start() {
+    // 1번 과업: 모바일 오디오 컨텍스트 활성화 (사용자 상호작용 동기화)
+    async activateAudioContext() {
+        if (this.audioContext) {
+            if (this.audioContext.state === 'suspended') {
+                try {
+                    await this.audioContext.resume();
+                    console.log('[Mobile STT] AudioContext 재개됨');
+                } catch (e) {
+                    console.warn('[Mobile STT] AudioContext 재개 실패:', e);
+                }
+            }
+            return;
+        }
+
+        try {
+            // iOS Safari의 오디오 컨텍스트 생성
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioContextClass();
+            
+            // 모바일에서 오디오 컨텍스트를 강제로 활성화
+            if (this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+            
+            console.log('[Mobile STT] AudioContext 활성화 성공');
+        } catch (e) {
+            console.warn('[Mobile STT] AudioContext 생성 실패:', e);
+        }
+    }
+
+    // 1번 과업: 모바일 마이크 권한 요청
+    async requestMicrophonePermission() {
+        if (this.micPermissionGranted) return true;
+
+        try {
+            // 마이크 권한 요청 (getUserMedia)
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                } 
+            });
+            
+            // 스트림 즉시 정지 (권한 확인만 필요)
+            stream.getTracks().forEach(track => track.stop());
+            
+            this.micPermissionGranted = true;
+            console.log('[Mobile STT] 마이크 권한 획득 성공');
+            return true;
+        } catch (error) {
+            console.error('[Mobile STT] 마이크 권한 획득 실패:', error);
+            
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                if (this.onErrorCallback) {
+                    this.onErrorCallback('not-allowed', 
+                        '마이크 권한이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해 주세요.');
+                }
+            } else if (error.name === 'NotFoundError') {
+                if (this.onErrorCallback) {
+                    this.onErrorCallback('audio-capture', 
+                        '마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해 주세요.');
+                }
+            }
+            return false;
+        }
+    }
+
+    // 음성인식 시작 (최적화 - 1번 과업: 모바일 강화)
+    async start() {
         if (!this.recognition) {
             const initialized = this.init();
             if (!initialized) return false;
@@ -255,15 +327,50 @@ class SpeechRecognitionManager {
             this._restartTimeout = null;
         }
 
+        // 1번 과업: 모바일 환경에서 추가 초기화
+        if (this.isMobile) {
+            console.log('[Mobile STT] 모바일 환경 감지 -', this.isIOS ? 'iOS' : 'Android');
+            
+            // 오디오 컨텍스트 활성화 (사용자 상호작용 후 호출되어야 함)
+            await this.activateAudioContext();
+            
+            // 마이크 권한 요청
+            const hasPermission = await this.requestMicrophonePermission();
+            if (!hasPermission) {
+                return false;
+            }
+        }
+
         try {
             this.isListening = true;
             this.restartAttempts = 0;
             this._isRestarting = false;
+            
+            // iOS Safari에서 짧은 지연 후 시작 (안정성 향상)
+            if (this.isIOS) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
             this.recognition.start();
+            console.log('[STT] 음성인식 시작');
             return true;
         } catch (error) {
             console.error('Failed to start recognition:', error);
             this.isListening = false;
+            
+            // 모바일에서 자주 발생하는 오류 처리
+            if (error.message && error.message.includes('already started')) {
+                // 이미 시작된 경우, 재시작 시도
+                try {
+                    this.recognition.stop();
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    this.recognition.start();
+                    this.isListening = true;
+                    return true;
+                } catch (e) {
+                    console.error('[Mobile STT] 재시작 실패:', e);
+                }
+            }
             return false;
         }
     }

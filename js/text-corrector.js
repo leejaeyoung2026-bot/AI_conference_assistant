@@ -50,6 +50,12 @@ class TextCorrector {
         this._baseDictionary = null;        // 캐시된 기본 사전
         this._variationsCache = new Map();  // 발음 변형 캐시
 
+        // ========== 5번 과업: 다중 언어 컨텍스트 ==========
+        this.languageContext = {
+            primary: 'ko-KR',
+            secondary: 'none'
+        };
+
         // 설정 로드 (비동기)
         setTimeout(() => this.loadSettings(), 0);
     }
@@ -84,6 +90,15 @@ class TextCorrector {
         this.meetingContext = context.trim();
         this.extractKeywordsFromContext();
         this.saveSettings();
+    }
+
+    /**
+     * 5번 과업: 언어 컨텍스트 설정
+     */
+    setLanguageContext(langContext) {
+        if (langContext.primary) this.languageContext.primary = langContext.primary;
+        if (langContext.secondary !== undefined) this.languageContext.secondary = langContext.secondary;
+        console.log('[TextCorrector] 언어 컨텍스트 설정:', this.languageContext);
     }
 
     setPriorityTerms(termsString) {

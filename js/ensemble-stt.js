@@ -50,7 +50,7 @@ class EnsembleSTTSystem {
         // 웹 오디오 분석 (발화자 감지용)
         this.audioContext = null;
         this.analyser = null;
-        this.voiceActivityThreshold = 0.005;
+        this.voiceActivityThreshold = 0.02;
 
         // 서버 연결 상태
         this.serverConnected = false;

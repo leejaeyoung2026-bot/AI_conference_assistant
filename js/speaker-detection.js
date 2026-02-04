@@ -203,7 +203,7 @@ class SpeakerDetector {
         }
 
         // 임계값 이하면 무음으로 판단
-        if (maxValue < -65) return 0;
+        if (maxValue < -50) return 0;
 
         return maxBinIndex * binSize;
     }
@@ -256,7 +256,7 @@ class SpeakerDetector {
         const avgRecentVolume = recentVolumes.length > 0 
             ? recentVolumes.reduce((a, b) => a + b.value, 0) / recentVolumes.length 
             : 0;
-        const wasSilent = avgRecentVolume < 0.002;
+        const wasSilent = avgRecentVolume < 0.01;
 
         // 발화자 변경 판단
         if ((volumeChanged || pitchChanged) && wasSilent) {

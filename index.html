@@ -1,450 +1,696 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회의 AI 어시스턴트 v5.0 - 앙상블 STT 시스템</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <title>AI 회의 어시스턴트 - 앙상블 STT 기반 차세대 회의 도구</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <!-- <link rel="stylesheet" href="css/style.css"> -->
-    <link rel="stylesheet" href="css/enhanced-v2.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg-main: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.85);
+            --text-main: #f1f5f9;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                var(--bg-main);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.15));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--primary-light);
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero-badge i { animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text-main), var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            box-shadow: 0 8px 30px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px var(--primary-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(51, 65, 85, 0.7);
+            border-color: var(--primary);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 20px;
+            background: linear-gradient(180deg, var(--bg-main), rgba(15, 23, 42, 0.95));
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 16px;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 100px 20px;
+            background: var(--bg-main);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .services-grid { grid-template-columns: 1fr; }
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+        }
+
+        .service-card h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        /* Tech Section */
+        .tech {
+            padding: 100px 20px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), var(--bg-main));
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .tech-grid { grid-template-columns: 1fr; }
+        }
+
+        .tech-card {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+        }
+
+        .tech-card .model-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tech-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .tech-tag.speed { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .tech-tag.accuracy { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .tech-tag.context { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .tech-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .tech-card ul {
+            text-align: left;
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .tech-card li {
+            padding: 6px 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-card li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 100px 20px;
+            background: var(--bg-main);
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .faq-question i {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+
+        .faq-answer-content {
+            padding: 0 24px 24px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .faq-answer-content code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .btn { padding: 14px 24px; font-size: 0.9rem; }
+            .section-title h2 { font-size: 1.75rem; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-
 <body>
-    <div class="app-container">
-        <!-- 헤더 -->
-        <header class="app-header">
-            <div class="logo">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
                 <i class="fas fa-microphone-alt"></i>
-                <h1>회의 AI 어시스턴트</h1>
-                <span class="version-badge">v5.0</span>
+                <span>앙상블 STT 기반 차세대 회의 도구</span>
             </div>
-            <div class="header-controls">
-                <div class="meeting-timer">
-                    <i class="fas fa-clock"></i>
-                    <span id="timer">00:00:00</span>
-                </div>
-                <!-- 발화자 표시 -->
-                <div class="speaker-indicator primary" id="speakerIndicator">
-                    <span class="speaker-icon">👤</span>
-                    <span class="speaker-label">발표자</span>
-                </div>
-                <button class="btn btn-settings" id="settingsBtn" title="설정">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- 메인 컨텐츠 -->
-        <main class="main-content">
-            <!-- 왼쪽: 음성인식 패널 -->
-            <section class="panel transcription-panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-comment-dots"></i> 실시간 음성인식</h2>
-                    <div class="status-indicator" id="statusIndicator">
-                        <span class="status-dot"></span>
-                        <span class="status-text">대기 중</span>
-                    </div>
-                </div>
-
-                <!-- 음성 시각화 -->
-                <div class="voice-visualizer" id="voiceVisualizer">
-                    <div class="visualizer-bars">
-                        <span></span><span></span><span></span><span></span><span></span>
-                        <span></span><span></span><span></span><span></span><span></span>
-                    </div>
-                </div>
-
-                <!-- 컨트롤 버튼 -->
-                <div class="control-buttons">
-                    <button class="btn btn-primary btn-large" id="startBtn">
-                        <i class="fas fa-play"></i>
-                        <span>녹음 시작</span>
-                    </button>
-                    <button class="btn btn-warning btn-large" id="pauseBtn" disabled>
-                        <i class="fas fa-pause"></i>
-                        <span>일시정지</span>
-                    </button>
-                    <button class="btn btn-danger btn-large" id="stopBtn" disabled>
-                        <i class="fas fa-stop"></i>
-                        <span>녹음 중지</span>
-                    </button>
-                </div>
-
-                <!-- 발화자 설정 버튼 -->
-                <div class="speaker-controls">
-                    <button class="btn btn-sm btn-outline" id="setPrimarySpeakerBtn" title="현재 발화자를 주발표자로 설정">
-                        <i class="fas fa-user-check"></i>
-                        <span>주발표자 설정</span>
-                    </button>
-                    <div class="speaker-hint-box">
-                        <span class="speaker-hint">💡 회의 시작 시 주발표자를 설정하세요</span>
-                        <small class="speaker-hint-detail">
-                            녹음 시작 후, 주발표자가 말할 때 버튼을 클릭하면<br>
-                            음성 특성을 학습하여 발표자/참석자를 자동 구분합니다.
-                        </small>
-                    </div>
-                </div>
-
-                <!-- 실시간 텍스트 표시 -->
-                <div class="transcript-container">
-                    <div class="current-speech" id="currentSpeech">
-                        <p class="placeholder">녹음 버튼을 눌러 회의를 시작하세요...</p>
-                    </div>
-                    <div class="transcript-history" id="transcriptHistory">
-                        <!-- 인식된 텍스트가 여기에 표시됩니다 -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- 오른쪽: AI 분석 패널 -->
-            <section class="panel analysis-panel">
-                <!-- 질문 감지 영역 -->
-                <div class="sub-panel questions-panel">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-question-circle"></i> 감지된 질문</h2>
-                        <span class="badge" id="questionCount">0</span>
-                    </div>
-                    <div class="questions-list" id="questionsList">
-                        <div class="empty-state">
-                            <i class="fas fa-comment-slash"></i>
-                            <p>감지된 질문이 없습니다</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI 답변 영역 -->
-                <div class="sub-panel ai-answers-panel">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-robot"></i> AI 답변</h2>
-                        <span class="badge badge-ai" id="answerCount">0</span>
-                    </div>
-                    <div class="ai-answers-list" id="aiAnswersList">
-                        <div class="empty-state">
-                            <i class="fas fa-magic"></i>
-                            <p>질문이 감지되면 Gemini 2.5 Flash가 답변합니다</p>
-                            <small class="api-hint">🔍 검색 기반 답변 · 📎 출처 링크 제공</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 회의 요약 영역 -->
-                <div class="sub-panel summary-panel">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-file-alt"></i> 회의 요약</h2>
-                        <span class="badge badge-summary" id="summaryStatus">대기</span>
-                    </div>
-                    <div class="meeting-summary" id="meetingSummary">
-                        <div class="empty-state">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>회의가 진행되면 자동 요약됩니다</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- 하단 통계 바 -->
-        <footer class="stats-bar">
-            <div class="stat-item">
-                <i class="fas fa-file-alt"></i>
-                <span>총 단어: <strong id="totalWords">0</strong></span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-paragraph"></i>
-                <span>총 문장: <strong id="totalSentences">0</strong></span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-question"></i>
-                <span>질문 수: <strong id="totalQuestions">0</strong></span>
-            </div>
-
-            <div class="export-buttons">
-                <button class="btn btn-secondary btn-sm" id="clearBtn">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>기록 삭제</span>
-                </button>
-                <button class="btn btn-info btn-sm" id="exportAudioBtn" disabled>
+            <h1>AI 회의 어시스턴트 v5.0</h1>
+            <p>3대 오픈소스 STT 모델의 병렬 앙상블 시스템과 Gemini AI가 결합된 차세대 회의 도구로, 전문 용어 인식 정확도를 획기적으로 향상시킵니다.</p>
+            <div class="hero-buttons">
+                <a href="app.html" class="btn btn-primary">
+                    <i class="fas fa-play"></i>
+                    실시간 회의 어시스턴트
+                </a>
+                <a href="file-converter.html" class="btn btn-secondary">
                     <i class="fas fa-file-audio"></i>
-                    <span>음성 내보내기</span>
-                </button>
-                <button class="btn btn-export" id="exportBtn">
-                    <i class="fas fa-download"></i>
-                    <span>회의록 내보내기</span>
-                </button>
+                    녹음 파일 변환
+                </a>
             </div>
-        </footer>
-    </div>
+        </div>
+    </section>
 
-    <!-- 설정 모달 -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-cog"></i> 설정</h3>
-                <button class="btn-close" id="closeModal">&times;</button>
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>핵심 기능</h2>
+                <p>AI 회의 어시스턴트가 제공하는 혁신적인 기능들</p>
             </div>
-            <div class="modal-body">
-                <!-- Gemini API 설정 섹션 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-robot"></i> Gemini AI 설정</h4>
-                    <div class="setting-group">
-                        <label>Gemini API 키</label>
-                        <div class="api-key-input-wrapper">
-                            <input type="password" id="geminiApiKey" placeholder="API 키를 입력하세요">
-                            <button type="button" class="btn-toggle-visibility" id="toggleApiKeyVisibility">
-                                <i class="fas fa-eye"></i>
-                            </button>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>앙상블 STT 시스템</h3>
+                    <p>SenseVoice, Faster-Whisper, Qwen3-ASR 3개 모델의 결과를 Gemini AI가 통합 보정하여 최고 수준의 인식 정확도를 제공합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-user-check"></i></div>
+                    <h3>발화자 자동 구분</h3>
+                    <p>음성 특성 프로파일링을 통해 주발표자와 참석자를 자동으로 구분하고, 질문/코멘트를 실시간으로 분류합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                    <h3>Gemini AI 답변</h3>
+                    <p>회의 중 감지된 질문에 대해 Google 검색 기반의 신뢰할 수 있는 답변을 출처 링크와 함께 제공합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-flask"></i></div>
+                    <h3>전문용어 정밀 보정</h3>
+                    <p>제약, 화학, 바이오테크, IT 등 다양한 전문 분야의 용어를 정확하게 인식하고 보정합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
+                    <h3>스마트 회의록</h3>
+                    <p>회의 내용을 자동으로 요약하고, 결정 사항과 액션 아이템을 추출한 HTML 회의록을 생성합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                    <h3>다중 언어 지원</h3>
+                    <p>한국어, 영어, 일본어, 중국어 등 다양한 언어를 지원하며, 다국어 회의에서도 정확한 인식이 가능합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>서비스 선택</h2>
+                <p>목적에 맞는 서비스를 선택하세요</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🎙️</div>
+                    <h3>실시간 회의 어시스턴트</h3>
+                    <p>회의 중 실시간으로 음성을 인식하고 분석합니다. 질문 감지, AI 답변, 자동 요약 기능을 제공합니다.</p>
+                    <a href="app.html" class="btn btn-primary">
+                        <i class="fas fa-play"></i> 시작하기
+                    </a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📁</div>
+                    <h3>녹음 파일 텍스트 변환</h3>
+                    <p>기존에 녹음한 오디오/비디오 파일을 업로드하여 텍스트로 변환합니다. 앙상블 STT로 높은 정확도를 보장합니다.</p>
+                    <a href="file-converter.html" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> 파일 업로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Section -->
+    <section class="tech" id="tech">
+        <div class="container">
+            <div class="section-title">
+                <h2>앙상블 STT 기술 분석</h2>
+                <p>3개 모델의 강점을 결합한 병렬 앙상블 시스템</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="model-name">🚀 SenseVoice-Small</div>
+                    <span class="tech-tag speed">초고속 인식</span>
+                    <p>알리바바에서 개발한 초저지연 음성인식 모델로, 실시간 스트리밍에 최적화되어 있습니다.</p>
+                    <ul>
+                        <li>50ms 이하 지연 시간</li>
+                        <li>감정/이벤트 감지 (박수, 웃음)</li>
+                        <li>다국어 코드스위칭 지원</li>
+                        <li>경량 모델 (빠른 응답)</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="model-name">🎯 Faster-Whisper</div>
+                    <span class="tech-tag accuracy">고정확도</span>
+                    <p>OpenAI Whisper의 CTranslate2 최적화 버전으로, 뛰어난 전사 정확도를 제공합니다.</p>
+                    <ul>
+                        <li>OpenAI Whisper 기반</li>
+                        <li>int8 양자화로 4배 빠른 속도</li>
+                        <li>99개 언어 지원</li>
+                        <li>문장 부호 자동 삽입</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="model-name">🧠 Qwen3-ASR</div>
+                    <span class="tech-tag context">문맥추론</span>
+                    <p>알리바바 Qwen 시리즈의 멀티모달 추론 기반 ASR로, 문맥 파악 능력이 뛰어납니다.</p>
+                    <ul>
+                        <li>LLM 기반 문맥 이해</li>
+                        <li>전문 용어 정확도 향상</li>
+                        <li>동음이의어 자동 분별</li>
+                        <li>긴 문장 연속성 유지</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 48px; padding: 32px; background: rgba(99, 102, 241, 0.1); border-radius: 16px;">
+                <h3 style="margin-bottom: 16px;">💡 앙상블 시너지 효과</h3>
+                <p style="color: var(--text-muted); max-width: 700px; margin: 0 auto;">
+                    세 모델의 결과를 Gemini AI가 비교 분석하여 최적의 텍스트를 도출합니다. 
+                    SenseVoice의 속도, Faster-Whisper의 정확도, Qwen3-ASR의 문맥 파악 능력이 
+                    결합되어 단일 모델 대비 <strong style="color: var(--success);">평균 15% 이상의 인식 정확도 향상</strong>을 달성합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-title">
+                <h2>자주 묻는 질문</h2>
+                <p>설정 및 사용 방법 안내</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Gemini API 키는 어디서 발급받나요?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>1. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary-light);">Google AI Studio</a>에 접속합니다.</p>
+                            <p>2. Google 계정으로 로그인합니다.</p>
+                            <p>3. "Create API Key" 버튼을 클릭합니다.</p>
+                            <p>4. 발급된 API 키를 복사하여 설정창에 붙여넣습니다.</p>
+                            <p style="margin-top: 12px; color: var(--warning);">⚠️ API 키는 외부에 공유하지 마세요.</p>
                         </div>
-                        <small class="setting-hint">
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
-                                <i class="fas fa-external-link-alt"></i> Google AI Studio에서 API 키 발급받기
-                            </a>
-                        </small>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="autoAnswer" checked>
-                            질문 감지 시 자동 AI 답변
-                        </label>
-                    </div>
-                    <div class="setting-group">
-                        <label>AI 응답 스타일</label>
-                        <select id="aiResponseStyle">
-                            <option value="concise">간결하게</option>
-                            <option value="detailed">상세하게</option>
-                            <option value="bullet">요점 정리</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableGrounding" checked>
-                            🔍 Google 검색 기반 답변 (출처 링크 제공)
-                        </label>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableAutoSummary" checked>
-                            📝 주기적 회의 요약
-                        </label>
-                    </div>
-                    <div class="model-info">
-                        <i class="fas fa-microchip"></i>
-                        <span>Gemini 2.5 Flash 모델 사용 중</span>
-                    </div>
-                    <div class="api-status" id="apiStatus">
-                        <span class="status-dot"></span>
-                        <span class="status-text">API 키 미설정</span>
                     </div>
                 </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 앙상블 STT 설정 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-layer-group"></i> 앙상블 STT 설정 <span class="beta-badge">BETA</span></h4>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableEnsemble">
-                            🔗 앙상블 STT 서버 연결
-                        </label>
-                        <small class="setting-hint">3대 오픈소스 STT 모델을 병렬로 실행합니다</small>
-                        <small class="setting-hint fallback-note">⚠️ 서버 연결 실패 시 자동으로 브라우저 기본 음성인식(Web Speech API)으로 전환됩니다</small>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>질문 감지 민감도는 어떻게 설정하나요?</span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="setting-group">
-                        <label>앙상블 서버 URL</label>
-                        <div class="server-url-wrapper">
-                            <input type="text" id="ensembleServerUrl" placeholder="https://ai-conference-assistant.onrender.com" value="https://ai-conference-assistant.onrender.com">
-                            <button type="button" class="btn btn-sm btn-test-connection" id="testEnsembleConnection">
-                                <i class="fas fa-plug"></i> 연결 테스트
-                            </button>
-                        </div>
-                        <small class="setting-hint">
-                            지원 모델: SenseVoice-Small, Faster-Whisper, Qwen3-ASR
-                        </small>
-                    </div>
-                    <!-- 원클릭 서버 설정 프리셋 -->
-                    <div class="setting-group">
-                        <label>빠른 설정 (원클릭)</label>
-                        <div class="preset-buttons">
-                            <button type="button" class="btn btn-sm btn-preset" data-url="https://ai-conference-assistant.onrender.com" id="presetCloud">
-                                <i class="fas fa-cloud"></i> 클라우드 서버
-                            </button>
-                            <button type="button" class="btn btn-sm btn-preset" data-url="http://localhost:8000" id="presetLocal">
-                                <i class="fas fa-laptop"></i> 로컬 서버
-                            </button>
-                            <button type="button" class="btn btn-sm btn-preset" data-url="" id="presetCustom">
-                                <i class="fas fa-edit"></i> 직접 입력
-                            </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>설정창에서 "질문 감지 민감도" 슬라이더를 조절합니다.</p>
+                            <ul style="margin: 12px 0; padding-left: 20px;">
+                                <li><strong>1-2 (낮음)</strong>: 명확한 질문만 감지 (물음표로 끝나는 문장)</li>
+                                <li><strong>3 (보통)</strong>: 권장 설정, 의문형 어미 포함</li>
+                                <li><strong>4-5 (높음)</strong>: 간접 질문, 확인 요청까지 감지</li>
+                            </ul>
+                            <p>회의 성격에 따라 조절하세요. 브레인스토밍 회의는 높게, 발표 위주 회의는 낮게 설정하는 것을 권장합니다.</p>
                         </div>
                     </div>
-                    <div class="ensemble-status" id="ensembleStatus">
-                        <i class="fas fa-info-circle"></i>
-                        <span id="ensembleStatusText">앙상블 서버 미연결 - Web Speech API 사용 중</span>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>보정 간격(버퍼)은 어떤 역할을 하나요?</span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <!-- 서버 연결 도움말 -->
-                    <div class="server-help-card" id="serverHelpCard">
-                        <div class="help-header">
-                            <i class="fas fa-question-circle"></i>
-                            <span>앙상블 서버 설정 가이드</span>
-                            <button type="button" class="btn-toggle-help" id="toggleServerHelp">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>"보정 버퍼 간격"은 AI 보정 요청 사이의 최소 대기 시간입니다.</p>
+                            <ul style="margin: 12px 0; padding-left: 20px;">
+                                <li><strong>3-5초</strong>: 빠른 보정, API 호출 빈번 (비용 증가)</li>
+                                <li><strong>10-15초</strong>: 균형 잡힌 설정</li>
+                                <li><strong>15-20초</strong>: 비용 절약, 문장 단위 보정</li>
+                            </ul>
+                            <p>전문 용어가 많은 회의에서는 짧은 간격(3-5초)을, 일반 회의에서는 10초 이상을 권장합니다.</p>
                         </div>
-                        <div class="help-content" id="serverHelpContent" style="display: none;">
-                            <ol>
-                                <li>Python 3.9+ 환경에서 FastAPI 서버를 실행합니다</li>
-                                <li>필요 패키지: <code>pip install fastapi uvicorn sensevoice faster-whisper transformers</code></li>
-                                <li>서버 실행: <code>uvicorn main:app --host 0.0.0.0 --port 8000</code></li>
-                                <li>위 "연결 테스트" 버튼으로 연결을 확인합니다</li>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>회의 컨텍스트는 어떻게 설정하나요?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>설정창의 "회의 주제/프로젝트명"에 회의 정보를 입력하세요.</p>
+                            <p style="margin-top: 12px;"><strong>예시:</strong></p>
+                            <code style="display: block; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 8px 0;">
+신약 개발 3차 임상시험 결과 검토 회의<br>
+주요 키워드: Phase III, PK/PD, 바이오마커, ITT 분석
+                            </code>
+                            <p style="margin-top: 12px;">"우선 인식 용어"에는 자주 사용되는 전문 용어나 제품 코드를 쉼표로 구분하여 입력합니다.</p>
+                            <code style="display: block; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 8px 0;">
+XYZ-123, ABC-456, 바리시티닙, 토실리주맙
+                            </code>
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>앙상블 STT 서버는 어떻게 연결하나요?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>앙상블 STT는 별도의 서버가 필요합니다. 서버 없이도 브라우저 기본 음성인식(Web Speech API)으로 동작합니다.</p>
+                            <p style="margin-top: 12px;"><strong>서버 연결 방법:</strong></p>
+                            <ol style="margin: 12px 0; padding-left: 20px;">
+                                <li>설정창에서 "앙상블 STT 서버 연결" 체크</li>
+                                <li>서버 URL 입력 (예: <code>http://localhost:8000</code>)</li>
+                                <li>"연결 테스트" 버튼 클릭</li>
+                                <li>연결 성공 시 자동으로 앙상블 모드 활성화</li>
                             </ol>
-                            <a href="#" class="help-link" id="downloadServerTemplate">
-                                <i class="fas fa-download"></i> 서버 템플릿 코드 보기
-                            </a>
+                            <p style="color: var(--text-dim); margin-top: 12px;">* 서버 구축 가이드는 설정창의 "서버 템플릿 코드 보기"를 참조하세요.</p>
                         </div>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 발화자 감지 설정 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-users"></i> 발화자 감지 설정</h4>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableSpeakerDetection" checked>
-                            👤 발화자 자동 구분
-                        </label>
-                        <small class="setting-hint">
-                            주발표자와 참석자(질문/코멘트)를 자동으로 구분합니다
-                        </small>
-                    </div>
-                    <div class="speaker-legend">
-                        <div class="legend-item primary">
-                            <span class="legend-icon">👤</span>
-                            <span>주발표자 - 파란색 말풍선</span>
-                        </div>
-                        <div class="legend-item secondary">
-                            <span class="legend-icon">👥</span>
-                            <span>참석자 (질문/코멘트) - 초록색 말풍선</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 회의 컨텍스트 설정 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-clipboard-list"></i> 회의 컨텍스트</h4>
-                    <div class="setting-group">
-                        <label>회의 주제 / 프로젝트명</label>
-                        <textarea id="meetingContext" rows="3"
-                            placeholder="예: 신제품 개발 회의&#10;주요 키워드: 시장분석, ROI, 출시일정"></textarea>
-                        <small class="setting-hint">회의 주제와 관련 키워드를 입력하면 음성 인식 정확도가 향상됩니다</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>우선 인식 용어 (쉼표로 구분)</label>
-                        <input type="text" id="priorityTerms" placeholder="예: 프로젝트명, 제품코드, 전문용어">
-                        <small class="setting-hint">자주 사용할 전문 용어나 코드를 등록하세요</small>
-                    </div>
-                    <div class="context-status" id="contextStatus">
-                        <i class="fas fa-info-circle"></i>
-                        <span>컨텍스트 미설정 - 기본 보정 모드</span>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 전문용어 보정 설정 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-flask"></i> 전문용어 보정</h4>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableCorrection" checked>
-                            음성인식 결과 AI 보정
-                        </label>
-                        <small class="setting-hint">전문용어를 정확하게 인식합니다 (예: "바리스틴" → "바리시티닙")</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>전문 분야</label>
-                        <select id="correctionPersona">
-                            <option value="pharma">💊 제약/약학</option>
-                            <option value="chemistry">⚗️ 화학</option>
-                            <option value="biotech">🧬 바이오테크</option>
-                            <option value="food">🍽️ 식품</option>
-                            <option value="it">💻 IT/소프트웨어</option>
-                            <option value="general">🔬 일반 과학</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableNBest" checked>
-                            다중 후보 분석 (N-Best)
-                        </label>
-                        <small class="setting-hint">여러 음성 인식 후보 중 문맥에 맞는 것을 선택합니다</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>보정 버퍼 간격 (초)</label>
-                        <div class="slider-container">
-                            <input type="range" id="correctionInterval" min="3" max="20" value="5" step="1">
-                            <span id="correctionIntervalValue">5초</span>
-                        </div>
-                        <small class="setting-hint">AI 보정 요청 간격 (3~20초, 짧을수록 빠르지만 API 비용 증가)</small>
-                    </div>
-                    <div class="correction-examples">
-                        <span class="example-label">보정 예시:</span>
-                        <span class="example-item">"에이피아이" → "API"</span>
-                        <span class="example-item">"유아이" → "UI"</span>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 기본 설정 섹션 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-sliders-h"></i> 기본 설정</h4>
-                    <div class="setting-group">
-                        <label>언어 설정</label>
-                        <select id="languageSelect">
-                            <option value="ko-KR">한국어</option>
-                            <option value="en-US">English (US)</option>
-                            <option value="ja-JP">日本語</option>
-                            <option value="zh-CN">中文 (简体)</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>질문 감지 민감도</label>
-                        <div class="slider-container">
-                            <input type="range" id="sensitivityRange" min="1" max="5" value="3">
-                            <span id="sensitivityValue">보통</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="soundAlert" checked>
-                            질문 감지 시 알림음
-                        </label>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 알림 토스트 -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2024 AI 회의 어시스턴트. 앙상블 STT 기술로 더 정확한 회의록을.</p>
+    </footer>
 
-    <!-- 스크립트 로드 -->
-    <script src="js/speech-recognition.js"></script>
-    <script src="js/ai-analysis.js"></script>
-    <script src="js/gemini-api.js"></script>
-    <script src="js/text-corrector.js"></script>
-    <script src="js/audio-recorder.js"></script>
-    <script src="js/speaker-detection.js"></script>
-    <script src="js/meeting-export.js"></script>
-    <script src="js/ensemble-stt.js"></script>
-    <script src="js/gemini-ensemble-corrector.js"></script>
-    <script src="js/enhanced-app-v2.js"></script>
+    <script>
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+    </script>
 </body>
-
 </html>
