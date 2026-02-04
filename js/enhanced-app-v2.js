@@ -1885,14 +1885,14 @@ ${aiAnswersText ? `[AI 답변 내용]\n${aiAnswersText}\n` : ''}
      * 서버 템플릿 코드 표시
      */
     showServerTemplate() {
-        const template = `# FastAPI 앙상블 STT 서버 템플릿
+        const template = `# FastAPI Faster-Whisper STT 서버 템플릿
 # 파일명: main.py
 
 from fastapi import FastAPI, WebSocket, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
-app = FastAPI(title="Ensemble STT Server")
+app = FastAPI(title="Faster-Whisper STT Server")
 
 # CORS 설정
 app.add_middleware(
@@ -1907,8 +1907,8 @@ app.add_middleware(
 async def health_check():
     return {
         "status": "healthy",
-        "message": "Ensemble STT Server is running",
-        "models": ["SenseVoice-Small", "Faster-Whisper", "Qwen3-ASR"]
+        "message": "Faster-Whisper STT Server is running",
+        "models": ["Faster-Whisper"]
     }
 
 @app.websocket("/ws/stt")
@@ -1916,12 +1916,24 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
+            # 1. 메타데이터 수신
+            # metadata = await websocket.receive_json()
+            
+            # 2. 오디오 데이터 수신
             data = await websocket.receive_bytes()
-            # 여기서 3개 모델 병렬 실행
-            # result = await process_ensemble(data)
+            
+            # Faster-Whisper 모델 실행 (예시)
+            # result = await process_whisper(data)
+            
             await websocket.send_json({
                 "type": "ensemble_result",
-                "data": {"finalText": "인식된 텍스트"}
+                "data": {
+                    "finalText": "인식된 텍스트",
+                    "fasterWhisper": {
+                        "text": "인식된 텍스트",
+                        "confidence": 0.95
+                    }
+                }
             })
     except Exception as e:
         print(f"WebSocket error: {e}")

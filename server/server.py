@@ -24,14 +24,12 @@ app.add_middleware(
 
 # Global variables for models
 models = {
-    "sensevoice": None,
-    "faster_whisper": None,
-    "qwen_asr": None
+    "faster_whisper": None
 }
 
 # Load models (Mock implementation for now to ensure connection works)
 async def load_models():
-    logger.info("Loading STT models...")
+    logger.info("Loading Faster-Whisper model...")
     # In a real implementation, you would load the models here
     # try:
     #     from faster_whisper import WhisperModel
@@ -40,7 +38,7 @@ async def load_models():
     # except Exception as e:
     #     logger.warning(f"Failed to load Faster-Whisper: {e}")
     
-    logger.info("Models loaded (Simulation Mode enabled if models are missing)")
+    logger.info("Model loaded (Simulation Mode enabled if model is missing)")
 
 @app.on_event("startup")
 async def startup_event():
@@ -48,14 +46,14 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"status": "running", "service": "Ensemble STT Server"}
+    return {"status": "running", "service": "Faster-Whisper STT Server"}
 
 @app.get("/health")
 async def health_check():
     return {
         "status": "healthy",
-        "message": "Ensemble STT Server is running (Simulation Mode)",
-        "models": ["SenseVoice-Small", "Faster-Whisper", "Qwen3-ASR"]
+        "message": "Faster-Whisper STT Server is running (Simulation Mode)",
+        "models": ["Faster-Whisper"]
     }
 
 @app.websocket("/ws/stt")
@@ -75,22 +73,19 @@ async def websocket_endpoint(websocket: WebSocket):
             logger.info(f"Received audio bytes: {len(audio_bytes)} bytes")
             
             # 3. Process Audio (Simulation for now)
-            # In a real-world scenario, you would decode the bytes (webm/opus) to PCM 
-            # and pass it to the models.
-            
-            # Simulate processing time
             await asyncio.sleep(0.5)
             
-            # Create a mock response closely matching the protocol in ensemble-stt.js
+            # Create a mock response with only fasterWhisper
             response = {
                 "type": "ensemble_result",
                 "data": {
-                    "finalText": f"Server processed {len(audio_bytes)} bytes of audio.",
-                    "senseVoice": "SenseVoice prediction",
-                    "fasterWhisper": "Faster-Whisper prediction",
-                    "qwenASR": "Qwen3-ASR prediction",
+                    "finalText": f"Faster-Whisper processed {len(audio_bytes)} bytes of audio.",
+                    "fasterWhisper": {
+                        "text": f"Faster-Whisper prediction for {len(audio_bytes)} bytes",
+                        "confidence": 0.92
+                    },
                     "speaker": metadata.get("speaker", "unknown"),
-                    "confidence": 0.95,
+                    "confidence": 0.92,
                     "events": []
                 }
             }

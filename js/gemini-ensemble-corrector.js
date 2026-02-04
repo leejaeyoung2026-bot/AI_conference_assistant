@@ -139,39 +139,18 @@ class GeminiEnsembleCorrector {
     async performCorrection(ensembleData) {
         const { models, speaker, events } = ensembleData;
 
-        // 모델 결과 수집
+        // 모델 결과 수집 (Faster-Whisper만 사용하도록 수정)
         const modelResults = [];
-        if (models.senseVoice?.text) modelResults.push({ model: 'SenseVoice', text: models.senseVoice.text, confidence: models.senseVoice.confidence || 0 });
+        // if (models.senseVoice?.text) modelResults.push({ model: 'SenseVoice', text: models.senseVoice.text, confidence: models.senseVoice.confidence || 0 });
         if (models.fasterWhisper?.text) modelResults.push({ model: 'Faster-Whisper', text: models.fasterWhisper.text, confidence: models.fasterWhisper.confidence || 0 });
-        if (models.qwenASR?.text) modelResults.push({ model: 'Qwen3-ASR', text: models.qwenASR.text, confidence: models.qwenASR.confidence || 0 });
+        // if (models.qwenASR?.text) modelResults.push({ model: 'Qwen3-ASR', text: models.qwenASR.text, confidence: models.qwenASR.confidence || 0 });
 
         // 결과가 없으면 반환
         if (modelResults.length === 0) {
             return { text: '', confidence: 0, speaker: speaker };
         }
 
-        // 결과가 하나면 바로 반환
-        if (modelResults.length === 1) {
-            return {
-                text: modelResults[0].text,
-                confidence: modelResults[0].confidence,
-                speaker: speaker,
-                model: modelResults[0].model
-            };
-        }
-
-        // 결과가 모두 동일하면 바로 반환
-        const texts = modelResults.map(r => r.text);
-        if (texts.every(t => t === texts[0])) {
-            return {
-                text: texts[0],
-                confidence: 1.0,
-                speaker: speaker,
-                agreement: 'unanimous'
-            };
-        }
-
-        // Gemini로 통합 보정
+        // Gemini로 통합 보정 (단일 모델이어도 문맥 보정을 위해 수행)
         const correctedText = await this.geminiEnsembleCorrect(modelResults, speaker, events);
 
         // 이력 업데이트
@@ -182,7 +161,7 @@ class GeminiEnsembleCorrector {
 
         return {
             text: correctedText,
-            confidence: this.calculateConfidence(modelResults, correctedText),
+            confidence: modelResults[0].confidence,
             speaker: speaker,
             originalResults: modelResults
         };
@@ -197,10 +176,10 @@ class GeminiEnsembleCorrector {
         try {
             const response = await this.geminiAPI.generateContent(prompt);
             const corrected = this.parseGeminiResponse(response);
-            return corrected || this.selectBestCandidate({ models: this.resultsToModels(modelResults) });
+            return corrected || modelResults[0].text;
         } catch (error) {
             console.error('[GeminiEnsembleCorrector] Gemini API 오류:', error);
-            return this.selectBestCandidate({ models: this.resultsToModels(modelResults) });
+            return modelResults[0].text;
         }
     }
 
@@ -225,7 +204,7 @@ class GeminiEnsembleCorrector {
             ? `- 언어: ${primaryLang} (주), ${secondaryLang} (보조) - 두 언어가 혼용될 수 있으며, 각 언어의 전문 용어를 정확히 인식하세요`
             : `- 언어: ${primaryLang}`;
 
-        return `당신은 전문 회의의 음성인식 보정 전문가입니다.
+        return `당신은 전문 회의의 음성인식 보정 전문가입니다. Faster-Whisper 모델의 인식 결과를 바탕으로 회의 문맥과 전문 용어를 고려하여 보정해주세요.
 
 ## 회의 컨텍스트
 - 주제: ${this.meetingContext.topic}
@@ -239,16 +218,14 @@ ${this.meetingContext.keywords.join(', ')}
 ## 사용자 지정 우선 인식 용어
 ${this.priorityTerms.length > 0 ? this.priorityTerms.join(', ') : '(없음)'}
 
-## 3개 음성인식 모델 결과
-
-${modelResults.map((r, i) => `### 모델 ${i + 1}: ${r.model} (신뢰도: ${(r.confidence * 100).toFixed(1)}%)
-"${r.text}"`).join('\n\n')}
+## 음성인식 결과 (Faster-Whisper)
+"${modelResults[0].text}"
 
 ${events.length > 0 ? `## 감지된 이벤트\n${events.join(', ')}` : ''}
 
 ## 지시사항
-1. 세 모델의 차이점을 분석하세요.
-2. 회의 주제와 전문 용어 키워드에 가장 부합하는 논리적인 문장을 하나로 합성하세요.
+1. 입력된 문장을 분석하여 오타나 문맥에 맞지 않는 단어를 수정하세요.
+2. 회의 주제와 전문 용어 키워드에 부합하도록 보정하세요.
 3. 전문 용어의 정확한 표기에 주의하세요 (사용자 지정 우선 인식 용어 참고)
 4. 수치 데이터는 반드시 보존하세요 (예: 3.5%, 18개, 30일).
 5. ${speakerInfo}의 발화 스타일을 고려하세요.
@@ -287,31 +264,19 @@ ${events.length > 0 ? `## 감지된 이벤트\n${events.join(', ')}` : ''}
     selectBestCandidate(ensembleData) {
         const { models } = ensembleData;
         
-        let bestCandidate = { text: '', confidence: 0, model: '' };
-
-        // 신뢰도가 가장 높은 모델 선택
         if (models.fasterWhisper?.text) {
-            const conf = models.fasterWhisper.confidence || 0.7;
-            if (conf > bestCandidate.confidence) {
-                bestCandidate = { text: models.fasterWhisper.text, confidence: conf, model: 'Faster-Whisper' };
-            }
+            return { 
+                text: models.fasterWhisper.text, 
+                confidence: models.fasterWhisper.confidence || 0.7, 
+                model: 'Faster-Whisper' 
+            };
         }
 
-        if (models.qwenASR?.text) {
-            const conf = models.qwenASR.confidence || 0.65;
-            if (conf > bestCandidate.confidence) {
-                bestCandidate = { text: models.qwenASR.text, confidence: conf, model: 'Qwen3-ASR' };
-            }
-        }
+        // 폴백
+        if (models.senseVoice?.text) return { text: models.senseVoice.text, confidence: 0.6, model: 'SenseVoice' };
+        if (models.qwenASR?.text) return { text: models.qwenASR.text, confidence: 0.65, model: 'Qwen3-ASR' };
 
-        if (models.senseVoice?.text) {
-            const conf = models.senseVoice.confidence || 0.6;
-            if (conf > bestCandidate.confidence) {
-                bestCandidate = { text: models.senseVoice.text, confidence: conf, model: 'SenseVoice' };
-            }
-        }
-
-        return bestCandidate;
+        return { text: '', confidence: 0, model: '' };
     }
 
     /**

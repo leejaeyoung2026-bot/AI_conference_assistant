@@ -101,11 +101,11 @@
                 <!-- 앙상블 모드 실시간 시각화 (각 모델별 원본 인식 결과) -->
                 <div class="ensemble-visualizer" id="ensembleVisualizer" style="display: none;">
                     <div class="ensemble-header">
-                        <span class="ensemble-badge"><i class="fas fa-layer-group"></i> 앙상블 모드 활성화</span>
-                        <span class="ensemble-status-text">3개 모델 병렬 인식 중</span>
+                        <span class="ensemble-badge"><i class="fas fa-layer-group"></i> 고성능 STT 모드 활성화</span>
+                        <span class="ensemble-status-text">Faster-Whisper 모델 인식 중</span>
                     </div>
                     <div class="ensemble-models">
-                        <div class="model-result" id="modelSenseVoice">
+                        <div class="model-result" id="modelSenseVoice" style="display: none;">
                             <div class="model-header">
                                 <span class="model-name">🚀 SenseVoice</span>
                                 <span class="model-tag speed">초고속</span>
@@ -121,7 +121,7 @@
                             </div>
                             <p class="model-text" id="textWhisper">대기 중...</p>
                         </div>
-                        <div class="model-result" id="modelQwen">
+                        <div class="model-result" id="modelQwen" style="display: none;">
                             <div class="model-header">
                                 <span class="model-name">🧠 Qwen3-ASR</span>
                                 <span class="model-tag context">문맥추론</span>
@@ -131,7 +131,7 @@
                         </div>
                     </div>
                     <div class="ensemble-final">
-                        <span class="final-label"><i class="fas fa-magic"></i> Gemini 통합 보정 결과:</span>
+                        <span class="final-label"><i class="fas fa-magic"></i> Gemini 문맥 보정 결과:</span>
                         <p class="final-text" id="ensembleFinalText">--</p>
                     </div>
                 </div>
