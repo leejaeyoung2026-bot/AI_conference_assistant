@@ -82,6 +82,26 @@
         .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
         .footer-links a:hover { color: white; }
 
+        /* Sophisticated Workflow UI */
+        .workflow-container { position: relative; padding: 40px 0; }
+        .flow-path { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; position: relative; z-index: 1; }
+        
+        .flow-item { flex: 1; position: relative; padding: 35px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 30px; backdrop-filter: blur(10px); transition: 0.5s; }
+        .flow-item:hover { transform: translateY(-10px); background: rgba(99, 102, 241, 0.05); border-color: var(--primary); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        
+        .flow-number { position: absolute; top: -20px; left: 35px; width: 45px; height: 45px; background: var(--primary); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+        
+        .flow-arrow { position: absolute; top: 50%; right: -15px; transform: translateY(-50%); color: var(--primary); font-size: 1.5rem; opacity: 0.3; z-index: 0; }
+        
+        .loop-badge { display: inline-block; padding: 5px 15px; background: rgba(6, 182, 212, 0.15); color: var(--accent); border-radius: 999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .glow-effect { position: absolute; width: 300px; height: 300px; background: var(--primary); filter: blur(150px); opacity: 0.1; pointer-events: none; z-index: 0; }
+
+        @media (max-width: 992px) {
+            .flow-path { flex-direction: column; gap: 50px; }
+            .flow-arrow { top: auto; bottom: -35px; right: auto; left: 50%; transform: translateX(-50%) rotate(90deg); }
+        }
+
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.8rem; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -169,26 +189,42 @@
         </div>
     </section>
 
-    <section class="section" style="background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.05), transparent); border-radius: 40px;">
+    <section class="section" style="position: relative;">
+        <div class="glow-effect" style="top: 20%; left: 10%;"></div>
+        <div class="glow-effect" style="bottom: 20%; right: 10%; background: var(--accent);"></div>
+        
         <div class="section-title">
-            <h2>기록을 넘어 맥락을 읽는 VORA의 엔진</h2>
-            <p>단순한 전사가 아닙니다. VORA는 대화의 흐름을 스스로 학습합니다.</p>
+            <h2 style="font-size: 3rem;">How VORA's Brain Works</h2>
+            <p>데이터가 순환하며 지능이 고도화되는 VORA만의 독창적인 메커니즘</p>
         </div>
-        <div class="service-grid">
-            <div class="service-card">
-                <div class="service-icon" style="color: var(--accent);"><i class="fas fa-sync-alt"></i></div>
-                <h3>실시간 요약 피드백</h3>
-                <p>VORA는 1분 단위로 회의 내용을 압축 요약합니다. 이 데이터는 즉시 **AI의 프롬프트로 재주입**되어, AI가 현재 대화 주제를 절대로 놓치지 않도록 만듭니다.</p>
-            </div>
-            <div class="service-card">
-                <div class="service-icon" style="color: var(--primary);"><i class="fas fa-spell-check"></i></div>
-                <h3>문맥 기반 오타 보정</h3>
-                <p>이전 대화 요약본을 실시간 참고합니다. 발음이 비슷한 여러 단어 중, **현재 비즈니스 상황에 가장 적합한 용어**를 선택하여 정밀하게 교정합니다.</p>
-            </div>
-            <div class="service-card">
-                <div class="service-icon" style="color: var(--success);"><i class="fas fa-brain"></i></div>
-                <h3>장기 기억력 유지</h3>
-                <p>전체 스크립트 대신 정제된 핵심 요약본을 피드백으로 활용하여, **수 시간의 긴 회의**에서도 AI가 지치지 않고 일관된 통찰과 답변을 제공합니다.</p>
+
+        <div class="workflow-container">
+            <div class="flow-path">
+                <!-- Step 1 -->
+                <div class="flow-item">
+                    <div class="flow-number">01</div>
+                    <div class="loop-badge">Real-time Capture</div>
+                    <h3>음성 데이터의 텍스트화</h3>
+                    <p>브라우저 표준 기술을 통해 현장의 목소리를 1차로 디지털화합니다. 수 밀리초 내에 이루어지는 이 과정은 모든 통찰의 시작점입니다.</p>
+                    <div class="flow-arrow"><i class="fas fa-long-arrow-alt-right"></i></div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flow-item">
+                    <div class="flow-number">02</div>
+                    <div class="loop-badge">Context Synthesis</div>
+                    <h3>지능형 맥락 추출 (1min)</h3>
+                    <p>VORA는 1분 단위로 대화를 분석합니다. 흩어진 문장들을 연결하여 현재 논의의 핵심 주제와 흐름을 스스로 학습하고 요약합니다.</p>
+                    <div class="flow-arrow"><i class="fas fa-long-arrow-alt-right"></i></div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flow-item">
+                    <div class="flow-number" style="background: var(--accent);">03</div>
+                    <div class="loop-badge" style="background: rgba(99, 102, 241, 0.2); color: white;">Feedback Loop</div>
+                    <h3>요약 재주입 및 정밀 보정</h3>
+                    <p>생성된 요약본을 <strong>다시 AI의 기억(Prompt)으로 주입</strong>합니다. 이를 통해 AI는 실시간 오타를 보정하고, 완벽한 문맥을 이해한 답변을 내놓습니다.</p>
+                </div>
             </div>
         </div>
     </section>
