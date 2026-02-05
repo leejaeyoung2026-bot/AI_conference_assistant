@@ -9,9 +9,9 @@ import uvicorn
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("EnsembleSTTServer")
+logger = logging.getLogger("FasterWhisperServer")
 
-app = FastAPI(title="Ensemble STT Server")
+app = FastAPI(title="Faster-Whisper STT Server")
 
 # Allow CORS
 app.add_middleware(
@@ -23,26 +23,20 @@ app.add_middleware(
 )
 
 # Global variables for models
-models = {
-    "faster_whisper": None
-}
+model = None
 
-# Load models (Mock implementation for now to ensure connection works)
-async def load_models():
+# Load models (Mock implementation for now)
+async def load_model():
     logger.info("Loading Faster-Whisper model...")
-    # In a real implementation, you would load the models here
-    # try:
-    #     from faster_whisper import WhisperModel
-    #     models["faster_whisper"] = WhisperModel("small", device="cpu", compute_type="int8")
-    #     logger.info("Faster-Whisper loaded")
-    # except Exception as e:
-    #     logger.warning(f"Failed to load Faster-Whisper: {e}")
-    
-    logger.info("Model loaded (Simulation Mode enabled if model is missing)")
+    # In a real implementation:
+    # from faster_whisper import WhisperModel
+    # global model
+    # model = WhisperModel("small", device="cpu", compute_type="int8")
+    logger.info("Model loaded (Simulation Mode)")
 
 @app.on_event("startup")
 async def startup_event():
-    await load_models()
+    await load_model()
 
 @app.get("/")
 async def root():
@@ -52,8 +46,8 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "message": "Faster-Whisper STT Server is running (Simulation Mode)",
-        "models": ["Faster-Whisper"]
+        "message": "Faster-Whisper STT Server is running",
+        "model": "Faster-Whisper"
     }
 
 @app.websocket("/ws/stt")
@@ -66,27 +60,24 @@ async def websocket_endpoint(websocket: WebSocket):
             # 1. Receive Metadata (JSON)
             data_str = await websocket.receive_text()
             metadata = json.loads(data_str)
-            logger.info(f"Received metadata: {metadata}")
             
             # 2. Receive Audio Data (Binary)
             audio_bytes = await websocket.receive_bytes()
-            logger.info(f"Received audio bytes: {len(audio_bytes)} bytes")
             
-            # 3. Process Audio (Simulation for now)
-            await asyncio.sleep(0.5)
+            # 3. Process Audio (Simulation)
+            await asyncio.sleep(0.3)
             
-            # Create a mock response with only fasterWhisper
+            # Create a response
             response = {
-                "type": "ensemble_result",
+                "type": "stt_result",
                 "data": {
-                    "finalText": f"Faster-Whisper processed {len(audio_bytes)} bytes of audio.",
+                    "finalText": f"[Faster-Whisper] 인식 결과 (데이터 크기: {len(audio_bytes)} bytes)",
                     "fasterWhisper": {
-                        "text": f"Faster-Whisper prediction for {len(audio_bytes)} bytes",
-                        "confidence": 0.92
+                        "text": f"인식된 텍스트 예시 (청크 {len(audio_bytes)})",
+                        "confidence": 0.95
                     },
-                    "speaker": metadata.get("speaker", "unknown"),
-                    "confidence": 0.92,
-                    "events": []
+                    "speaker": metadata.get("speaker", {"type": "unknown"}),
+                    "confidence": 0.95
                 }
             }
             
@@ -97,11 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         logger.error(f"Error: {e}")
         try:
-            await websocket.send_json({
-                "type": "error", 
-                "code": "processing_error", 
-                "message": str(e)
-            })
+            await websocket.send_json({"type": "error", "message": str(e)})
         except:
             pass
 

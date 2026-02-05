@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회의 AI 어시스턴트 v5.0 - 앙상블 STT 시스템</title>
+    <title>회의 AI 어시스턴트 v5.0 - Faster-Whisper STT 시스템</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
@@ -98,21 +98,13 @@
                     </div>
                 </div>
 
-                <!-- 앙상블 모드 실시간 시각화 (각 모델별 원본 인식 결과) -->
+                <!-- Faster-Whisper 모드 실시간 시각화 -->
                 <div class="ensemble-visualizer" id="ensembleVisualizer" style="display: none;">
                     <div class="ensemble-header">
                         <span class="ensemble-badge"><i class="fas fa-layer-group"></i> 고성능 STT 모드 활성화</span>
                         <span class="ensemble-status-text">Faster-Whisper 모델 인식 중</span>
                     </div>
                     <div class="ensemble-models">
-                        <div class="model-result" id="modelSenseVoice" style="display: none;">
-                            <div class="model-header">
-                                <span class="model-name">🚀 SenseVoice</span>
-                                <span class="model-tag speed">초고속</span>
-                                <span class="model-confidence" id="confSenseVoice">--</span>
-                            </div>
-                            <p class="model-text" id="textSenseVoice">대기 중...</p>
-                        </div>
                         <div class="model-result" id="modelWhisper">
                             <div class="model-header">
                                 <span class="model-name">🎯 Faster-Whisper</span>
@@ -120,14 +112,6 @@
                                 <span class="model-confidence" id="confWhisper">--</span>
                             </div>
                             <p class="model-text" id="textWhisper">대기 중...</p>
-                        </div>
-                        <div class="model-result" id="modelQwen" style="display: none;">
-                            <div class="model-header">
-                                <span class="model-name">🧠 Qwen3-ASR</span>
-                                <span class="model-tag context">문맥추론</span>
-                                <span class="model-confidence" id="confQwen">--</span>
-                            </div>
-                            <p class="model-text" id="textQwen">대기 중...</p>
                         </div>
                     </div>
                     <div class="ensemble-final">
@@ -279,19 +263,19 @@
 
                 <div class="setting-divider"></div>
 
-                <!-- 앙상블 STT 설정 -->
+                <!-- Faster-Whisper STT 설정 -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-layer-group"></i> 앙상블 STT 설정 <span class="beta-badge">BETA</span></h4>
+                    <h4><i class="fas fa-layer-group"></i> Faster-Whisper STT 설정 <span class="beta-badge">BETA</span></h4>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableEnsemble">
-                            🔗 앙상블 STT 서버 연결
+                            🔗 Faster-Whisper 서버 연결
                         </label>
-                        <small class="setting-hint">3대 오픈소스 STT 모델을 병렬로 실행합니다</small>
+                        <small class="setting-hint">고성능 Faster-Whisper 모델을 사용하여 실시간 전사를 진행합니다</small>
                         <small class="setting-hint fallback-note">⚠️ 서버 연결 실패 시 자동으로 브라우저 기본 음성인식(Web Speech API)으로 전환됩니다</small>
                     </div>
                     <div class="setting-group">
-                        <label>앙상블 서버 URL</label>
+                        <label>Faster-Whisper 서버 URL</label>
                         <div class="server-url-wrapper">
                             <input type="text" id="ensembleServerUrl" placeholder="https://ai-conference-assistant.onrender.com" value="https://ai-conference-assistant.onrender.com">
                             <button type="button" class="btn btn-sm btn-test-connection" id="testEnsembleConnection">
@@ -299,7 +283,7 @@
                             </button>
                         </div>
                         <small class="setting-hint">
-                            지원 모델: SenseVoice-Small, Faster-Whisper, Qwen3-ASR
+                            지원 모델: Faster-Whisper (Large-v3/Small)
                         </small>
                     </div>
                     <!-- 원클릭 서버 설정 프리셋 -->
@@ -319,13 +303,13 @@
                     </div>
                     <div class="ensemble-status" id="ensembleStatus">
                         <i class="fas fa-info-circle"></i>
-                        <span id="ensembleStatusText">앙상블 서버 미연결 - Web Speech API 사용 중</span>
+                        <span id="ensembleStatusText">Faster-Whisper 서버 미연결 - Web Speech API 사용 중</span>
                     </div>
                     <!-- 서버 연결 도움말 -->
                     <div class="server-help-card" id="serverHelpCard">
                         <div class="help-header">
                             <i class="fas fa-question-circle"></i>
-                            <span>앙상블 서버 설정 가이드</span>
+                            <span>Faster-Whisper 서버 설정 가이드</span>
                             <button type="button" class="btn-toggle-help" id="toggleServerHelp">
                                 <i class="fas fa-chevron-down"></i>
                             </button>
@@ -333,7 +317,7 @@
                         <div class="help-content" id="serverHelpContent" style="display: none;">
                             <ol>
                                 <li>Python 3.9+ 환경에서 FastAPI 서버를 실행합니다</li>
-                                <li>필요 패키지: <code>pip install fastapi uvicorn sensevoice faster-whisper transformers</code></li>
+                                <li>필요 패키지: <code>pip install fastapi uvicorn faster-whisper</code></li>
                                 <li>서버 실행: <code>uvicorn main:app --host 0.0.0.0 --port 8000</code></li>
                                 <li>위 "연결 테스트" 버튼으로 연결을 확인합니다</li>
                             </ol>
@@ -537,8 +521,7 @@ Ctrl+Enter로 전송"></textarea>
     <script src="js/audio-recorder.js"></script>
     <script src="js/speaker-detection.js"></script>
     <script src="js/meeting-export.js"></script>
-    <script src="js/ensemble-stt.js"></script>
-    <script src="js/gemini-ensemble-corrector.js"></script>
+    <script src="js/faster-whisper-stt.js"></script>
     <script src="js/enhanced-app-v2.js"></script>
 </body>
 
