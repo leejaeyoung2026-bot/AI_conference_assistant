@@ -172,25 +172,37 @@
             </div>
         </div>
 
-        <!-- 3. 기술 사양 -->
+        <!-- 3. 기술 및 성능 -->
         <div class="faq-section">
             <span class="faq-category">기술 및 성능</span>
             
             <div class="faq-item">
                 <div class="faq-question">
-                    <span>음성 인식 정확도는 어느 정도인가요?</span>
+                    <span>어떻게 전문 용어를 그렇게 정확하게 보정하나요?</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
                     <div class="faq-answer-content">
-                        VORA는 브라우저 표준인 Web Speech API를 사용하여 1차 인식을 수행하고, 2차로 Gemini 2.0 Flash AI가 문맥을 분석하여 오타와 전문 용어를 보정합니다. 조용한 환경과 명확한 발음 하에서 95% 이상의 높은 정확도를 보여줍니다.
+                        두 가지 핵심 로직이 작동합니다. 첫째, 사용자가 설정한 **'우선 인식 용어'**를 기반으로 1차 필터링을 거칩니다. 둘째, **'지능형 피드백 루프'**를 통해 실시간으로 생성된 회의 요약본을 AI에게 다시 전달합니다. AI는 이 요약본을 토대로 현재 회의의 전문적인 맥락을 이해한 상태에서 전사 결과를 교정하기 때문에, 단순 전사 도구보다 압도적으로 높은 정확도를 보여줍니다.
                     </div>
                 </div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">
-                    <span>지원하는 언어는 무엇인가요?</span>
+                    <span>AI가 회의의 전체 흐름을 어떻게 기억하나요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        긴 회의의 모든 텍스트를 AI에게 계속 보내면 처리 속도가 느려지고 비용이 상승합니다. VORA는 이를 해결하기 위해 **'요약 재주입(Summary Re-injection)'** 기술을 사용합니다. 주기적으로 생성된 핵심 요약 데이터를 AI의 '단기 기억'으로 활용함으로써, AI는 수 시간의 회의 중에도 일관된 맥락을 유지하며 질문에 답변하고 오타를 수정할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>인식 언어는 어떻게 변경하나요?</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
