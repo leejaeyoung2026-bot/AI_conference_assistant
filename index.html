@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VORA - 실시간 지능형 회의 통찰 플랫폼</title>
+    <title>VORA - 회원가입 없는 100% 무료 AI 회의록 & 비즈니스 통찰</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
@@ -11,6 +11,7 @@
             --primary: #6366f1;
             --primary-hover: #4f46e5;
             --accent: #06b6d4;
+            --success: #10b981;
             --bg-main: #0f172a;
             --bg-panel: rgba(30, 41, 59, 0.85);
             --text-main: #f1f5f9;
@@ -18,134 +19,215 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg-main); color: var(--text-main); line-height: 1.7; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg-main); color: var(--text-main); line-height: 1.7; overflow-x: hidden; }
 
-        header { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
+        /* Header */
+        header { padding: 20px 40px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; }
         nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .nav-links { display: flex; gap: 25px; }
+        .logo { text-decoration:none; color:white; font-weight:900; font-size:1.8rem; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
         .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
         .nav-links a:hover { color: var(--primary); }
+        .btn-start-nav { background: var(--primary); color: white !important; padding: 8px 20px; border-radius: 8px; font-weight: 700; }
 
-        .hero { padding: 120px 20px; text-align: center; }
-        .hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 25px; background: linear-gradient(135deg, #fff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { max-width: 800px; margin: 0 auto 40px; font-size: 1.2rem; color: var(--text-muted); }
-
-        .section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
-        .section-title { text-align: center; margin-bottom: 60px; }
-        .section-title h2 { font-size: 2.5rem; margin-bottom: 15px; }
+        /* Hero */
+        .hero { padding: 140px 20px; text-align: center; position: relative; }
+        .hero-badge { display:inline-block; padding: 8px 24px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 999px; color: var(--success); font-weight:700; margin-bottom:30px; font-size: 0.9rem; }
+        .hero h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 900; margin-bottom: 30px; line-height: 1.1; letter-spacing: -2px; }
+        .hero h1 span { color: var(--primary); }
+        .hero p { max-width: 750px; margin: 0 auto 40px; font-size: 1.25rem; color: var(--text-muted); }
         
-        .content-block { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; margin-bottom: 80px; }
-        .content-text h3 { font-size: 1.8rem; margin-bottom: 20px; color: var(--primary); }
-        .content-text p { margin-bottom: 20px; font-size: 1.05rem; color: var(--text-muted); text-align: justify; }
+        .hero-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn { padding: 18px 40px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: 0.3s; cursor: pointer; border: none; font-size: 1.1rem; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4); }
+        .btn-outline { border: 1px solid rgba(255,255,255,0.1); color: white; background: rgba(255,255,255,0.02); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
 
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .feature-card { background: var(--bg-panel); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .feature-card i { font-size: 2rem; color: var(--accent); margin-bottom: 20px; }
+        /* Free Promo Section */
+        .promo-banner { background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.1)); padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .promo-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; }
+        .promo-item { display: flex; align-items: center; gap: 15px; }
+        .promo-item i { font-size: 1.5rem; color: var(--success); }
+        .promo-item span { font-weight: 700; font-size: 1.1rem; }
 
-        .cta-box { background: linear-gradient(135deg, var(--primary), #4338ca); padding: 60px; border-radius: 30px; text-align: center; margin-top: 50px; }
-        .btn { padding: 15px 35px; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-block; transition: 0.3s; }
-        .btn-white { background: white; color: var(--primary); }
-        .btn-white:hover { transform: scale(1.05); }
+        /* Services Grid */
+        .section { padding: 120px 20px; max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 80px; }
+        .section-title h2 { font-size: 3rem; font-weight: 900; margin-bottom: 20px; }
+        .section-title p { font-size: 1.2rem; color: var(--text-muted); }
 
-        footer { padding: 80px 20px; background: #070b1a; border-top: 1px solid rgba(255,255,255,0.05); }
-        .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
-        .footer-info h4 { margin-bottom: 20px; }
-        .footer-info p { color: var(--text-muted); font-size: 0.9rem; }
-        .footer-links h5 { margin-bottom: 20px; color: white; }
+        .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+        .service-card { background: var(--bg-panel); padding: 50px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; position: relative; overflow: hidden; }
+        .service-card:hover { border-color: var(--primary); transform: translateY(-10px); }
+        .service-card::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 70%); pointer-events: none; }
+        .service-icon { width: 60px; height: 60px; background: rgba(99, 102, 241, 0.1); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--primary); margin-bottom: 30px; }
+        .service-card h3 { font-size: 1.5rem; margin-bottom: 15px; }
+        .service-card p { color: var(--text-muted); font-size: 1rem; line-height: 1.8; }
+
+        /* Comparison Section */
+        .comparison { background: rgba(255,255,255,0.02); border-radius: 40px; padding: 80px 40px; }
+        .comp-table { width: 100%; border-collapse: collapse; margin-top: 40px; }
+        .comp-table th, .comp-table td { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .comp-table th { color: var(--text-muted); font-weight: 500; }
+        .comp-table td.highlight { color: var(--success); font-weight: 700; background: rgba(16, 185, 129, 0.05); }
+
+        /* Footer */
+        footer { padding: 100px 20px 40px; background: #070b1a; border-top: 1px solid rgba(255,255,255,0.05); }
+        .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+        .footer-links h5 { color: white; margin-bottom: 25px; font-size: 1.1rem; }
         .footer-links ul { list-style: none; }
-        .footer-links li { margin-bottom: 10px; }
-        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .footer-links a:hover { color: white; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.8rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .header { padding: 20px; }
+            .nav-links { display: none; }
+        }
     </style>
 </head>
 <body>
     <header>
         <nav>
-            <a href="index.html" style="text-decoration:none; color:white; font-weight:900; font-size:1.8rem; letter-spacing: -1px;">VORA</a>
+            <a href="index.html" class="logo">VORA</a>
             <div class="nav-links">
-                <a href="#features">주요 기능</a>
-                <a href="#workflow">작동 원리</a>
+                <a href="#services">제공 서비스</a>
                 <a href="blog.html">기술 블로그</a>
-                <a href="app.html" style="color: var(--primary); font-weight:700;">시작하기</a>
+                <a href="terms.html">이용약관</a>
+                <a href="app.html" class="btn-start-nav">지금 시작하기</a>
             </div>
         </nav>
     </header>
 
     <section class="hero">
-        <div class="hero-badge" style="display:inline-block; padding: 8px 20px; background: rgba(99, 102, 241, 0.1); border-radius: 20px; color: var(--primary); font-weight:700; margin-bottom:20px;">
-            v5.2 Web Standard Edition
+        <div class="hero-badge">
+            <i class="fas fa-check-circle"></i> 회원가입 없이 즉시 사용 가능한 100% 무료 도구
         </div>
-        <h1>회의의 모든 순간을 지능적으로 기록하다</h1>
-        <p>복잡한 서버 설정 없이 브라우저만으로 실시간 음성 인식을 수행하고, <br>Gemini AI가 당신의 회의를 분석하여 완벽한 회의록을 완성합니다.</p>
-        <div class="hero-btns">
-            <a href="app.html" class="btn btn-white">지금 무료로 시작하기</a>
+        <h1>회의의 기록을 넘어 <br><span>통찰의 가치</span>를 더하다</h1>
+        <p>복잡한 설치나 번거로운 로그인 과정이 필요 없습니다. <br>브라우저만으로 완성되는 AI 회의 보조 시스템, VORA를 만나보세요.</p>
+        <div class="hero-actions">
+            <a href="app.html" class="btn btn-primary"><i class="fas fa-play"></i> 실시간 회의 시작</a>
+            <a href="#services" class="btn btn-outline">기능 살펴보기</a>
         </div>
     </section>
 
-    <section class="section" id="features">
+    <div class="promo-banner">
+        <div class="promo-content">
+            <div class="promo-item"><i class="fas fa-user-slash"></i> <span>No Sign-up</span></div>
+            <div class="promo-item"><i class="fas fa-comment-dollar"></i> <span>100% Free Forever</span></div>
+            <div class="promo-item"><i class="fas fa-server"></i> <span>Serverless Security</span></div>
+            <div class="promo-item"><i class="fas fa-language"></i> <span>Multi-Language</span></div>
+        </div>
+    </div>
+
+    <section class="section" id="services">
         <div class="section-title">
-            <h2>차별화된 비즈니스 솔루션</h2>
-            <p>단순한 전사를 넘어선 지능형 회의 보조 도구입니다.</p>
+            <h2>VORA All-in-One AI Suite</h2>
+            <p>전문적인 회의 운영을 위해 필요한 모든 기능을 한곳에 담았습니다.</p>
         </div>
-        <div class="feature-grid">
-            <div class="feature-card">
-                <i class="fas fa-bolt"></i>
-                <h3>초저지연 실시간 전사</h3>
-                <p>Web Speech API의 강력한 스트리밍 성능을 활용하여 화자의 음성을 지연 없이 텍스트로 변환합니다. 회의 중 실시간으로 내용을 확인하세요.</p>
+        <div class="service-grid">
+            <!-- 1. 실시간 전사 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-microphone-alt"></i></div>
+                <h3>실시간 음성 전사 (ASR)</h3>
+                <p>Web Speech API 표준을 활용하여 화자의 음성을 즉각적으로 텍스트화합니다. 전용 서버 연결 없이도 지연 없는 전사 환경을 제공합니다.</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-brain"></i>
-                <h3>Gemini AI 보정</h3>
-                <p>Google의 최신 AI 기술을 통해 음성 인식 과정에서 발생하는 오타나 전문 용어 오인식을 문맥에 맞게 지능적으로 교정합니다.</p>
+            <!-- 2. 지능형 문맥 보정 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-magic"></i></div>
+                <h3>Gemini AI 문맥 보정</h3>
+                <p>발음이 모호한 전문 용어나 오타를 Gemini 2.0 Flash 모델이 회의 맥락에 맞게 지능적으로 교정하여 가독성을 높입니다.</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-shield-alt"></i>
-                <h3>보안 중심 설계</h3>
-                <p>모든 데이터는 브라우저 내에서만 처리되며 외부 서버에 저장되지 않습니다. 기업의 핵심 기밀과 개인정보를 안전하게 보호합니다.</p>
+            <!-- 3. 실시간 질문 답변 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-robot"></i></div>
+                <h3>AI 실시간 Q&A</h3>
+                <p>회의 중 나오는 질문을 AI가 자동으로 감지하고, Google 검색 기능을 활용하여 신뢰할 수 있는 답변과 출처 링크를 즉시 제공합니다.</p>
             </div>
-        </div>
-    </section>
-
-    <section class="section" id="workflow" style="background: rgba(255,255,255,0.02);">
-        <div class="content-block">
-            <div class="content-text">
-                <h3>왜 AI 회의 어시스턴트인가?</h3>
-                <p>우리는 현대 비즈니스 환경에서 '회의'가 가지는 중요성을 잘 알고 있습니다. 하지만 회의 내용을 기록하고 정리하는 과정에서 정작 중요한 아이디어를 놓치기도 합니다.</p>
-                <p>당사의 솔루션은 기록의 부담을 AI에게 맡기고, 참여자들이 오직 '논의'에만 집중할 수 있는 환경을 제공합니다. 특히 제약, 화학, IT 등 전문 용어가 빈번한 산업군에서 탁월한 보정 성능을 발휘합니다.</p>
-                <a href="blog.html" style="color: var(--accent); text-decoration:none; font-weight:700;">기술 사양 더 알아보기 →</a>
+            <!-- 4. 주기적 자동 요약 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-file-invoice"></i></div>
+                <h3>지능형 회의 요약</h3>
+                <p>회의가 진행되는 동안 실시간으로 핵심 내용을 요약합니다. 결정 사항과 액션 아이템을 놓치지 않도록 체계적으로 정리해 드립니다.</p>
             </div>
-            <div style="background: var(--bg-panel); height: 300px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; color: var(--text-muted);">
-                [ 서비스 워크플로우 인포그래픽 영역 ]
+            <!-- 5. 발화자 자동 구분 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-user-check"></i></div>
+                <h3>발화자 프로파일링</h3>
+                <p>음성 특징 분석을 통해 발표자와 참석자를 자동으로 구분합니다. 누가 어떤 발언을 했는지 명확하게 기록에 남깁니다.</p>
+            </div>
+            <!-- 6. 스마트 리포트 내보내기 -->
+            <div class="service-card">
+                <div class="service-icon"><i class="fas fa-download"></i></div>
+                <h3>HTML 스마트 리포트</h3>
+                <p>완성된 회의록은 가독성 높은 HTML 리포트로 즉시 다운로드 가능합니다. 보관과 공유가 용이한 전문적인 포맷을 제공합니다.</p>
             </div>
         </div>
     </section>
 
     <section class="section">
-        <div class="cta-box">
-            <h2 style="margin-bottom:20px;">지금 바로 비즈니스의 효율을 높이세요</h2>
-            <p style="margin-bottom:30px; opacity:0.9;">Gemini AI와 함께하는 스마트한 회의 환경, 단 한 번의 클릭으로 시작됩니다.</p>
-            <a href="app.html" class="btn btn-white">실시간 회의록 모드 실행</a>
+        <div class="comparison">
+            <div class="section-title">
+                <h2>왜 VORA를 선택해야 하는가?</h2>
+                <p>기존 서비스들과의 명확한 차이를 확인하세요.</p>
+            </div>
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>비교 항목</th>
+                        <th>일반 AI 전사 도구</th>
+                        <th>VORA AI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>회원가입/로그인</td>
+                        <td>필수 (이메일, 번호 등)</td>
+                        <td class="highlight">불필요 (익명성 보장)</td>
+                    </tr>
+                    <tr>
+                        <td>이용 요금</td>
+                        <td>구독형 또는 유료 결제</td>
+                        <td class="highlight">100% 무료 (Open Source 기반)</td>
+                    </tr>
+                    <tr>
+                        <td>데이터 보안</td>
+                        <td>업체 서버에 강제 저장</td>
+                        <td class="highlight">사용자 브라우저 내 처리 (휘발성)</td>
+                    </tr>
+                    <tr>
+                        <td>전문 용어 보정</td>
+                        <td>제한적임</td>
+                        <td class="highlight">Gemini AI 기반 정밀 보정</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
     <footer>
         <div class="footer-grid">
             <div class="footer-info">
-                <h4 style="font-weight:900;">AI MEETING</h4>
-                <p>브라우저 표준 기술과 Gemini AI를 결합한 차세대 회의 보조 솔루션입니다. 안전하고 빠른 음성 인식 환경을 만나보세요.</p>
+                <h4 class="logo" style="font-size: 1.5rem; display:block; margin-bottom:20px;">VORA</h4>
+                <p>Beyond Transcription, Towards Insight.<br>보라는 회의의 본질을 꿰뚫어 보는 지능형 솔루션입니다.</p>
             </div>
             <div class="footer-links">
                 <h5>Product</h5>
                 <ul>
                     <li><a href="app.html">실시간 인식</a></li>
                     <li><a href="blog.html">기술 가이드</a></li>
+                    <li><a href="admin.html">시스템 상태</a></li>
                 </ul>
             </div>
             <div class="footer-links">
                 <h5>Company</h5>
                 <ul>
-                    <li><a href="#">회사 소개</a></li>
                     <li><a href="blog.html">기술 블로그</a></li>
-                    <li><a href="admin.html">관리자 페이지</a></li>
+                    <li><a href="index.html#services">서비스 안내</a></li>
                 </ul>
             </div>
             <div class="footer-links">
@@ -153,12 +235,11 @@
                 <ul>
                     <li><a href="terms.html">이용약관</a></li>
                     <li><a href="privacy.html">개인정보처리방침</a></li>
-                    <li><a href="#">쿠키 정책</a></li>
                 </ul>
             </div>
         </div>
-        <div style="text-align:center; margin-top:50px; padding-top:30px; border-top:1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size:0.8rem;">
-            © 2026 AI Meeting Assistant. Empowering professional communication with intelligent AI solutions.
+        <div style="text-align:center; margin-top:60px; padding-top:30px; border-top:1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size:0.8rem;">
+            © 2026 VORA. Empowering professional communication with intelligent AI solutions.
         </div>
     </footer>
 </body>
