@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회의 AI 어시스턴트 v5.0 - Faster-Whisper STT 시스템</title>
+    <title>회의 AI 어시스턴트 v5.2 - 브라우저 엔진 모드</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <!-- <link rel="stylesheet" href="css/style.css"> -->
     <link rel="stylesheet" href="css/enhanced-v2.css">
 </head>
 
@@ -17,9 +16,9 @@
         <!-- 헤더 -->
         <header class="app-header">
             <div class="logo">
-                <i class="fas fa-microphone-alt"></i>
+                <i class="fas fa-magic"></i>
                 <h1>회의 AI 어시스턴트</h1>
-                <span class="version-badge">v5.0</span>
+                <span class="version-badge">v5.2</span>
             </div>
             <div class="header-controls">
                 <div class="meeting-timer">
@@ -79,13 +78,6 @@
                         <i class="fas fa-user-check"></i>
                         <span>주발표자 설정</span>
                     </button>
-                    <div class="speaker-hint-box">
-                        <span class="speaker-hint">💡 회의 시작 시 주발표자를 설정하세요</span>
-                        <small class="speaker-hint-detail">
-                            녹음 시작 후, 주발표자가 말할 때 버튼을 클릭하면<br>
-                            음성 특성을 학습하여 발표자/참석자를 자동 구분합니다.
-                        </small>
-                    </div>
                 </div>
 
                 <!-- 실시간 텍스트 표시 -->
@@ -95,28 +87,6 @@
                     </div>
                     <div class="transcript-history" id="transcriptHistory">
                         <!-- 인식된 텍스트가 여기에 표시됩니다 -->
-                    </div>
-                </div>
-
-                <!-- Faster-Whisper 모드 실시간 시각화 -->
-                <div class="ensemble-visualizer" id="ensembleVisualizer" style="display: none;">
-                    <div class="ensemble-header">
-                        <span class="ensemble-badge"><i class="fas fa-layer-group"></i> 고성능 STT 모드 활성화</span>
-                        <span class="ensemble-status-text">Faster-Whisper 모델 인식 중</span>
-                    </div>
-                    <div class="ensemble-models">
-                        <div class="model-result" id="modelWhisper">
-                            <div class="model-header">
-                                <span class="model-name">🎯 Faster-Whisper</span>
-                                <span class="model-tag accuracy">고정확</span>
-                                <span class="model-confidence" id="confWhisper">--</span>
-                            </div>
-                            <p class="model-text" id="textWhisper">대기 중...</p>
-                        </div>
-                    </div>
-                    <div class="ensemble-final">
-                        <span class="final-label"><i class="fas fa-magic"></i> Gemini 문맥 보정 결과:</span>
-                        <p class="final-text" id="ensembleFinalText">--</p>
                     </div>
                 </div>
             </section>
@@ -146,8 +116,7 @@
                     <div class="ai-answers-list" id="aiAnswersList">
                         <div class="empty-state">
                             <i class="fas fa-magic"></i>
-                            <p>질문이 감지되면 Gemini 2.5 Flash가 답변합니다</p>
-                            <small class="api-hint">🔍 검색 기반 답변 · 📎 출처 링크 제공</small>
+                            <p>질문이 감지되면 Gemini AI가 답변합니다</p>
                         </div>
                     </div>
                 </div>
@@ -219,11 +188,6 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <small class="setting-hint">
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
-                                <i class="fas fa-external-link-alt"></i> Google AI Studio에서 API 키 발급받기
-                            </a>
-                        </small>
                     </div>
                     <div class="setting-group">
                         <label>
@@ -232,99 +196,14 @@
                         </label>
                     </div>
                     <div class="setting-group">
-                        <label>AI 응답 스타일</label>
-                        <select id="aiResponseStyle">
-                            <option value="concise">간결하게</option>
-                            <option value="detailed">상세하게</option>
-                            <option value="bullet">요점 정리</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableGrounding" checked>
-                            🔍 Google 검색 기반 답변 (출처 링크 제공)
-                        </label>
-                    </div>
-                    <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableAutoSummary" checked>
                             📝 주기적 회의 요약
                         </label>
                     </div>
-                    <div class="model-info">
-                        <i class="fas fa-microchip"></i>
-                        <span>Gemini 2.5 Flash 모델 사용 중</span>
-                    </div>
                     <div class="api-status" id="apiStatus">
                         <span class="status-dot"></span>
                         <span class="status-text">API 키 미설정</span>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- Faster-Whisper STT 설정 -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-layer-group"></i> Faster-Whisper STT 설정 <span class="beta-badge">BETA</span></h4>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableEnsemble">
-                            🔗 Faster-Whisper 서버 연결
-                        </label>
-                        <small class="setting-hint">고성능 Faster-Whisper 모델을 사용하여 실시간 전사를 진행합니다</small>
-                        <small class="setting-hint fallback-note">⚠️ 서버 연결 실패 시 자동으로 브라우저 기본 음성인식(Web Speech API)으로 전환됩니다</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>Faster-Whisper 서버 URL</label>
-                        <div class="server-url-wrapper">
-                            <input type="text" id="ensembleServerUrl" placeholder="https://ai-conference-assistant.onrender.com" value="https://ai-conference-assistant.onrender.com">
-                            <button type="button" class="btn btn-sm btn-test-connection" id="testEnsembleConnection">
-                                <i class="fas fa-plug"></i> 연결 테스트
-                            </button>
-                        </div>
-                        <small class="setting-hint">
-                            지원 모델: Faster-Whisper (Large-v3/Small)
-                        </small>
-                    </div>
-                    <!-- 원클릭 서버 설정 프리셋 -->
-                    <div class="setting-group">
-                        <label>빠른 설정 (원클릭)</label>
-                        <div class="preset-buttons">
-                            <button type="button" class="btn btn-sm btn-preset" data-url="https://ai-conference-assistant.onrender.com" id="presetCloud">
-                                <i class="fas fa-cloud"></i> 클라우드 서버
-                            </button>
-                            <button type="button" class="btn btn-sm btn-preset" data-url="http://localhost:8000" id="presetLocal">
-                                <i class="fas fa-laptop"></i> 로컬 서버
-                            </button>
-                            <button type="button" class="btn btn-sm btn-preset" data-url="" id="presetCustom">
-                                <i class="fas fa-edit"></i> 직접 입력
-                            </button>
-                        </div>
-                    </div>
-                    <div class="ensemble-status" id="ensembleStatus">
-                        <i class="fas fa-info-circle"></i>
-                        <span id="ensembleStatusText">Faster-Whisper 서버 미연결 - Web Speech API 사용 중</span>
-                    </div>
-                    <!-- 서버 연결 도움말 -->
-                    <div class="server-help-card" id="serverHelpCard">
-                        <div class="help-header">
-                            <i class="fas fa-question-circle"></i>
-                            <span>Faster-Whisper 서버 설정 가이드</span>
-                            <button type="button" class="btn-toggle-help" id="toggleServerHelp">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div class="help-content" id="serverHelpContent" style="display: none;">
-                            <ol>
-                                <li>Python 3.9+ 환경에서 FastAPI 서버를 실행합니다</li>
-                                <li>필요 패키지: <code>pip install fastapi uvicorn faster-whisper</code></li>
-                                <li>서버 실행: <code>uvicorn main:app --host 0.0.0.0 --port 8000</code></li>
-                                <li>위 "연결 테스트" 버튼으로 연결을 확인합니다</li>
-                            </ol>
-                            <a href="#" class="help-link" id="downloadServerTemplate">
-                                <i class="fas fa-download"></i> 서버 템플릿 코드 보기
-                            </a>
-                        </div>
                     </div>
                 </div>
 
@@ -338,19 +217,6 @@
                             <input type="checkbox" id="enableSpeakerDetection" checked>
                             👤 발화자 자동 구분
                         </label>
-                        <small class="setting-hint">
-                            주발표자와 참석자(질문/코멘트)를 자동으로 구분합니다
-                        </small>
-                    </div>
-                    <div class="speaker-legend">
-                        <div class="legend-item primary">
-                            <span class="legend-icon">👤</span>
-                            <span>주발표자 - 파란색 말풍선</span>
-                        </div>
-                        <div class="legend-item secondary">
-                            <span class="legend-icon">👥</span>
-                            <span>참석자 (질문/코멘트) - 초록색 말풍선</span>
-                        </div>
                     </div>
                 </div>
 
@@ -363,99 +229,30 @@
                         <label>회의 주제 / 프로젝트명</label>
                         <textarea id="meetingContext" rows="3"
                             placeholder="예: 신제품 개발 회의&#10;주요 키워드: 시장분석, ROI, 출시일정"></textarea>
-                        <small class="setting-hint">회의 주제와 관련 키워드를 입력하면 음성 인식 정확도가 향상됩니다</small>
                     </div>
                     <div class="setting-group">
                         <label>우선 인식 용어 (쉼표로 구분)</label>
                         <input type="text" id="priorityTerms" placeholder="예: 프로젝트명, 제품코드, 전문용어">
-                        <small class="setting-hint">자주 사용할 전문 용어나 코드를 등록하세요</small>
                     </div>
                     <div class="context-status" id="contextStatus">
                         <i class="fas fa-info-circle"></i>
-                        <span>컨텍스트 미설정 - 기본 보정 모드</span>
+                        <span>컨텍스트 미설정</span>
                     </div>
                 </div>
 
                 <div class="setting-divider"></div>
 
-                <!-- 전문용어 보정 설정 -->
+                <!-- 언어 설정 섹션 -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-flask"></i> 전문용어 보정</h4>
+                    <h4><i class="fas fa-globe"></i> 언어 설정</h4>
                     <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableCorrection" checked>
-                            음성인식 결과 AI 보정
-                        </label>
-                        <small class="setting-hint">전문용어를 정확하게 인식합니다 (예: "에이피아이" → "API")</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>전문 분야</label>
-                        <select id="correctionPersona">
-                            <option value="pharma">💊 제약/약학</option>
-                            <option value="chemistry">⚗️ 화학</option>
-                            <option value="biotech">🧬 바이오테크</option>
-                            <option value="food">🍽️ 식품</option>
-                            <option value="it">💻 IT/소프트웨어</option>
-                            <option value="general">🔬 일반 과학</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="enableNBest" checked>
-                            다중 후보 분석 (N-Best)
-                        </label>
-                        <small class="setting-hint">여러 음성 인식 후보 중 문맥에 맞는 것을 선택합니다</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>보정 버퍼 간격 (초)</label>
-                        <div class="slider-container">
-                            <input type="range" id="correctionInterval" min="3" max="20" value="5" step="1">
-                            <span id="correctionIntervalValue">5초</span>
-                        </div>
-                        <small class="setting-hint">AI 보정 요청 간격 (3~20초, 짧을수록 빠르지만 API 비용 증가)</small>
-                    </div>
-                    <div class="correction-examples">
-                        <span class="example-label">보정 예시:</span>
-                        <span class="example-item">"에이피아이" → "API"</span>
-                        <span class="example-item">"유아이" → "UI"</span>
-                    </div>
-                </div>
-
-                <div class="setting-divider"></div>
-
-                <!-- 다중 언어 설정 섹션 (5번 과업) -->
-                <div class="setting-section">
-                    <h4><i class="fas fa-globe"></i> 다중 언어 설정</h4>
-                    <div class="setting-group">
-                        <label>주 언어 (Primary Language)</label>
+                        <label>인식 언어</label>
                         <select id="languageSelect">
                             <option value="ko-KR">🇰🇷 한국어</option>
                             <option value="en-US">🇺🇸 English (US)</option>
                             <option value="ja-JP">🇯🇵 日本語</option>
                             <option value="zh-CN">🇨🇳 中文 (简体)</option>
-                            <option value="de-DE">🇩🇪 Deutsch</option>
-                            <option value="fr-FR">🇫🇷 Français</option>
-                            <option value="es-ES">🇪🇸 Español</option>
                         </select>
-                        <small class="setting-hint">회의에서 주로 사용하는 언어를 선택하세요</small>
-                    </div>
-                    <div class="setting-group">
-                        <label>보조 언어 (Secondary Language)</label>
-                        <select id="secondaryLanguageSelect">
-                            <option value="none">없음 (단일 언어 모드)</option>
-                            <option value="en-US">🇺🇸 English (US)</option>
-                            <option value="ko-KR">🇰🇷 한국어</option>
-                            <option value="ja-JP">🇯🇵 日本語</option>
-                            <option value="zh-CN">🇨🇳 中文 (简体)</option>
-                            <option value="de-DE">🇩🇪 Deutsch</option>
-                            <option value="fr-FR">🇫🇷 Français</option>
-                            <option value="es-ES">🇪🇸 Español</option>
-                        </select>
-                        <small class="setting-hint">회의 중 혼용되는 보조 언어를 선택하면 인식 정확도가 향상됩니다</small>
-                    </div>
-                    <div class="language-status" id="languageStatus">
-                        <i class="fas fa-language"></i>
-                        <span id="languageStatusText">단일 언어 모드: 한국어</span>
                     </div>
                 </div>
 
@@ -482,34 +279,6 @@
         </div>
     </div>
 
-    <!-- 사용자 메모/채팅 입력창 (6번 과업) -->
-    <div class="user-memo-panel" id="userMemoPanel">
-        <div class="memo-toggle" id="memoToggle" title="메모/질문 입력">
-            <i class="fas fa-edit"></i>
-        </div>
-        <div class="memo-container" id="memoContainer" style="display: none;">
-            <div class="memo-header">
-                <span><i class="fas fa-sticky-note"></i> 중요 메모 & 질문</span>
-                <button class="btn-memo-close" id="memoClose"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="memo-history" id="memoHistory">
-                <!-- 사용자 메모 히스토리 -->
-            </div>
-            <div class="memo-input-area">
-                <textarea id="userMemoInput" placeholder="회의 중 중요한 내용이나 AI에게 질문할 내용을 입력하세요...
-Ctrl+Enter로 전송"></textarea>
-                <div class="memo-actions">
-                    <button class="btn btn-sm btn-outline" id="saveMemoBtn" title="메모로 저장">
-                        <i class="fas fa-save"></i> 메모 저장
-                    </button>
-                    <button class="btn btn-sm btn-primary" id="askAIBtn" title="AI에게 질문">
-                        <i class="fas fa-robot"></i> AI 질문
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 알림 토스트 -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -521,7 +290,6 @@ Ctrl+Enter로 전송"></textarea>
     <script src="js/audio-recorder.js"></script>
     <script src="js/speaker-detection.js"></script>
     <script src="js/meeting-export.js"></script>
-    <script src="js/faster-whisper-stt.js"></script>
     <script src="js/enhanced-app-v2.js"></script>
 </body>
 
