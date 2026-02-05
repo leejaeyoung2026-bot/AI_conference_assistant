@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자주 묻는 질문(FAQ) - VORA AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 900; color: white; text-decoration: none; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--primary); }
+
+        .container { max-width: 800px; margin: 80px auto; padding: 0 20px; }
+        .page-title { text-align: center; margin-bottom: 60px; }
+        .page-title h1 { font-size: 3rem; font-weight: 900; margin-bottom: 20px; }
+        .page-title p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .faq-section { margin-bottom: 40px; }
+        .faq-category { color: var(--primary); font-weight: 700; font-size: 1.2rem; margin-bottom: 20px; display: block; border-left: 4px solid var(--primary); padding-left: 15px; }
+
+        .faq-item {
+            background: var(--bg-panel);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .faq-question:hover { background: rgba(255,255,255,0.02); }
+        .faq-question i { color: var(--text-muted); transition: 0.3s; }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-out;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .faq-answer-content {
+            padding: 25px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: justify;
+        }
+
+        .faq-item.active .faq-answer { max-height: 1000px; }
+        .faq-item.active .faq-question i { transform: rotate(180deg); color: var(--primary); }
+
+        footer { padding: 60px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">VORA</a>
+            <div class="nav-links">
+                <a href="index.html">홈</a>
+                <a href="blog.html">기술 블로그</a>
+                <a href="faq.html" style="color: var(--primary);">FAQ</a>
+                <a href="app.html">앱 시작</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Frequently Asked Questions</h1>
+            <p>VORA 서비스 이용에 대해 궁금한 점을 확인해 보세요.</p>
+        </div>
+
+        <!-- 1. 서비스 일반 -->
+        <div class="faq-section">
+            <span class="faq-category">서비스 일반</span>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>정말 회원가입이 필요 없나요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        네, 맞습니다. VORA는 사용자의 번거로움을 최소화하기 위해 별도의 회원가입이나 로그인 절차를 두지 않습니다. 웹사이트에 접속하는 즉시 모든 기능을 무료로 사용하실 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>서비스 이용 요금이 어떻게 되나요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        VORA는 100% 무료로 제공됩니다. 브라우저 내장 기술과 사용자의 개인 API 키를 활용하는 구조이기 때문에, 별도의 구독료나 사용료를 당사에 지불하실 필요가 없습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 보안 및 프라이버시 -->
+        <div class="faq-section">
+            <span class="faq-category">보안 및 프라이버시</span>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>회의 내용이 서버에 저장되나요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        아니요. VORA는 'Serverless Architecture'를 지향합니다. 사용자의 음성 및 전사된 텍스트 데이터는 브라우저의 메모리상에서만 존재하며, 페이지를 새로고침하거나 닫는 즉시 소멸됩니다. 당사의 서버에는 어떠한 회의 기록도 남지 않습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>입력한 Gemini API 키는 안전한가요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        사용자가 입력한 API 키는 본인의 브라우저 로컬 스토리지(LocalStorage)에만 암호화되어 저장됩니다. 이 키는 당사 서버로 전송되지 않으며, 오직 Google Gemini 서버와 통신할 때만 사용됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 기술 사양 -->
+        <div class="faq-section">
+            <span class="faq-category">기술 및 성능</span>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>음성 인식 정확도는 어느 정도인가요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        VORA는 브라우저 표준인 Web Speech API를 사용하여 1차 인식을 수행하고, 2차로 Gemini 2.0 Flash AI가 문맥을 분석하여 오타와 전문 용어를 보정합니다. 조용한 환경과 명확한 발음 하에서 95% 이상의 높은 정확도를 보여줍니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>지원하는 언어는 무엇인가요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        현재 한국어, 영어, 일본어, 중국어를 공식 지원합니다. 다국어 회의 환경에서도 설정창에서 언어를 변경하여 유연하게 대응할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>AI 답변이 생성되지 않을 때는 어떻게 하나요?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Gemini API 키가 올바르게 입력되었는지 확인해 주세요. 또한, Google의 Rate Limit(호출 속도 제한) 정책에 의해 일시적으로 대기가 발생할 수 있습니다. 관리자 제어센터에서 'Gemini API Queue' 상태를 확인해 보시기 바랍니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 VORA. Empowering professional communication with intelligent AI solutions.</p>
+        <div style="margin-top: 15px;">
+            <a href="terms.html" style="color: var(--text-muted); margin: 0 10px; text-decoration: none;">이용약관</a>
+            <a href="privacy.html" style="color: var(--text-muted); margin: 0 10px; text-decoration: none;">개인정보처리방침</a>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Accordion Logic
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                const isActive = item.classList.contains('active');
+                
+                // Close other items
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+                
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
