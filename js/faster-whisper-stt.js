@@ -128,19 +128,30 @@ class FasterWhisperSTTSystem {
 
         try {
             this.audioChunks = [];
+            
+            // 서버 연결 및 대기
+            await this.connectToServer();
+            
+            // 연결이 열릴 때까지 최대 3초 대기
+            let attempts = 0;
+            while (this.webSocketConnection?.readyState !== WebSocket.OPEN && attempts < 30) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+
+            if (this.webSocketConnection?.readyState !== WebSocket.OPEN) {
+                throw new Error('서버 연결 시간 초과');
+            }
+
             this.isRecording = true;
             this.isPaused = false;
-            
-            // 1초마다 데이터 수집
             this.mediaRecorder.start(1000);
-            
-            // 서버 연결
-            await this.connectToServer();
             
             return true;
         } catch (error) {
             this.log('녹음 시작 실패', error);
             this.isRecording = false;
+            this.disconnectFromServer();
             return false;
         }
     }

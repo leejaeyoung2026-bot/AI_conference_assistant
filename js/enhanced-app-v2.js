@@ -285,25 +285,61 @@ class EnhancedMeetingApp {
     async startRecording() {
         if (this.state.isRecording) return;
         this.updateButtonStates('recording');
+        
         try {
+            console.log('[App] 녹음 시작 절차 진입');
+            
+            // 1. 마이크 권한 먼저 확인 및 획득 (경합 방지)
+            if (!this.audioRecorder.stream) {
+                await this.audioRecorder.start();
+                this.audioRecorder.stop(); // 스트림만 확보 후 즉시 중지 (초기화용)
+            }
+
             let started = false;
             if (this.state.fasterWhisperMode) {
+                console.log('[App] Faster-Whisper 엔진 시작 시도...');
                 started = await this.speechManager.start();
-                if (!started) { this.showToast('서버 연결 실패. 기본 엔진 사용.', 'warning'); started = this.fallbackSpeechManager.start(); }
-            } else started = this.fallbackSpeechManager.start();
-            if (!started) throw new Error('인식 시작 불가');
+                if (!started) { 
+                    this.showToast('서버 연결 실패. 기본 엔진으로 전환합니다.', 'warning'); 
+                    started = this.fallbackSpeechManager.start(); 
+                }
+            } else {
+                console.log('[App] 브라우저 기본 엔진 시작...');
+                started = this.fallbackSpeechManager.start();
+            }
+
+            if (!started) throw new Error('음성인식 엔진을 시작할 수 없습니다.');
+
+            // 2. 실제 오디오 녹음 및 분석 시작
             await this.audioRecorder.start();
-            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
+            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) {
+                this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
+            }
+
+            // 3. 상태 확정
             this.state.isRecording = true;
+            this.state.isPaused = false;
             this.state.startTime = Date.now();
+            
             this.startTimer();
             this.updateRecordingStatus('recording');
-            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) this.startAutoSummaryTimer();
+            this.sendLog('녹음이 시작되었습니다.', 'success');
+
+            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) {
+                this.startAutoSummaryTimer();
+            }
+
             this.showToast('녹음 시작', 'success');
+
         } catch (e) {
-            this.showToast(e.message, 'error');
+            console.error('[StartRecording Error]', e);
+            this.showToast(`녹음 실패: ${e.message}`, 'error');
             this.state.isRecording = false;
             this.updateButtonStates('idle');
+            this.updateRecordingStatus('stopped');
+            this.speechManager.stop();
+            this.fallbackSpeechManager.stop();
+            this.audioRecorder.stop();
         }
     }
 
