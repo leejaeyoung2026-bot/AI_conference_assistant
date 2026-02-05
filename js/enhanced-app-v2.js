@@ -1,20 +1,13 @@
 /**
  * Enhanced Meeting AI Assistant v5.0 (Faster-Whisper Edition)
  * Faster-Whisper STT + 발화자 구분 + Gemini 통합 보정
- * 
- * 주요 기능:
- * 1. 고성능 Faster-Whisper STT 전용 연동
- * 2. 발화자 자동 구분 (주발표자/참석자)
- * 3. 녹음 일시정지/재개
- * 4. 음성 파일 내보내기
- * 5. HTML 회의록 내보내기
  */
 
 class EnhancedMeetingApp {
     constructor() {
         // 핵심 모듈 초기화
         this.speechManager = new FasterWhisperSTTSystem();
-        this.fallbackSpeechManager = new SpeechRecognitionManager(); // 서버 미연결 시 폴백
+        this.fallbackSpeechManager = new SpeechRecognitionManager();
         this.aiEngine = new AIAnalysisEngine();
         this.geminiAPI = new GeminiAPI();
         this.textCorrector = new TextCorrector(this.geminiAPI);
@@ -44,7 +37,7 @@ class EnhancedMeetingApp {
             enableGrounding: true,
             enableAutoSummary: true,
             enableSpeakerDetection: true,
-            fasterWhisperMode: false // 서버 연동 모드
+            fasterWhisperMode: false
         };
 
         // 데이터
@@ -57,16 +50,11 @@ class EnhancedMeetingApp {
             userMemos: []
         };
 
-        // 초기화
         this.init();
     }
 
-    /**
-     * DOM 요소 초기화
-     */
     initializeElements() {
         return {
-            // 버튼
             startBtn: document.getElementById('startBtn'),
             stopBtn: document.getElementById('stopBtn'),
             pauseBtn: document.getElementById('pauseBtn'),
@@ -77,65 +65,43 @@ class EnhancedMeetingApp {
             settingsBtn: document.getElementById('settingsBtn'),
             closeModal: document.getElementById('closeModal'),
             setPrimarySpeakerBtn: document.getElementById('setPrimarySpeakerBtn'),
-
-            // 상태 표시
             statusIndicator: document.getElementById('statusIndicator'),
             voiceVisualizer: document.getElementById('voiceVisualizer'),
             timer: document.getElementById('timer'),
             speakerIndicator: document.getElementById('speakerIndicator'),
-
-            // 텍스트 영역
             currentSpeech: document.getElementById('currentSpeech'),
             transcriptHistory: document.getElementById('transcriptHistory'),
-
-            // 분석 영역
             questionsList: document.getElementById('questionsList'),
             aiAnswersList: document.getElementById('aiAnswersList'),
             meetingSummary: document.getElementById('meetingSummary'),
-
-            // 통계
             questionCount: document.getElementById('questionCount'),
             answerCount: document.getElementById('answerCount'),
             totalWords: document.getElementById('totalWords'),
             totalSentences: document.getElementById('totalSentences'),
             totalQuestions: document.getElementById('totalQuestions'),
             summaryStatus: document.getElementById('summaryStatus'),
-
-            // 모달 및 설정
             settingsModal: document.getElementById('settingsModal'),
             languageSelect: document.getElementById('languageSelect'),
+            secondaryLanguageSelect: document.getElementById('secondaryLanguageSelect'),
             sensitivityRange: document.getElementById('sensitivityRange'),
             sensitivityValue: document.getElementById('sensitivityValue'),
             soundAlert: document.getElementById('soundAlert'),
-
-            // Gemini API 설정
             geminiApiKey: document.getElementById('geminiApiKey'),
             toggleApiKeyVisibility: document.getElementById('toggleApiKeyVisibility'),
             autoAnswer: document.getElementById('autoAnswer'),
             aiResponseStyle: document.getElementById('aiResponseStyle'),
             apiStatus: document.getElementById('apiStatus'),
-
-            // 전문용어 보정 설정
             enableCorrection: document.getElementById('enableCorrection'),
             correctionPersona: document.getElementById('correctionPersona'),
             enableNBest: document.getElementById('enableNBest'),
-
-            // 회의 컨텍스트 설정
             meetingContext: document.getElementById('meetingContext'),
             priorityTerms: document.getElementById('priorityTerms'),
             contextStatus: document.getElementById('contextStatus'),
-            sessionDictionary: document.getElementById('sessionDictionary'),
-
-            // 보정 버퍼 설정
             correctionInterval: document.getElementById('correctionInterval'),
             correctionIntervalValue: document.getElementById('correctionIntervalValue'),
-
-            // 새로운 기능
             enableGrounding: document.getElementById('enableGrounding'),
             enableAutoSummary: document.getElementById('enableAutoSummary'),
             enableSpeakerDetection: document.getElementById('enableSpeakerDetection'),
-            
-            // Faster-Whisper STT 설정
             enableEnsemble: document.getElementById('enableEnsemble'),
             ensembleServerUrl: document.getElementById('ensembleServerUrl'),
             testEnsembleConnection: document.getElementById('testEnsembleConnection'),
@@ -144,19 +110,12 @@ class EnhancedMeetingApp {
             toggleServerHelp: document.getElementById('toggleServerHelp'),
             serverHelpContent: document.getElementById('serverHelpContent'),
             downloadServerTemplate: document.getElementById('downloadServerTemplate'),
-
-            // 시각화
             ensembleVisualizer: document.getElementById('ensembleVisualizer'),
             textWhisper: document.getElementById('textWhisper'),
             confWhisper: document.getElementById('confWhisper'),
             ensembleFinalText: document.getElementById('ensembleFinalText'),
-
-            // 다중 언어 설정
-            secondaryLanguageSelect: document.getElementById('secondaryLanguageSelect'),
             languageStatus: document.getElementById('languageStatus'),
             languageStatusText: document.getElementById('languageStatusText'),
-
-            // 사용자 메모 패널
             memoToggle: document.getElementById('memoToggle'),
             memoContainer: document.getElementById('memoContainer'),
             memoClose: document.getElementById('memoClose'),
@@ -164,15 +123,10 @@ class EnhancedMeetingApp {
             userMemoInput: document.getElementById('userMemoInput'),
             saveMemoBtn: document.getElementById('saveMemoBtn'),
             askAIBtn: document.getElementById('askAIBtn'),
-
-            // 토스트
             toastContainer: document.getElementById('toastContainer')
         };
     }
 
-    /**
-     * 초기화
-     */
     init() {
         this.setupEventListeners();
         this.setupSpeechCallbacks();
@@ -189,51 +143,47 @@ class EnhancedMeetingApp {
         this.updateContextStatusUI();
         this.updateFasterWhisperStatusUI();
         this.updateLanguageStatusUI();
-        
         this.initCorrectionIntervalUI();
-        
-        console.log('[EnhancedMeetingApp] Faster-Whisper Edition 초기화 완료');
+        console.log('[EnhancedMeetingApp] Faster-Whisper Edition v5.1 초기화 완료');
     }
 
-    /**
-     * 이벤트 리스너 설정
-     */
     setupEventListeners() {
-        if (this.elements.startBtn) this.elements.startBtn.addEventListener('click', () => this.startRecording());
-        if (this.elements.stopBtn) this.elements.stopBtn.addEventListener('click', () => this.stopRecording());
-        if (this.elements.pauseBtn) this.elements.pauseBtn.addEventListener('click', () => this.togglePause());
-        if (this.elements.clearBtn) this.elements.clearBtn.addEventListener('click', () => this.clearAll());
-
-        if (this.elements.exportBtn) this.elements.exportBtn.addEventListener('click', () => this.showExportMenu());
-        if (this.elements.exportAudioBtn) this.elements.exportAudioBtn.addEventListener('click', () => this.exportAudio());
-        if (this.elements.exportHtmlBtn) this.elements.exportHtmlBtn.addEventListener('click', () => this.exportHTML());
-
-        if (this.elements.setPrimarySpeakerBtn) this.elements.setPrimarySpeakerBtn.addEventListener('click', () => this.setPrimarySpeaker());
-
-        if (this.elements.settingsBtn) this.elements.settingsBtn.addEventListener('click', () => this.openSettings());
-        if (this.elements.closeModal) this.elements.closeModal.addEventListener('click', () => this.closeSettings());
-        if (this.elements.settingsModal) {
-            this.elements.settingsModal.addEventListener('click', (e) => {
-                if (e.target === this.elements.settingsModal) this.closeSettings();
-            });
-        }
-
-        if (this.elements.toggleApiKeyVisibility) this.elements.toggleApiKeyVisibility.addEventListener('click', () => this.toggleApiKeyVisibility());
+        const el = this.elements;
+        if (el.startBtn) el.startBtn.addEventListener('click', () => this.startRecording());
+        if (el.stopBtn) el.stopBtn.addEventListener('click', () => this.stopRecording());
+        if (el.pauseBtn) el.pauseBtn.addEventListener('click', () => this.togglePause());
+        if (el.clearBtn) el.clearBtn.addEventListener('click', () => this.clearAll());
+        if (el.exportBtn) el.exportBtn.addEventListener('click', () => this.showExportMenu());
+        if (el.exportAudioBtn) el.exportAudioBtn.addEventListener('click', () => this.exportAudio());
+        if (el.exportHtmlBtn) el.exportHtmlBtn.addEventListener('click', () => this.exportHTML());
+        if (el.setPrimarySpeakerBtn) el.setPrimarySpeakerBtn.addEventListener('click', () => this.setPrimarySpeaker());
+        if (el.settingsBtn) el.settingsBtn.addEventListener('click', () => this.openSettings());
+        if (el.closeModal) el.closeModal.addEventListener('click', () => this.closeSettings());
+        if (el.settingsModal) el.settingsModal.addEventListener('click', (e) => { if (e.target === el.settingsModal) this.closeSettings(); });
+        if (el.toggleApiKeyVisibility) el.toggleApiKeyVisibility.addEventListener('click', () => this.toggleApiKeyVisibility());
 
         this.setupSettingsChangeListeners();
     }
 
     setupSettingsChangeListeners() {
-        if (this.elements.languageSelect) {
-            this.elements.languageSelect.addEventListener('change', (e) => {
+        const el = this.elements;
+        if (el.languageSelect) {
+            el.languageSelect.addEventListener('change', (e) => {
                 this.state.language = e.target.value;
                 this.fallbackSpeechManager.setLanguage(this.state.language);
+                this.updateLanguageStatusUI();
                 this.saveSettings();
             });
         }
-
-        if (this.elements.geminiApiKey) {
-            this.elements.geminiApiKey.addEventListener('change', async (e) => {
+        if (el.secondaryLanguageSelect) {
+            el.secondaryLanguageSelect.addEventListener('change', (e) => {
+                this.state.secondaryLanguage = e.target.value;
+                this.updateLanguageStatusUI();
+                this.saveSettings();
+            });
+        }
+        if (el.geminiApiKey) {
+            el.geminiApiKey.addEventListener('change', async (e) => {
                 const apiKey = e.target.value.trim();
                 this.geminiAPI.setApiKey(apiKey);
                 this.saveSettings();
@@ -241,762 +191,430 @@ class EnhancedMeetingApp {
                 else this.updateApiStatusWithState('error', 'API 키 미설정');
             });
         }
-
-        if (this.elements.autoAnswer) {
-            this.elements.autoAnswer.addEventListener('change', (e) => {
-                this.state.autoAnswer = e.target.checked;
-                this.saveSettings();
-            });
-        }
-
-        if (this.elements.enableCorrection) {
-            this.elements.enableCorrection.addEventListener('change', (e) => {
-                this.state.enableCorrection = e.target.checked;
-                this.textCorrector.enabled = e.target.checked;
-                this.saveSettings();
-            });
-        }
-
-        if (this.elements.sensitivityRange) {
-            this.elements.sensitivityRange.addEventListener('input', (e) => {
+        if (el.autoAnswer) el.autoAnswer.addEventListener('change', (e) => { this.state.autoAnswer = e.target.checked; this.saveSettings(); });
+        if (el.enableCorrection) el.enableCorrection.addEventListener('change', (e) => { this.state.enableCorrection = e.target.checked; this.textCorrector.enabled = e.target.checked; this.saveSettings(); });
+        if (el.sensitivityRange) {
+            el.sensitivityRange.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 this.aiEngine.sensitivity = value;
                 const labels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
-                if (this.elements.sensitivityValue) this.elements.sensitivityValue.textContent = labels[value - 1];
+                if (el.sensitivityValue) el.sensitivityValue.textContent = labels[value - 1];
                 this.saveSettings();
             });
         }
-
-        if (this.elements.correctionInterval) {
-            this.elements.correctionInterval.addEventListener('input', (e) => {
+        if (el.correctionInterval) {
+            el.correctionInterval.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
-                if (this.elements.correctionIntervalValue) this.elements.correctionIntervalValue.textContent = `${value}초`;
+                if (el.correctionIntervalValue) el.correctionIntervalValue.textContent = `${value}초`;
                 if (this.textCorrector) this.textCorrector.minCorrectionInterval = value * 1000;
                 this.saveSettings();
             });
         }
-
-        if (this.elements.meetingContext) {
-            this.elements.meetingContext.addEventListener('input', () => {
-                this.updateContext();
-                this.updateContextStatusUI();
-            });
-            this.elements.meetingContext.addEventListener('change', () => {
-                this.updateContext();
-                this.saveSettings();
-            });
+        if (el.meetingContext) {
+            el.meetingContext.addEventListener('input', () => { this.updateContext(); });
+            el.meetingContext.addEventListener('change', () => { this.updateContext(); this.saveSettings(); });
         }
-
-        if (this.elements.priorityTerms) {
-            this.elements.priorityTerms.addEventListener('input', () => {
-                this.updateContext();
-                this.updateContextStatusUI();
-            });
-            this.elements.priorityTerms.addEventListener('change', () => {
-                this.updateContext();
-                this.saveSettings();
-            });
+        if (el.priorityTerms) {
+            el.priorityTerms.addEventListener('input', () => { this.updateContext(); });
+            el.priorityTerms.addEventListener('change', () => { this.updateContext(); this.saveSettings(); });
         }
     }
 
-    /**
-     * 음성인식 콜백 설정
-     */
     setupSpeechCallbacks() {
         const handleResult = (result) => this.handleSpeechResult(result);
         const handleStatus = (status) => this.updateRecordingStatus(status);
         const handleError = (code, msg) => this.showToast(msg, 'error');
-
-        // Faster-Whisper 콜백
         this.speechManager.onTranscript(handleResult);
         this.speechManager.onStatusChange(handleStatus);
         this.speechManager.onError(handleError);
-
-        // Fallback (Web Speech API) 콜백
         this.fallbackSpeechManager.onResult(handleResult);
         this.fallbackSpeechManager.onStatusChange(handleStatus);
         this.fallbackSpeechManager.onError(handleError);
     }
 
-    setupAICallbacks() {
-        this.aiEngine.onQuestionDetected = async (question) => {
-            await this.handleQuestionDetected(question);
-        };
-    }
+    setupAICallbacks() { this.aiEngine.onQuestionDetected = async (q) => await this.handleQuestionDetected(q); }
+    setupGeminiCallbacks() { this.geminiAPI.onSummaryGenerated = (s) => this.updateMeetingSummary(s); }
+    setupTextCorrectorCallbacks() { this.textCorrector.onCorrectionComplete = (o, c) => { if (o !== c) console.log(`[TextCorrector] ${o} -> ${c}`); }; }
+    setupAudioRecorderCallbacks() { this.audioRecorder.onError = (c, m) => this.showToast(m, 'error'); }
+    setupSpeakerDetectorCallbacks() { this.speakerDetector.onSpeakerChange = (i) => this.updateSpeakerIndicator(i.current); }
 
-    setupGeminiCallbacks() {
-        this.geminiAPI.onSummaryGenerated = (summary) => {
-            this.updateMeetingSummary(summary);
-        };
-    }
-
-    setupTextCorrectorCallbacks() {
-        this.textCorrector.onCorrectionComplete = (original, corrected) => {
-            if (original !== corrected) {
-                console.log(`[TextCorrector] 보정: "${original}" → "${corrected}"`);
-            }
-        };
-    }
-
-    setupAudioRecorderCallbacks() {
-        this.audioRecorder.onError = (code, message) => this.showToast(message, 'error');
-    }
-
-    setupSpeakerDetectorCallbacks() {
-        this.speakerDetector.onSpeakerChange = (info) => {
-            this.updateSpeakerIndicator(info.current);
-        };
-    }
-
-    /**
-     * 녹음 시작
-     */
     async startRecording() {
         if (this.state.isRecording) return;
-
-        this.updateButtonStates('starting');
-
+        this.updateButtonStates('recording');
         try {
-            let sttStarted = false;
-
-            // Faster-Whisper 시도
+            let started = false;
             if (this.state.fasterWhisperMode) {
-                sttStarted = await this.speechManager.start();
-                if (!sttStarted) {
-                    this.showToast('Faster-Whisper 서버 연결 실패. 브라우저 내장 엔진을 사용합니다.', 'warning');
-                    sttStarted = this.fallbackSpeechManager.start();
-                }
-            } else {
-                sttStarted = this.fallbackSpeechManager.start();
-            }
-
-            if (!sttStarted) throw new Error('음성인식을 시작할 수 없습니다');
-
-            // 오디오 녹음 시작
+                started = await this.speechManager.start();
+                if (!started) { this.showToast('서버 연결 실패. 기본 엔진 사용.', 'warning'); started = this.fallbackSpeechManager.start(); }
+            } else started = this.fallbackSpeechManager.start();
+            if (!started) throw new Error('인식 시작 불가');
             await this.audioRecorder.start();
-
-            // 발화자 감지 초기화
-            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) {
-                this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
-            }
-
+            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
             this.state.isRecording = true;
-            this.state.isPaused = false;
             this.state.startTime = Date.now();
-            this.state.pausedDuration = 0;
-
             this.startTimer();
-            this.updateButtonStates('recording');
             this.updateRecordingStatus('recording');
-            this.updateContext();
-
-            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) {
-                this.startAutoSummaryTimer();
-            }
-
-            this.showToast('녹음이 시작되었습니다', 'success');
-
-        } catch (error) {
-            console.error('[StartRecording Error]', error);
-            this.showToast(error.message || '녹음 시작에 실패했습니다', 'error');
+            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) this.startAutoSummaryTimer();
+            this.showToast('녹음 시작', 'success');
+        } catch (e) {
+            this.showToast(e.message, 'error');
             this.state.isRecording = false;
-            this.stopTimer();
-            this.speechManager.stop();
-            this.fallbackSpeechManager.stop();
-            this.audioRecorder.stop();
             this.updateButtonStates('idle');
         }
     }
 
     stopRecording() {
         if (!this.state.isRecording) return;
-
         this.speechManager.stop();
         this.fallbackSpeechManager.stop();
         this.audioRecorder.stop();
         this.stopTimer();
         this.stopAutoSummaryTimer();
-
         this.state.isRecording = false;
-        this.state.isPaused = false;
-
         this.updateButtonStates('idle');
         this.updateRecordingStatus('stopped');
-
-        if (this.state.enableAutoSummary && this.data.fullTranscript.length > 0) {
-            this.generateFinalSummary();
-        }
-
-        this.showToast('녹음이 중지되었습니다', 'info');
+        if (this.data.fullTranscript.length > 0) this.generateFinalSummary();
+        this.showToast('녹음 중지', 'info');
     }
 
     togglePause() {
         if (!this.state.isRecording) return;
-
         if (this.state.isPaused) {
-            if (this.state.fasterWhisperMode) this.speechManager.start();
-            else this.fallbackSpeechManager.start();
-            
+            if (this.state.fasterWhisperMode) this.speechManager.start(); else this.fallbackSpeechManager.start();
             this.audioRecorder.resume();
-            if (this.state.pauseStartTime) {
-                this.state.pausedDuration += Date.now() - this.state.pauseStartTime;
-                this.state.pauseStartTime = null;
-            }
             this.state.isPaused = false;
             this.updateButtonStates('recording');
-            this.updateRecordingStatus('recording');
-            this.showToast('녹음이 재개되었습니다', 'success');
+            this.showToast('재개됨', 'success');
         } else {
             this.speechManager.stop();
             this.fallbackSpeechManager.stop();
             this.audioRecorder.pause();
-            this.state.pauseStartTime = Date.now();
             this.state.isPaused = true;
             this.updateButtonStates('paused');
-            this.updateRecordingStatus('paused');
-            this.showToast('녹음이 일시정지되었습니다', 'info');
+            this.showToast('일시정지됨', 'info');
         }
     }
 
-    /**
-     * 음성인식 결과 처리
-     */
     async handleSpeechResult(result) {
         if (!result.isFinal) {
             this.updateCurrentSpeech(result.text);
-            
-            // 실시간 모델 결과 시각화 업데이트
             if (this.state.fasterWhisperMode && this.elements.textWhisper) {
                 this.elements.textWhisper.textContent = result.text;
-                if (result.confidence) {
-                    this.elements.confWhisper.textContent = `${(result.confidence * 100).toFixed(0)}%`;
-                }
+                if (result.confidence) this.elements.confWhisper.textContent = `${(result.confidence * 100).toFixed(0)}%`;
             }
             return;
         }
-
-        // 발화자 처리
-        const processedUtterance = this.speakerDetector.processUtterance(result.text);
-        
-        // 텍스트 보정
-        let correctedText = result.text;
+        const processed = this.speakerDetector.processUtterance(result.text);
+        let corrected = result.text;
         if (this.state.enableCorrection && this.textCorrector.enabled) {
             try {
-                const correctionResult = await this.textCorrector.correct(result.text, result.candidates);
-                if (correctionResult && typeof correctionResult === 'object') correctedText = correctionResult.text || result.text;
-                else if (typeof correctionResult === 'string') correctedText = correctionResult;
-            } catch (error) {
-                console.warn('[TextCorrector] 보정 실패:', error);
-            }
+                const res = await this.textCorrector.correct(result.text);
+                corrected = typeof res === 'string' ? res : (res?.text || result.text);
+            } catch (e) {}
         }
-
-        const finalResult = {
-            text: correctedText,
-            originalText: result.text,
-            speaker: processedUtterance.speaker,
-            classification: processedUtterance.classification,
-            timestamp: new Date(),
-            corrected: correctedText !== result.text
-        };
-
-        this.data.fullTranscript.push(finalResult);
-        this.addTranscriptToHistory(finalResult);
+        const finalRes = { text: corrected, original: result.text, speaker: processed.speaker, classification: processed.classification, timestamp: new Date(), corrected: corrected !== result.text };
+        this.data.fullTranscript.push(finalRes);
+        this.addTranscriptToHistory(finalRes);
         this.updateCurrentSpeech('');
         this.updateStats();
-
-        // 모델 결과 시각화 최종 업데이트
-        if (this.elements.ensembleFinalText) {
-            this.elements.ensembleFinalText.textContent = correctedText;
-        }
-
-        this.meetingExporter.addTranscript({
-            text: finalResult.text,
-            speaker: finalResult.speaker,
-            timestamp: finalResult.timestamp,
-            isQuestion: finalResult.classification?.type === 'question',
-            isComment: finalResult.classification?.type === 'comment',
-            corrected: finalResult.corrected
-        });
-
-        requestIdleCallback(() => {
-            const langCode = this.state.language?.split('-')[0] || 'ko';
-            this.aiEngine.analyzeText(correctedText, langCode);
-        });
+        if (this.elements.ensembleFinalText) this.elements.ensembleFinalText.textContent = corrected;
+        this.meetingExporter.addTranscript(finalRes);
+        const langCode = this.state.language?.split('-')[0] || 'ko';
+        requestIdleCallback(() => this.aiEngine.analyzeText(corrected, langCode));
     }
 
-    updateCurrentSpeech(text) {
-        if (!this.elements.currentSpeech) return;
-        if (text) {
-            this.elements.currentSpeech.innerHTML = `
-                <div class="speech-content">
-                    <span class="speech-text">${this.escapeHtml(text)}</span>
-                    <span class="speech-indicator">...</span>
-                </div>
-            `;
-        } else {
-            this.elements.currentSpeech.innerHTML = '';
-        }
-    }
+    updateCurrentSpeech(t) { if (this.elements.currentSpeech) this.elements.currentSpeech.innerHTML = t ? `<div class="speech-content"><span class="speech-text">${this.escapeHtml(t)}</span><span class="speech-indicator">...</span></div>` : ''; }
 
-    addTranscriptToHistory(result) {
-        if (!this.elements.transcriptHistory) return;
-        const emptyState = this.elements.transcriptHistory.querySelector('.empty-state, .placeholder');
-        if (emptyState) emptyState.remove();
-
+    addTranscriptToHistory(res) {
+        const hist = this.elements.transcriptHistory;
+        if (!hist) return;
+        const empty = hist.querySelector('.empty-state, .placeholder');
+        if (empty) empty.remove();
         const item = document.createElement('div');
-        const speakerClass = result.speaker?.isPrimary ? 'primary' : 'secondary';
-        const isQuestion = result.classification?.type === 'question';
-        const classificationClass = result.classification?.type || '';
-        const transcriptIndex = this.data.fullTranscript.length - 1;
-        
-        item.dataset.index = transcriptIndex;
-        item.className = `transcript-item ${speakerClass} ${classificationClass}`;
-        
-        const speakerLabel = result.speaker?.isPrimary ? '발표자' : '참석자';
-        const timeStr = result.timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-        let badgesHtml = `<span class="badge badge-question-toggle ${isQuestion ? 'active' : ''}" data-index="${transcriptIndex}">❓ 질문${isQuestion ? ' ✓' : ''}</span>`;
-        if (result.corrected) badgesHtml += '<span class="badge badge-corrected">✨ 보정됨</span>';
-
+        const sClass = res.speaker?.isPrimary ? 'primary' : 'secondary';
+        item.className = `transcript-item ${sClass} ${res.classification?.type || ''}`;
+        const time = res.timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         item.innerHTML = `
-            <div class="transcript-speaker ${speakerClass}">
-                <span class="speaker-icon">${result.speaker?.isPrimary ? '👤' : '👥'}</span>
-                <span class="speaker-label">${speakerLabel}</span>
-            </div>
-            <div class="transcript-content">
-                <p class="transcript-text">${this.escapeHtml(result.text)}</p>
-                <div class="transcript-meta"><span class="timestamp">${timeStr}</span>${badgesHtml}</div>
-            </div>
+            <div class="transcript-speaker ${sClass}"><span class="speaker-icon">${res.speaker?.isPrimary ? '👤' : '👥'}</span><span class="speaker-label">${res.speaker?.isPrimary ? '발표자' : '참석자'}</span></div>
+            <div class="transcript-content"><p class="transcript-text">${this.escapeHtml(res.text)}</p><div class="transcript-meta"><span class="timestamp">${time}</span>${res.corrected ? '<span class="badge badge-corrected">✨ 보정됨</span>' : ''}</div></div>
         `;
-
-        const questionToggle = item.querySelector('.badge-question-toggle');
-        if (questionToggle) {
-            questionToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleQuestionStatus(parseInt(questionToggle.dataset.index), questionToggle);
-            });
-        }
-
-        this.elements.transcriptHistory.appendChild(item);
-        this.scrollToBottom(this.elements.transcriptHistory);
+        hist.appendChild(item);
+        this.scrollToBottom(hist);
     }
 
-    toggleQuestionStatus(index, badgeElement) {
-        if (index < 0 || index >= this.data.fullTranscript.length) return;
-        const transcript = this.data.fullTranscript[index];
-        const isCurrentlyQuestion = transcript.classification?.type === 'question';
-        
-        if (isCurrentlyQuestion) {
-            transcript.classification = { type: null };
-            badgeElement.classList.remove('active');
-            badgeElement.innerHTML = '❓ 질문';
-        } else {
-            transcript.classification = { type: 'question' };
-            badgeElement.classList.add('active');
-            badgeElement.innerHTML = '❓ 질문 ✓';
-            this.handleQuestionDetected(transcript.text);
-        }
-        
-        const transcriptItem = badgeElement.closest('.transcript-item');
-        if (transcriptItem) transcriptItem.classList.toggle('question', !isCurrentlyQuestion);
+    async handleQuestionDetected(q) {
+        this.data.questions.push({ text: q, timestamp: new Date() });
+        this.updateQuestionsList(q);
         this.updateStats();
+        if (this.state.autoAnswer && this.geminiAPI.isConfigured) await this.generateAIAnswer(q);
     }
 
-    async handleQuestionDetected(question) {
-        this.data.questions.push({ text: question, timestamp: new Date(), answered: false });
-        this.updateQuestionsList(question);
-        this.updateStats();
-        this.meetingExporter.addQuestion({ text: question, timestamp: new Date() });
-        if (this.elements.soundAlert?.checked) this.playAlertSound();
-        if (this.state.autoAnswer && this.geminiAPI.isConfigured) await this.generateAIAnswer(question);
-    }
-
-    async generateAIAnswer(question) {
+    async generateAIAnswer(q) {
         try {
-            let context = '';
-            const recentSummary = this.data.meetingSummaries.slice(-1)[0] || '';
-            if (recentSummary) context += `[최근 회의 요약]\n${recentSummary}\n\n`;
-            
-            const recentTranscripts = this.data.fullTranscript.slice(-10);
-            if (recentTranscripts.length > 0) context += `[최근 대화 내용]\n${recentTranscripts.map(t => t.text).join('\n')}`;
-            
-            const result = await this.geminiAPI.generateAnswer(question, context);
-            if (result) {
-                const aiAnswer = {
-                    question: result.question || question,
-                    answer: result.answer || '',
-                    sources: result.sources || [],
-                    hasGrounding: result.hasGrounding || false,
-                    timestamp: result.timestamp || new Date()
-                };
-                this.data.aiAnswers.push(aiAnswer);
-                this.updateAIAnswersList(aiAnswer);
+            const res = await this.geminiAPI.generateAnswer(q, this.data.fullTranscript.slice(-10).map(t => t.text).join('\n'));
+            if (res) {
+                const ans = { question: q, answer: res.answer || '', sources: res.sources || [], timestamp: new Date() };
+                this.data.aiAnswers.push(ans);
+                this.updateAIAnswersList(ans);
                 this.updateStats();
-                this.meetingExporter.addAIAnswer(aiAnswer);
             }
-        } catch (error) {
-            console.error('[AI Answer Error]', error);
-        }
+        } catch (e) {}
     }
 
-    updateQuestionsList(question) {
-        if (!this.elements.questionsList) return;
-        const emptyState = this.elements.questionsList.querySelector('.empty-state');
-        if (emptyState) emptyState.remove();
-
-        const item = document.createElement('div');
-        item.className = 'question-item';
-        item.innerHTML = `
-            <span class="question-icon">❓</span>
-            <p class="question-text">${this.escapeHtml(question)}</p>
-            <span class="question-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
-        `;
-        this.elements.questionsList.appendChild(item);
-        this.scrollToBottom(this.elements.questionsList);
+    updateQuestionsList(q) {
+        const list = this.elements.questionsList;
+        if (!list) return;
+        const empty = list.querySelector('.empty-state'); if (empty) empty.remove();
+        const item = document.createElement('div'); item.className = 'question-item';
+        item.innerHTML = `<span class="question-icon">❓</span><p class="question-text">${this.escapeHtml(q)}</p>`;
+        list.appendChild(item);
+        this.scrollToBottom(list);
     }
 
-    updateAIAnswersList(aiAnswer) {
-        if (!this.elements.aiAnswersList) return;
-        const emptyState = this.elements.aiAnswersList.querySelector('.empty-state');
-        if (emptyState) emptyState.remove();
-
-        const item = document.createElement('div');
-        item.className = 'ai-answer-item';
-        let sourcesHtml = '';
-        if (aiAnswer.sources?.length > 0) {
-            sourcesHtml = `<div class="answer-sources"><span class="sources-label">📎 참고:</span>${aiAnswer.sources.map(s => `<a href="${s.uri || s.url || s}" target="_blank" class="source-link">${s.title || '출처'}</a>`).join(' ')}</div>`;
-        }
-
-        item.innerHTML = `<div class="answer-question"><span class="label">Q.</span><p>${this.escapeHtml(aiAnswer.question)}</p></div><div class="answer-content"><span class="label">A.</span><p>${this.escapeHtml(aiAnswer.answer)}</p>${sourcesHtml}</div>`;
-        this.elements.aiAnswersList.appendChild(item);
-        this.scrollToBottom(this.elements.aiAnswersList);
+    updateAIAnswersList(a) {
+        const list = this.elements.aiAnswersList;
+        if (!list) return;
+        const empty = list.querySelector('.empty-state'); if (empty) empty.remove();
+        const item = document.createElement('div'); item.className = 'ai-answer-item';
+        item.innerHTML = `<div class="answer-question"><span>Q.</span><p>${this.escapeHtml(a.question)}</p></div><div class="answer-content"><span>A.</span><p>${this.escapeHtml(a.answer)}</p></div>`;
+        list.appendChild(item);
+        this.scrollToBottom(list);
     }
 
-    updateMeetingSummary(summary) {
-        if (!summary) return;
-        this.data.meetingSummaries.push(summary);
-        this.meetingExporter.setSummary(summary);
-        if (this.elements.meetingSummary) {
-            this.elements.meetingSummary.innerHTML = `<div class="summary-content"><p>${this.escapeHtml(summary).replace(/\n/g, '<br>')}</p><span class="summary-time">최종 업데이트: ${new Date().toLocaleTimeString('ko-KR')}</span></div>`;
-        }
-        if (this.elements.summaryStatus) {
-            this.elements.summaryStatus.textContent = '생성됨';
-            this.elements.summaryStatus.classList.add('active');
-        }
+    updateMeetingSummary(s) {
+        if (!s) return;
+        this.data.meetingSummaries.push(s);
+        if (this.elements.meetingSummary) this.elements.meetingSummary.innerHTML = `<div class="summary-content"><p>${this.escapeHtml(s).replace(/\n/g, '<br>')}</p></div>`;
+        if (this.elements.summaryStatus) { this.elements.summaryStatus.textContent = '업데이트됨'; this.elements.summaryStatus.classList.add('active'); }
     }
 
     async generateFinalSummary() {
         if (!this.geminiAPI.isConfigured) return;
-        try {
-            const fullText = this.data.fullTranscript.map(t => t.text).join(' ');
-            if (fullText.length < 50) return;
-            const summary = await this.geminiAPI.generateMeetingSummary(fullText);
-            this.updateMeetingSummary(summary);
-        } catch (error) {
-            console.error('[Final Summary Error]', error);
-        }
+        const text = this.data.fullTranscript.map(t => t.text).join(' ');
+        if (text.length < 50) return;
+        try { const s = await this.geminiAPI.generateMeetingSummary(text); this.updateMeetingSummary(s); } catch (e) {}
     }
 
-    updateSpeakerIndicator(speakerType) {
-        if (!this.elements.speakerIndicator) return;
-        const isPrimary = speakerType === 'primary';
-        this.elements.speakerIndicator.className = `speaker-indicator ${speakerType}`;
-        this.elements.speakerIndicator.innerHTML = `<span class="speaker-icon">${isPrimary ? '👤' : '👥'}</span><span class="speaker-label">${isPrimary ? '발표자' : '참석자'}</span>`;
+    updateSpeakerIndicator(type) {
+        const el = this.elements.speakerIndicator;
+        if (!el) return;
+        const isP = type === 'primary';
+        el.className = `speaker-indicator ${type}`;
+        el.innerHTML = `<span class="speaker-icon">${isP ? '👤' : '👥'}</span><span class="speaker-label">${isP ? '발표자' : '참석자'}</span>`;
     }
 
-    setPrimarySpeaker() {
-        this.speakerDetector.setPrimarySpeaker();
-        this.updateSpeakerIndicator('primary');
-        this.showToast('주발표자가 설정되었습니다', 'success');
-    }
+    setPrimarySpeaker() { this.speakerDetector.setPrimarySpeaker(); this.updateSpeakerIndicator('primary'); this.showToast('주발표자 설정됨', 'success'); }
 
     updateStats() {
-        const totalWords = this.data.fullTranscript.reduce((sum, t) => sum + (t.text?.split(/\s+/).length || 0), 0);
-        if (this.elements.totalWords) this.elements.totalWords.textContent = totalWords;
+        const words = this.data.fullTranscript.reduce((sum, t) => sum + (t.text?.split(/\s+/).length || 0), 0);
+        if (this.elements.totalWords) this.elements.totalWords.textContent = words;
         if (this.elements.totalSentences) this.elements.totalSentences.textContent = this.data.fullTranscript.length;
         if (this.elements.totalQuestions) this.elements.totalQuestions.textContent = this.data.questions.length;
         if (this.elements.questionCount) this.elements.questionCount.textContent = this.data.questions.length;
         if (this.elements.answerCount) this.elements.answerCount.textContent = this.data.aiAnswers.length;
     }
 
-    startTimer() {
-        this.stopTimer();
-        this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
-    }
-
-    stopTimer() {
-        if (this.state.timerInterval) {
-            clearInterval(this.state.timerInterval);
-            this.state.timerInterval = null;
-        }
+    startTimer() { this.stopTimer(); this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000); }
+    stopTimer() { if (this.state.timerInterval) { clearInterval(this.state.timerInterval); this.state.timerInterval = null; } }
+    updateTimerDisplay() {
+        if (!this.elements.timer || !this.state.startTime) return;
+        let elapsed = Date.now() - this.state.startTime - this.state.pausedDuration;
+        const s = Math.floor(elapsed / 1000);
+        const m = Math.floor(s / 60);
+        const h = Math.floor(m / 60);
+        const pad = (n) => n.toString().padStart(2, '0');
+        this.elements.timer.textContent = `${pad(h)}:${pad(m % 60)}:${pad(s % 60)}`;
     }
 
     startAutoSummaryTimer() {
         this.stopAutoSummaryTimer();
         this.state.autoSummaryTimer = setInterval(async () => {
-            if (!this.state.isRecording || this.state.isPaused) return;
-            if (this.data.fullTranscript.length < 3) return;
+            if (!this.state.isRecording || this.state.isPaused || this.data.fullTranscript.length < 3) return;
             try {
-                const recentTranscripts = this.data.fullTranscript.slice(-20).map(t => t.text).join('\n');
-                this.geminiAPI.addToMeetingTranscript(recentTranscripts, new Date());
-                await this.geminiAPI.generateMeetingSummary(recentTranscripts);
-                if (this.elements.summaryStatus) {
-                    this.elements.summaryStatus.textContent = '업데이트됨';
-                    this.elements.summaryStatus.classList.add('active');
-                }
-            } catch (error) { console.error('[AutoSummary] 실패:', error); }
+                const text = this.data.fullTranscript.slice(-20).map(t => t.text).join('\n');
+                await this.geminiAPI.generateMeetingSummary(text);
+            } catch (e) {}
         }, 60000);
     }
+    stopAutoSummaryTimer() { if (this.state.autoSummaryTimer) { clearInterval(this.state.autoSummaryTimer); this.state.autoSummaryTimer = null; } }
 
-    stopAutoSummaryTimer() {
-        if (this.state.autoSummaryTimer) {
-            clearInterval(this.state.autoSummaryTimer);
-            this.state.autoSummaryTimer = null;
-        }
-    }
-
-    updateTimerDisplay() {
-        if (!this.elements.timer || !this.state.startTime) return;
-        let elapsed = Date.now() - this.state.startTime - this.state.pausedDuration;
-        if (this.state.isPaused && this.state.pauseStartTime) elapsed = this.state.pauseStartTime - this.state.startTime - this.state.pausedDuration;
-        const seconds = Math.floor(elapsed / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const pad = (n) => n.toString().padStart(2, '0');
-        this.elements.timer.textContent = `${pad(hours)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
-    }
-
-    exportAudio() {
-        if (!this.audioRecorder.chunks.length) {
-            this.showToast('내보낼 녹음 데이터가 없습니다', 'warning');
-            return;
-        }
-        this.audioRecorder.downloadRecording('meeting_audio');
-        this.showToast('음성 파일이 다운로드됩니다', 'success');
-    }
-
-    async exportHTML() {
-        const meetingTitle = this.elements.meetingContext?.value?.split('\n')[0] || '회의록';
-        this.meetingExporter.setMeetingInfo({ title: meetingTitle, date: new Date(this.state.startTime || Date.now()), duration: this.elements.timer?.textContent || '00:00:00' });
-        
-        let smartSummary = null;
-        if (this.geminiAPI.isConfigured && this.data.fullTranscript.length > 0) {
-            this.showToast('AI가 회의록을 분석 중입니다...', 'info');
-            try { smartSummary = await this.generateSmartMeetingSummary(); } catch (e) {}
-        }
-        this.meetingExporter.downloadSmartHTML('meeting_report', smartSummary);
-        this.showToast('회의 리포트가 다운로드됩니다', 'success');
-    }
-
-    async generateSmartMeetingSummary() {
-        if (!this.geminiAPI.isConfigured) return null;
-        const transcriptText = this.data.fullTranscript.map(t => `[${t.timestamp.toLocaleTimeString()}] ${t.speaker?.isPrimary ? '발표자' : '참석자'}: ${t.text}`).join('\n');
-        const prompt = `당신은 전문 회의 서기입니다. 다음 회의 내용을 분석하여 요약해주세요.\n\n[회의내용]\n${transcriptText}`;
-        try {
-            const result = await this.geminiAPI.generateMeetingSummary(prompt);
-            return result;
-        } catch (e) { return null; }
-    }
-
-    showExportMenu() {
-        if (this.data.fullTranscript.length === 0) {
-            this.showToast('내보낼 데이터가 없습니다', 'warning');
-            return;
-        }
-        this.exportHTML();
-    }
+    exportAudio() { if (this.audioRecorder.chunks.length) this.audioRecorder.downloadRecording('meeting_audio'); else this.showToast('데이터 없음', 'warning'); }
+    async exportHTML() { this.meetingExporter.downloadSmartHTML('meeting_report', this.data.meetingSummaries.slice(-1)[0]); this.showToast('다운로드됨', 'success'); }
+    showExportMenu() { if (this.data.fullTranscript.length) this.exportHTML(); else this.showToast('데이터 없음', 'warning'); }
 
     clearAll() {
-        if (!confirm('모든 기록을 삭제하시겠습니까?')) return;
+        if (!confirm('삭제하시겠습니까?')) return;
         this.data = { fullTranscript: [], questions: [], aiAnswers: [], meetingSummaries: [], speakerHistory: [], userMemos: [] };
         this.audioRecorder.clearRecording();
         this.speakerDetector.reset();
-        this.meetingExporter.clear();
         if (this.elements.transcriptHistory) this.elements.transcriptHistory.innerHTML = '';
-        if (this.elements.currentSpeech) this.elements.currentSpeech.innerHTML = '<p class="placeholder">녹음 버튼을 눌러 회의를 시작하세요...</p>';
         this.updateStats();
-        this.showToast('기록이 삭제되었습니다', 'success');
+        this.showToast('삭제됨', 'success');
     }
 
     updateApiStatusUI() {
-        if (!this.elements.apiStatus) return;
-        const isConfigured = this.geminiAPI?.isConfigured;
-        this.elements.apiStatus.className = `api-status ${isConfigured ? 'configured' : 'error'}`;
-        this.elements.apiStatus.querySelector('.status-text').textContent = isConfigured ? 'API 연결됨' : 'API 키 미설정';
+        const config = this.geminiAPI?.isConfigured;
+        const el = this.elements.apiStatus;
+        if (el) { el.className = `api-status ${config ? 'configured' : 'error'}`; el.querySelector('.status-text').textContent = config ? 'API 연결됨' : 'API 키 미설정'; }
     }
 
-    async validateApiKey(apiKey) {
-        this.updateApiStatusWithState('pending', '연결 확인 중...');
+    async validateApiKey(key) {
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: 'Hi' }] }] })
-            });
-            if (response.ok) {
-                this.updateApiStatusWithState('configured', 'API 연결 성공');
-                return true;
-            }
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Hi' }] }] }) });
+            if (res.ok) { this.updateApiStatusWithState('configured', 'API 연결 성공'); return true; }
         } catch (e) {}
-        this.updateApiStatusWithState('error', 'API 연결 실패');
-        return false;
+        this.updateApiStatusWithState('error', '연결 실패'); return false;
     }
 
-    updateApiStatusWithState(state, message) {
-        if (!this.elements.apiStatus) return;
-        this.elements.apiStatus.className = `api-status ${state}`;
-        this.elements.apiStatus.querySelector('.status-text').textContent = message;
-    }
+    updateApiStatusWithState(s, m) { if (this.elements.apiStatus) { this.elements.apiStatus.className = `api-status ${s}`; this.elements.apiStatus.querySelector('.status-text').textContent = m; } }
 
-    openSettings() { if (this.elements.settingsModal) this.elements.settingsModal.classList.add('active'); }
-    closeSettings() { if (this.elements.settingsModal) this.elements.settingsModal.classList.remove('active'); this.saveSettings(); }
+    openSettings() { this.elements.settingsModal?.classList.add('active'); }
+    closeSettings() { this.elements.settingsModal?.classList.remove('active'); this.saveSettings(); }
     toggleApiKeyVisibility() {
         const input = this.elements.geminiApiKey;
-        const icon = this.elements.toggleApiKeyVisibility.querySelector('i');
-        input.type = input.type === 'password' ? 'text' : 'password';
-        icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        const icon = this.elements.toggleApiKeyVisibility?.querySelector('i');
+        if (input && icon) { input.type = input.type === 'password' ? 'text' : 'password'; icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash'; }
     }
 
     saveSettings() {
-        const settings = {
-            language: this.state.language,
-            apiKey: this.elements.geminiApiKey?.value || '',
-            fasterWhisperEnabled: this.state.fasterWhisperMode,
-            serverUrl: this.elements.ensembleServerUrl?.value || ''
-        };
-        localStorage.setItem('meetingAssistantSettings', JSON.stringify(settings));
+        const s = { language: this.state.language, secondaryLanguage: this.state.secondaryLanguage, apiKey: this.elements.geminiApiKey?.value || '', fasterWhisperEnabled: this.state.fasterWhisperMode, serverUrl: this.elements.ensembleServerUrl?.value || '' };
+        localStorage.setItem('meetingAssistantSettings', JSON.stringify(s));
     }
 
     loadSettings() {
         try {
             const saved = localStorage.getItem('meetingAssistantSettings');
             if (!saved) return;
-            const settings = JSON.parse(saved);
-            this.state.language = settings.language || 'ko-KR';
-            if (this.elements.geminiApiKey) {
-                this.elements.geminiApiKey.value = settings.apiKey || '';
-                this.geminiAPI.setApiKey(settings.apiKey || '');
-            }
-            this.state.fasterWhisperMode = settings.fasterWhisperEnabled || false;
+            const s = JSON.parse(saved);
+            this.state.language = s.language || 'ko-KR';
+            this.state.secondaryLanguage = s.secondaryLanguage || 'none';
+            if (this.elements.languageSelect) this.elements.languageSelect.value = this.state.language;
+            if (this.elements.secondaryLanguageSelect) this.elements.secondaryLanguageSelect.value = this.state.secondaryLanguage;
+            if (this.elements.geminiApiKey) { this.elements.geminiApiKey.value = s.apiKey || ''; this.geminiAPI.setApiKey(s.apiKey || ''); }
+            this.state.fasterWhisperMode = s.fasterWhisperEnabled || false;
             if (this.elements.enableEnsemble) this.elements.enableEnsemble.checked = this.state.fasterWhisperMode;
-            if (this.elements.ensembleServerUrl) this.elements.ensembleServerUrl.value = settings.serverUrl || 'http://localhost:8000';
-            this.speechManager.config.serverUrl = settings.serverUrl || 'http://localhost:8000';
+            if (this.elements.ensembleServerUrl) this.elements.ensembleServerUrl.value = s.serverUrl || 'http://localhost:8000';
+            this.speechManager.config.serverUrl = s.serverUrl || 'http://localhost:8000';
         } catch (e) {}
     }
 
-    showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span>${message}</span>`;
-        this.elements.toastContainer.appendChild(toast);
+    showToast(m, t = 'info') {
+        const toast = document.createElement('div'); toast.className = `toast toast-${t}`; toast.innerHTML = `<span>${m}</span>`;
+        this.elements.toastContainer?.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 10);
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
-    playAlertSound() { /* Logic to play sound */ }
-    escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+    escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
     scrollToBottom(el) { if (el) requestAnimationFrame(() => el.scrollTop = el.scrollHeight); }
 
-    // Faster-Whisper Logic
     setupFasterWhisperListeners() {
-        if (this.elements.enableEnsemble) {
-            this.elements.enableEnsemble.addEventListener('change', (e) => {
+        const el = this.elements;
+        if (el.enableEnsemble) {
+            el.enableEnsemble.addEventListener('change', (e) => {
                 this.state.fasterWhisperMode = e.target.checked;
                 this.updateFasterWhisperStatusUI();
-                this.updateEnsembleVisualizerVisibility();
+                if (el.ensembleVisualizer) el.ensembleVisualizer.style.display = e.target.checked ? 'block' : 'none';
                 this.saveSettings();
             });
         }
-        if (this.elements.testEnsembleConnection) {
-            this.elements.testEnsembleConnection.addEventListener('click', () => this.testFasterWhisperConnection());
+        if (el.testEnsembleConnection) el.testEnsembleConnection.addEventListener('click', () => this.testFasterWhisperConnection());
+        
+        // 프리셋 버튼 리스너 추가
+        document.querySelectorAll('.btn-preset').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const url = e.currentTarget.dataset.url;
+                if (el.ensembleServerUrl) {
+                    if (url === "") { el.ensembleServerUrl.focus(); }
+                    else el.ensembleServerUrl.value = url;
+                    this.speechManager.config.serverUrl = el.ensembleServerUrl.value;
+                    this.saveSettings();
+                }
+                document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
+        if (el.toggleServerHelp) {
+            el.toggleServerHelp.addEventListener('click', () => {
+                const content = el.serverHelpContent;
+                if (content) {
+                    const isVisible = content.style.display !== 'none';
+                    content.style.display = isVisible ? 'none' : 'block';
+                    const icon = el.toggleServerHelp.querySelector('i');
+                    if (icon) icon.className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                }
+            });
         }
     }
 
     async testFasterWhisperConnection() {
-        const url = this.elements.ensembleServerUrl.value.trim();
+        const url = this.elements.ensembleServerUrl?.value.trim();
+        if (!url) return;
         this.elements.testEnsembleConnection.disabled = true;
         try {
-            const response = await fetch(`${url}/health`);
-            if (response.ok) {
-                this.showToast('Faster-Whisper 서버 연결 성공!', 'success');
-                this.updateFasterWhisperStatusUI(true);
-            } else throw new Error();
-        } catch (e) {
-            this.showToast('Faster-Whisper 서버 연결 실패', 'error');
-            this.updateFasterWhisperStatusUI(false);
-        }
+            const res = await fetch(`${url}/health`);
+            if (res.ok) { this.showToast('서버 연결 성공!', 'success'); this.updateFasterWhisperStatusUI(true); } else throw new Error();
+        } catch (e) { this.showToast('연결 실패', 'error'); this.updateFasterWhisperStatusUI(false); }
         this.elements.testEnsembleConnection.disabled = false;
     }
 
     updateFasterWhisperStatusUI(connected = false) {
-        if (!this.elements.ensembleStatusText) return;
-        if (connected) this.elements.ensembleStatusText.textContent = 'Faster-Whisper 서버 연결됨';
-        else if (this.state.fasterWhisperMode) this.elements.ensembleStatusText.textContent = 'Faster-Whisper 모드 활성화 (연결 대기)';
-        else this.elements.ensembleStatusText.textContent = 'Faster-Whisper 미사용 (Web Speech API 사용 중)';
+        const el = this.elements.ensembleStatusText;
+        if (!el) return;
+        if (connected) el.textContent = 'Faster-Whisper 서버 연결됨';
+        else if (this.state.fasterWhisperMode) el.textContent = 'Faster-Whisper 모드 활성화 (대기)';
+        else el.textContent = 'Web Speech API 사용 중';
     }
 
-    updateEnsembleVisualizerVisibility() {
-        if (this.elements.ensembleVisualizer) this.elements.ensembleVisualizer.style.display = this.state.fasterWhisperMode ? 'block' : 'none';
+    setupLanguageListeners() {
+        this.updateLanguageStatusUI();
     }
 
-    updateRecordingStatus(status) {
-        const indicator = this.elements.statusIndicator;
-        if (!indicator) return;
-        const text = indicator.querySelector('.status-text');
-        indicator.className = `status-indicator ${status}`;
-        if (text) {
-            if (status === 'recording') text.textContent = '녹음 중';
-            else if (status === 'paused') text.textContent = '일시정지';
-            else text.textContent = '대기 중';
-        }
+    updateLanguageStatusUI() {
+        const el = this.elements.languageStatusText;
+        if (!el) return;
+        const langNames = { 'ko-KR': '한국어', 'en-US': 'English', 'ja-JP': '日本語', 'zh-CN': '中文', 'de-DE': 'Deutsch', 'fr-FR': 'Français', 'es-ES': 'Español' };
+        const p = langNames[this.state.language] || this.state.language;
+        const s = this.state.secondaryLanguage !== 'none' ? langNames[this.state.secondaryLanguage] || this.state.secondaryLanguage : null;
+        el.textContent = s ? `다중 언어: ${p} + ${s}` : `단일 언어: ${p}`;
     }
 
-    updateButtonStates(status) {
-        const { startBtn, stopBtn, pauseBtn } = this.elements;
-        if (status === 'recording') {
-            startBtn.disabled = true; stopBtn.disabled = false; pauseBtn.disabled = false;
-        } else if (status === 'idle') {
-            startBtn.disabled = false; stopBtn.disabled = true; pauseBtn.disabled = true;
-        }
-    }
-
-    initCorrectionIntervalUI() {
-        if (this.elements.correctionIntervalValue) this.elements.correctionIntervalValue.textContent = `${this.elements.correctionInterval.value}초`;
-    }
-
-    setupLanguageListeners() { /* ... */ }
-    updateLanguageStatusUI() { /* ... */ }
     setupMemoListeners() {
-        if (this.elements.memoToggle) this.elements.memoToggle.addEventListener('click', () => {
-            const isVisible = this.elements.memoContainer.style.display === 'flex';
-            this.elements.memoContainer.style.display = isVisible ? 'none' : 'flex';
+        const el = this.elements;
+        if (el.memoToggle) el.memoToggle.addEventListener('click', () => {
+            const isV = el.memoContainer?.style.display === 'flex';
+            if (el.memoContainer) el.memoContainer.style.display = isV ? 'none' : 'flex';
         });
-        if (this.elements.saveMemoBtn) this.elements.saveMemoBtn.addEventListener('click', () => {
-            const text = this.elements.userMemoInput.value.trim();
-            if (text) {
-                const item = document.createElement('div');
-                item.className = 'memo-item';
-                item.textContent = text;
-                this.elements.memoHistory.appendChild(item);
-                this.elements.userMemoInput.value = '';
+        if (el.memoClose) el.memoClose.addEventListener('click', () => { if (el.memoContainer) el.memoContainer.style.display = 'none'; });
+        if (el.saveMemoBtn) el.saveMemoBtn.addEventListener('click', () => {
+            const t = el.userMemoInput?.value.trim();
+            if (t) {
+                const m = document.createElement('div'); m.className = 'memo-item'; m.innerHTML = `<p class="memo-text">${this.escapeHtml(t)}</p>`;
+                el.memoHistory?.appendChild(m); el.userMemoInput.value = '';
             }
+        });
+        if (el.askAIBtn) el.askAIBtn.addEventListener('click', () => {
+            const t = el.userMemoInput?.value.trim();
+            if (t) { this.handleQuestionDetected(t); el.userMemoInput.value = ''; }
         });
     }
 
     updateContext() {
-        const context = this.elements.meetingContext?.value || '';
-        this.textCorrector.setMeetingContext(context);
-        this.geminiAPI.setContext(context);
+        const c = this.elements.meetingContext?.value || '';
+        this.textCorrector.setMeetingContext(c);
+        this.geminiAPI.setContext(c);
         this.updateContextStatusUI();
     }
 
     updateContextStatusUI() {
-        if (!this.elements.contextStatus) return;
-        const hasContext = this.elements.meetingContext?.value?.trim();
-        this.elements.contextStatus.innerHTML = hasContext ? '<i class="fas fa-check-circle"></i> 컨텍스트 설정됨' : '<i class="fas fa-info-circle"></i> 컨텍스트 미설정';
+        const el = this.elements.contextStatus;
+        if (!el) return;
+        const has = this.elements.meetingContext?.value?.trim();
+        el.innerHTML = has ? '<i class="fas fa-check-circle"></i> 컨텍스트 설정됨' : '<i class="fas fa-info-circle"></i> 컨텍스트 미설정';
     }
+
+    initCorrectionIntervalUI() { if (this.elements.correctionIntervalValue && this.elements.correctionInterval) this.elements.correctionIntervalValue.textContent = `${this.elements.correctionInterval.value}초`; }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new EnhancedMeetingApp();
-});
+document.addEventListener('DOMContentLoaded', () => { window.app = new EnhancedMeetingApp(); });
