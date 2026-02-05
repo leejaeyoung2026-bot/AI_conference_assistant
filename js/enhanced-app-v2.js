@@ -59,11 +59,13 @@ class EnhancedMeetingApp {
 
     startHeartbeat() {
         setInterval(() => {
+            if (!this.adminChannel) return;
+            
             this.adminChannel.postMessage({
                 type: 'HEARTBEAT',
                 data: {
-                    queueLength: this.geminiAPI.requestQueue?.length || 0,
-                    isProcessing: this.geminiAPI.isProcessingQueue,
+                    queueLength: this.geminiAPI?.requestQueue?.length || 0,
+                    isProcessing: this.geminiAPI?.isProcessingQueue || false,
                     transcriptCount: this.data.fullTranscript.length,
                     isRecording: this.state.isRecording
                 }
@@ -492,6 +494,54 @@ class EnhancedMeetingApp {
     }
 
     updateApiStatusWithState(s, m) { if (this.elements.apiStatus) { this.elements.apiStatus.className = `api-status ${s}`; this.elements.apiStatus.querySelector('.status-text').textContent = m; } }
+
+    updateRecordingStatus(status) {
+        const indicator = this.elements.statusIndicator;
+        const visualizer = this.elements.voiceVisualizer;
+        if (!indicator) return;
+
+        const statusText = indicator.querySelector('.status-text');
+        indicator.classList.remove('recording', 'paused', 'idle');
+
+        if (status === 'recording' || status === 'listening') {
+            indicator.classList.add('recording');
+            if (statusText) statusText.textContent = '녹음 중';
+            if (visualizer) visualizer.classList.add('active');
+        } else if (status === 'paused') {
+            indicator.classList.add('paused');
+            if (statusText) statusText.textContent = '일시정지';
+            if (visualizer) visualizer.classList.remove('active');
+        } else {
+            indicator.classList.add('idle');
+            if (statusText) statusText.textContent = '대기 중';
+            if (visualizer) visualizer.classList.remove('active');
+        }
+    }
+
+    updateButtonStates(status) {
+        const { startBtn, stopBtn, pauseBtn } = this.elements;
+        if (!startBtn || !stopBtn || !pauseBtn) return;
+
+        if (status === 'recording') {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            pauseBtn.disabled = false;
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i><span>일시정지</span>';
+            pauseBtn.className = 'btn btn-warning btn-large';
+        } else if (status === 'paused') {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            pauseBtn.disabled = false;
+            pauseBtn.innerHTML = '<i class="fas fa-play"></i><span>재개</span>';
+            pauseBtn.className = 'btn btn-success btn-large';
+        } else {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            pauseBtn.disabled = true;
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i><span>일시정지</span>';
+            pauseBtn.className = 'btn btn-warning btn-large';
+        }
+    }
 
     openSettings() { this.elements.settingsModal?.classList.add('active'); }
     closeSettings() { this.elements.settingsModal?.classList.remove('active'); this.saveSettings(); }
