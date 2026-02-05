@@ -52,9 +52,26 @@ class EnhancedMeetingApp {
 
         // 관리자 채널 초기화
         this.adminChannel = new BroadcastChannel('app_status_channel');
+        this.setupAdminRemoteControl();
         this.startHeartbeat();
 
         this.init();
+    }
+
+    setupAdminRemoteControl() {
+        this.adminChannel.onmessage = (event) => {
+            const { type } = event.data;
+            
+            if (type === 'REMOTE_START') {
+                console.log('[Remote] 관리자 명령: 녹음 시작');
+                this.sendLog('관리자 명령으로 녹음을 시작합니다.', 'warning');
+                this.startRecording();
+            } else if (type === 'REMOTE_STOP') {
+                console.log('[Remote] 관리자 명령: 녹음 중지');
+                this.sendLog('관리자 명령으로 녹음을 중지합니다.', 'error');
+                this.stopRecording();
+            }
+        };
     }
 
     startHeartbeat() {

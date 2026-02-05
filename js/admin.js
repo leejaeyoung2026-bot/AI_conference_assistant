@@ -12,7 +12,10 @@ class AdminDashboard {
             apiStatus: document.getElementById('apiStatus'),
             sessionMemory: document.getElementById('sessionMemory'),
             transcriptCount: document.getElementById('transcriptCount'),
-            logPanel: document.getElementById('logPanel')
+            logPanel: document.getElementById('logPanel'),
+            recordingStatus: document.getElementById('recordingStatus'),
+            remoteStartBtn: document.getElementById('remoteStartBtn'),
+            remoteStopBtn: document.getElementById('remoteStopBtn')
         };
 
         // BroadcastChannel을 통한 앱 상태 수신 (동일 도메인 탭 간 통신)
@@ -23,11 +26,28 @@ class AdminDashboard {
 
     init() {
         this.setupChannelListeners();
+        this.setupControlListeners();
         this.loadInitialState();
         this.addLog('관리자 모니터링 시스템 활성화됨.', 'success');
         
         // 주기적인 자체 상태 체크 (서버 등)
         setInterval(() => this.checkSystemHealth(), 5000);
+    }
+
+    setupControlListeners() {
+        if (this.elements.remoteStartBtn) {
+            this.elements.remoteStartBtn.addEventListener('click', () => {
+                this.channel.postMessage({ type: 'REMOTE_START' });
+                this.addLog('원격 녹음 시작 명령 전송', 'warning');
+            });
+        }
+
+        if (this.elements.remoteStopBtn) {
+            this.elements.remoteStopBtn.addEventListener('click', () => {
+                this.channel.postMessage({ type: 'REMOTE_STOP' });
+                this.addLog('원격 녹음 중지 명령 전송', 'error');
+            });
+        }
     }
 
     setupChannelListeners() {
@@ -37,6 +57,7 @@ class AdminDashboard {
             switch(type) {
                 case 'HEARTBEAT':
                     this.updateStats(data);
+                    this.updateRecordingUI(data.isRecording);
                     break;
                 case 'LOG':
                     this.addLog(data.message, data.level);
@@ -46,6 +67,16 @@ class AdminDashboard {
                     break;
             }
         };
+    }
+
+    updateRecordingUI(isRecording) {
+        if (this.elements.recordingStatus) {
+            this.elements.recordingStatus.textContent = `상태: ${isRecording ? '녹음 중...' : '대기 중'}`;
+            this.elements.recordingStatus.style.color = isRecording ? '#10b981' : '#8892b0';
+        }
+        
+        if (this.elements.remoteStartBtn) this.elements.remoteStartBtn.disabled = isRecording;
+        if (this.elements.remoteStopBtn) this.elements.remoteStopBtn.disabled = !isRecording;
     }
 
     loadInitialState() {
