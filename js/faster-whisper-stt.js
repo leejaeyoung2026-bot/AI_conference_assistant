@@ -13,7 +13,7 @@ class FasterWhisperSTTSystem {
         // 기본 설정
         this.config = {
             serverUrl: options.serverUrl || 'http://localhost:8000',
-            chunkDuration: options.chunkDuration || 3000, // 3초 단위 권장
+            chunkDuration: options.chunkDuration || 5000, // 5초 단위로 전송하여 문맥 확보
             debug: options.debug || false
         };
 
@@ -98,9 +98,9 @@ class FasterWhisperSTTSystem {
                 this.audioChunks.push(event.data);
                 this.allRecordedChunks.push(event.data);
                 
-                // 약 30KB 이상이면 서버로 전송 시도
+                // 약 100KB 이상 쌓였을 때 전송 (약 6-7초 분량)
                 const totalSize = this.audioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-                if (totalSize >= 30000) {
+                if (totalSize >= 100000) {
                     await this.processAudioChunk();
                 }
             }
@@ -145,7 +145,7 @@ class FasterWhisperSTTSystem {
 
             this.isRecording = true;
             this.isPaused = false;
-            this.mediaRecorder.start(1000);
+            this.mediaRecorder.start(this.config.chunkDuration); 
             
             return true;
         } catch (error) {
