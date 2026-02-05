@@ -50,7 +50,32 @@ class EnhancedMeetingApp {
             userMemos: []
         };
 
+        // 관리자 채널 초기화
+        this.adminChannel = new BroadcastChannel('app_status_channel');
+        this.startHeartbeat();
+
         this.init();
+    }
+
+    startHeartbeat() {
+        setInterval(() => {
+            this.adminChannel.postMessage({
+                type: 'HEARTBEAT',
+                data: {
+                    queueLength: this.geminiAPI.requestQueue?.length || 0,
+                    isProcessing: this.geminiAPI.isProcessingQueue,
+                    transcriptCount: this.data.fullTranscript.length,
+                    isRecording: this.state.isRecording
+                }
+            });
+        }, 2000);
+    }
+
+    sendLog(message, level = 'info') {
+        this.adminChannel.postMessage({
+            type: 'LOG',
+            data: { message, level }
+        });
     }
 
     initializeElements() {
