@@ -1,295 +1,174 @@
 /**
- * Faster-Whisper STT System v1.0
- * OpenAI Whisper 최적화 버전인 Faster-Whisper 전용 STT 시스템
- * 
- * 주요 특징:
- * 1. 단일 고성능 모델 (Faster-Whisper) 기반 실시간 전사
- * 2. WebSocket을 통한 실시간 오디오 스트리밍 및 결과 수신
- * 3. 발화자 정보 및 타임스탬프 관리
+ * Faster-Whisper STT System v1.1
+ * 매 청크마다 유효한 헤더를 포함하여 서버 전송 (Invalid Data 오류 해결)
  */
 
 class FasterWhisperSTTSystem {
     constructor(options = {}) {
-        // 기본 설정
         this.config = {
             serverUrl: options.serverUrl || 'http://localhost:8000',
-            chunkDuration: options.chunkDuration || 5000, // 5초 단위로 전송하여 문맥 확보
+            chunkDuration: options.chunkDuration || 5000, // 5초 단위
             debug: options.debug || false
         };
 
-        // 상태 관리
         this.isRecording = false;
-        this.isPaused = false;
         this.mediaRecorder = null;
-        this.audioChunks = [];
-        this.allRecordedChunks = [];
         this.stream = null;
+        this.webSocketConnection = null;
+        this.serverConnected = false;
         
+        // 발화자 정보
+        this.currentSpeaker = 'primary';
+        this.primarySpeakerId = `speaker_${Date.now()}`;
+
         // 콜백
         this.onTranscriptCallback = null;
-        this.onResultCallback = null;
         this.onErrorCallback = null;
         this.onStatusChangeCallback = null;
-        this.onSpeakerChangeCallback = null;
 
-        // 발화자 추적
-        this.currentSpeaker = 'primary';
-        this.primarySpeakerId = null;
-
-        // 서버 연결 상태
-        this.serverConnected = false;
-        this.webSocketConnection = null;
-
-        this.log('FasterWhisperSTTSystem 초기화 완료');
+        this.log('FasterWhisperSTTSystem v1.1 초기화');
     }
 
     log(message, data = null) {
-        if (this.config.debug) {
-            console.log(`[FasterWhisperSTT] ${message}`, data || '');
-        }
+        if (this.config.debug) console.log(`[FasterWhisperSTT] ${message}`, data || '');
     }
 
-    /**
-     * 오디오 초기화
-     */
     async initializeAudio() {
         try {
             this.stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    channelCount: 1,
-                    sampleRate: 16000,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
+                audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true }
             });
-
-            // MediaRecorder 설정
-            const mimeType = this.getSupportedMimeType();
-            this.mediaRecorder = new MediaRecorder(this.stream, {
-                mimeType: mimeType,
-                audioBitsPerSecond: 128000
-            });
-
-            this.setupMediaRecorderEvents();
-            
-            this.log('오디오 초기화 완료', { mimeType });
             return true;
         } catch (error) {
-            this.log('오디오 초기화 실패', error);
-            if (this.onErrorCallback) {
-                this.onErrorCallback('audio-init-failed', '마이크 접근 권한이 필요합니다.');
-            }
+            this.log('마이크 접근 실패', error);
+            if (this.onErrorCallback) this.onErrorCallback('audio-init-failed', '마이크 권한이 필요합니다.');
             return false;
         }
     }
 
-    getSupportedMimeType() {
-        const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/wav'];
-        for (const type of types) {
-            if (MediaRecorder.isTypeSupported(type)) return type;
-        }
-        return 'audio/webm';
-    }
-
-    setupMediaRecorderEvents() {
-        this.mediaRecorder.ondataavailable = async (event) => {
-            if (event.data.size > 0) {
-                this.audioChunks.push(event.data);
-                this.allRecordedChunks.push(event.data);
-                
-                // 약 100KB 이상 쌓였을 때 전송 (약 6-7초 분량)
-                const totalSize = this.audioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-                if (totalSize >= 100000) {
-                    await this.processAudioChunk();
-                }
-            }
-        };
-
-        this.mediaRecorder.onstart = () => {
-            if (this.onStatusChangeCallback) this.onStatusChangeCallback('recording');
-        };
-
-        this.mediaRecorder.onstop = () => {
-            if (this.onStatusChangeCallback) this.onStatusChangeCallback('stopped');
-        };
-    }
-
-    /**
-     * 녹음 시작
-     */
     async start() {
         if (this.isRecording) return false;
-
-        if (!this.mediaRecorder) {
-            const initialized = await this.initializeAudio();
-            if (!initialized) return false;
+        
+        if (!this.stream) {
+            const ok = await this.initializeAudio();
+            if (!ok) return false;
         }
 
         try {
-            this.audioChunks = [];
-            
-            // 서버 연결 및 대기
             await this.connectToServer();
             
-            // 연결이 열릴 때까지 최대 3초 대기
+            // WebSocket이 열릴 때까지 대기
             let attempts = 0;
-            while (this.webSocketConnection?.readyState !== WebSocket.OPEN && attempts < 30) {
+            while (this.webSocketConnection?.readyState !== WebSocket.OPEN && attempts < 20) {
                 await new Promise(r => setTimeout(r, 100));
                 attempts++;
             }
 
-            if (this.webSocketConnection?.readyState !== WebSocket.OPEN) {
-                throw new Error('서버 연결 시간 초과');
-            }
+            if (!this.serverConnected) throw new Error('서버 연결 실패');
 
             this.isRecording = true;
-            this.isPaused = false;
-            this.mediaRecorder.start(this.config.chunkDuration); 
-            
+            this.startChunkRecording();
             return true;
         } catch (error) {
-            this.log('녹음 시작 실패', error);
             this.isRecording = false;
-            this.disconnectFromServer();
             return false;
         }
     }
 
     /**
-     * 녹음 중지
+     * 핵심 로직: 일정 시간마다 녹음기를 껐다 켜서 독립적인 오디오 파일(청크) 생성
      */
-    stop() {
+    startChunkRecording() {
         if (!this.isRecording) return;
 
-        this.isRecording = false;
-        this.isPaused = false;
+        const mimeType = this.getSupportedMimeType();
+        this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
+        const chunks = [];
+
+        this.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        this.mediaRecorder.onstop = async () => {
+            if (chunks.length > 0 && this.serverConnected) {
+                const blob = new Blob(chunks, { type: mimeType });
+                await this.sendAudioToServer(blob);
+            }
+            // 즉시 다음 청크 녹음 시작 (연속성 유지)
+            if (this.isRecording) this.startChunkRecording();
+        };
+
+        // 지정된 시간(ms) 후 녹음 중단 -> onstop 트리거 -> 전송 및 재시작
+        this.mediaRecorder.start();
+        setTimeout(() => {
+            if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                this.mediaRecorder.stop();
+            }
+        }, this.config.chunkDuration);
+    }
+
+    async sendAudioToServer(blob) {
+        if (!this.webSocketConnection || this.webSocketConnection.readyState !== WebSocket.OPEN) return;
+
+        const arrayBuffer = await blob.arrayBuffer();
         
+        // 1. 메타데이터 전송
+        this.webSocketConnection.send(JSON.stringify({
+            type: 'audio_metadata',
+            speaker: { type: this.currentSpeaker, isPrimary: this.currentSpeaker === 'primary', id: this.primarySpeakerId },
+            timestamp: Date.now()
+        }));
+
+        // 2. 바이너리 데이터 전송
+        this.webSocketConnection.send(arrayBuffer);
+        this.log(`청크 전송 완료 (${(blob.size / 1024).toFixed(1)} KB)`);
+    }
+
+    async connectToServer() {
+        const wsUrl = this.config.serverUrl.replace('http', 'ws') + '/ws/stt';
+        this.webSocketConnection = new WebSocket(wsUrl);
+
+        this.webSocketConnection.onopen = () => {
+            this.serverConnected = true;
+            if (this.onStatusChangeCallback) this.onStatusChangeCallback('recording');
+        };
+
+        this.webSocketConnection.onmessage = (e) => {
+            const message = JSON.parse(e.data);
+            if (message.type === 'stt_result' && this.onTranscriptCallback) {
+                this.onTranscriptCallback({
+                    text: message.data.finalText,
+                    isFinal: true,
+                    timestamp: new Date()
+                });
+            }
+        };
+
+        this.webSocketConnection.onclose = () => {
+            this.serverConnected = false;
+            if (this.isRecording) this.connectToServer(); // 비정상 종료 시 재연결 시도
+        };
+    }
+
+    stop() {
+        this.isRecording = false;
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
         }
-
-        if (this.audioChunks.length > 0) {
-            this.processAudioChunk();
-        }
-
-        this.disconnectFromServer();
-    }
-
-    /**
-     * 서버 연결
-     */
-    async connectToServer() {
-        try {
-            const wsUrl = this.config.serverUrl.replace('http', 'ws') + '/ws/stt';
-            this.webSocketConnection = new WebSocket(wsUrl);
-
-            this.webSocketConnection.onopen = () => {
-                this.serverConnected = true;
-                this.log('서버 연결 성공');
-                if (this.onStatusChangeCallback) this.onStatusChangeCallback('server-connected');
-            };
-
-            this.webSocketConnection.onmessage = (event) => {
-                this.handleServerMessage(JSON.parse(event.data));
-            };
-
-            this.webSocketConnection.onerror = (error) => {
-                this.log('WebSocket 오류', error);
-                this.serverConnected = false;
-            };
-
-            this.webSocketConnection.onclose = () => {
-                this.serverConnected = false;
-                this.log('서버 연결 종료');
-            };
-
-        } catch (error) {
-            this.log('서버 연결 실패', error);
-            this.serverConnected = false;
-        }
-    }
-
-    disconnectFromServer() {
         if (this.webSocketConnection) {
             this.webSocketConnection.close();
-            this.webSocketConnection = null;
-        }
-        this.serverConnected = false;
-    }
-
-    async processAudioChunk() {
-        if (this.audioChunks.length === 0 || !this.serverConnected) return;
-
-        const audioBlob = new Blob(this.audioChunks, { 
-            type: this.mediaRecorder?.mimeType || 'audio/webm' 
-        });
-        this.audioChunks = [];
-
-        if (this.webSocketConnection?.readyState === WebSocket.OPEN) {
-            const arrayBuffer = await audioBlob.arrayBuffer();
-            
-            // 메타데이터 전송
-            this.webSocketConnection.send(JSON.stringify({
-                type: 'audio_metadata',
-                speaker: this.getCurrentSpeakerInfo(),
-                timestamp: Date.now()
-            }));
-
-            // 오디오 데이터 전송
-            this.webSocketConnection.send(arrayBuffer);
         }
     }
 
-    handleServerMessage(message) {
-        if (message.type === 'ensemble_result' || message.type === 'stt_result') {
-            const data = message.data;
-            const result = {
-                text: data.fasterWhisper?.text || data.finalText,
-                confidence: data.fasterWhisper?.confidence || data.confidence,
-                speaker: data.speaker,
-                timestamp: new Date()
-            };
-
-            if (this.onResultCallback) this.onResultCallback(result);
-            if (this.onTranscriptCallback) {
-                this.onTranscriptCallback({
-                    text: result.text,
-                    speaker: result.speaker,
-                    timestamp: result.timestamp,
-                    isFinal: true
-                });
-            }
-        } else if (message.type === 'error') {
-            if (this.onErrorCallback) this.onErrorCallback(message.code, message.message);
-        }
+    getSupportedMimeType() {
+        const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+        for (const type of types) if (MediaRecorder.isTypeSupported(type)) return type;
+        return 'audio/webm';
     }
 
-    getCurrentSpeakerInfo() {
-        return {
-            type: this.currentSpeaker,
-            isPrimary: this.currentSpeaker === 'primary',
-            id: this.primarySpeakerId || 'unknown'
-        };
-    }
-
-    setSpeaker(speakerType) {
-        this.currentSpeaker = speakerType;
-        if (this.onSpeakerChangeCallback) this.onSpeakerChangeCallback(speakerType);
-    }
-
-    onTranscript(callback) { this.onTranscriptCallback = callback; }
-    onResult(callback) { this.onResultCallback = callback; }
-    onError(callback) { this.onErrorCallback = callback; }
-    onStatusChange(callback) { this.onStatusChangeCallback = callback; }
-    
-    getStatus() {
-        return {
-            isRecording: this.isRecording,
-            serverConnected: this.serverConnected,
-            currentSpeaker: this.currentSpeaker
-        };
-    }
+    onTranscript(cb) { this.onTranscriptCallback = cb; }
+    onError(cb) { this.onErrorCallback = cb; }
+    onStatusChange(cb) { this.onStatusChangeCallback = cb; }
 }
 
 window.FasterWhisperSTTSystem = FasterWhisperSTTSystem;
