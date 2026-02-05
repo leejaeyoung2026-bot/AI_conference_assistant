@@ -134,7 +134,7 @@ class EnhancedMeetingApp {
         this.loadSettings();
         this.updateApiStatusUI();
         this.updateContextStatusUI();
-        console.log('[EnhancedMeetingApp] v5.2 Web Standard Edition Ready');
+        console.log('[VORA] v5.2 Web Standard Edition Ready');
     }
 
     setupEventListeners() {
