@@ -16,6 +16,12 @@ class SpeechRecognitionManager {
         this.onErrorCallback = null;
         this.language = 'ko-KR';
 
+        // 설정
+        this.config = {
+            noiseSuppression: true,
+            echoCancellation: true
+        };
+
         // N-Best 설정
         this.maxAlternatives = 5;           // 최대 후보 수
         this.enableNBest = true;            // N-Best 활성화 여부
@@ -284,8 +290,8 @@ class SpeechRecognitionManager {
             // 마이크 권한 요청 (getUserMedia)
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
+                    echoCancellation: this.config.echoCancellation,
+                    noiseSuppression: this.config.noiseSuppression,
                     autoGainControl: true
                 } 
             });

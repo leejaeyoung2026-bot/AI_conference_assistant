@@ -73,8 +73,8 @@ class AudioRecorder {
                 audio: {
                     channelCount: this.config.channels,
                     sampleRate: this.config.sampleRate,
-                    echoCancellation: true,
-                    noiseSuppression: true,
+                    echoCancellation: this.config.echoCancellation !== undefined ? this.config.echoCancellation : true,
+                    noiseSuppression: this.config.noiseSuppression !== undefined ? this.config.noiseSuppression : true,
                     autoGainControl: true
                 }
             });

@@ -32,6 +32,8 @@ class EnhancedMeetingApp {
             enableCorrection: true,
             enableAutoSummary: true,
             enableSpeakerDetection: true,
+            enableNoiseSuppression: true,
+            enableEchoCancellation: true,
             chatMode: 'question' // 기본 모드: 질문
         };
 
@@ -124,6 +126,8 @@ class EnhancedMeetingApp {
             contextStatus: document.getElementById('contextStatus'),
             enableAutoSummary: document.getElementById('enableAutoSummary'),
             enableSpeakerDetection: document.getElementById('enableSpeakerDetection'),
+            enableNoiseSuppression: document.getElementById('enableNoiseSuppression'),
+            enableEchoCancellation: document.getElementById('enableEchoCancellation'),
             toastContainer: document.getElementById('toastContainer')
         };
     }
@@ -201,6 +205,22 @@ class EnhancedMeetingApp {
             el.priorityTerms.addEventListener('input', () => {
                 this.saveSettings();
                 this.updateContextStatusUI();
+            });
+        }
+
+        // 오디오 처리 설정 리스너
+        if (el.enableNoiseSuppression) {
+            el.enableNoiseSuppression.addEventListener('change', (e) => {
+                this.state.enableNoiseSuppression = e.target.checked;
+                this.saveSettings();
+                this.showToast(`노이즈 억제가 ${e.target.checked ? '활성화' : '비활성화'}되었습니다.`, 'info');
+            });
+        }
+        if (el.enableEchoCancellation) {
+            el.enableEchoCancellation.addEventListener('change', (e) => {
+                this.state.enableEchoCancellation = e.target.checked;
+                this.saveSettings();
+                this.showToast(`에코 캔슬링이 ${e.target.checked ? '활성화' : '비활성화'}되었습니다.`, 'info');
             });
         }
     }
@@ -483,9 +503,21 @@ class EnhancedMeetingApp {
             language: this.state.language, 
             apiKey: this.elements.geminiApiKey?.value || '',
             meetingContext: this.elements.meetingContext?.value || '',
-            priorityTerms: this.elements.priorityTerms?.value || ''
+            priorityTerms: this.elements.priorityTerms?.value || '',
+            enableNoiseSuppression: this.state.enableNoiseSuppression,
+            enableEchoCancellation: this.state.enableEchoCancellation
         };
         localStorage.setItem('meetingAssistantSettings', JSON.stringify(s));
+
+        // 가용한 경우 즉시 적용
+        if (this.speechManager.config) {
+            this.speechManager.config.noiseSuppression = this.state.enableNoiseSuppression;
+            this.speechManager.config.echoCancellation = this.state.enableEchoCancellation;
+        }
+        if (this.audioRecorder.config) {
+            this.audioRecorder.config.noiseSuppression = this.state.enableNoiseSuppression;
+            this.audioRecorder.config.echoCancellation = this.state.enableEchoCancellation;
+        }
     }
 
     loadSettings() {
@@ -494,6 +526,22 @@ class EnhancedMeetingApp {
         if (this.elements.geminiApiKey) this.elements.geminiApiKey.value = saved.apiKey || '';
         if (this.elements.meetingContext) this.elements.meetingContext.value = saved.meetingContext || '';
         if (this.elements.priorityTerms) this.elements.priorityTerms.value = saved.priorityTerms || '';
+        
+        this.state.enableNoiseSuppression = saved.enableNoiseSuppression !== undefined ? saved.enableNoiseSuppression : true;
+        this.state.enableEchoCancellation = saved.enableEchoCancellation !== undefined ? saved.enableEchoCancellation : true;
+
+        if (this.elements.enableNoiseSuppression) this.elements.enableNoiseSuppression.checked = this.state.enableNoiseSuppression;
+        if (this.elements.enableEchoCancellation) this.elements.enableEchoCancellation.checked = this.state.enableEchoCancellation;
+
+        // 매니저들에 설정 적용
+        if (this.speechManager.config) {
+            this.speechManager.config.noiseSuppression = this.state.enableNoiseSuppression;
+            this.speechManager.config.echoCancellation = this.state.enableEchoCancellation;
+        }
+        if (this.audioRecorder.config) {
+            this.audioRecorder.config.noiseSuppression = this.state.enableNoiseSuppression;
+            this.audioRecorder.config.echoCancellation = this.state.enableEchoCancellation;
+        }
         
         this.geminiAPI.setApiKey(saved.apiKey || '');
         this.updateApiStatusUI();
