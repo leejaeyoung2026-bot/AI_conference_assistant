@@ -239,12 +239,32 @@ ${summaryContext}
     }
 
     // 회의 요약 생성 - 백그라운드에서 실행되도록 개선
-    generateMeetingSummary() {
-        if (!this.isConfigured || this.fullMeetingTranscript.length < 1) {
+    generateMeetingSummary(customText = null) {
+        if (!this.isConfigured) {
             return Promise.resolve(null);
         }
 
         const now = Date.now();
+        
+        // 커스텀 텍스트가 전달된 경우 (강제 요약)
+        if (customText) {
+            const summaryPrompt = `다음은 회의 내용입니다. 핵심 내용을 3-5개의 요점으로 간결하게 요약해주세요.
+이전 요약이 있다면 그것도 고려하여 통합 요약을 생성하세요.
+
+${this.meetingSummary ? `[이전 요약]\n${this.meetingSummary}\n\n` : ''}[회의 내용]
+${customText}
+
+요약 (불릿 포인트로):`;
+
+            this.generateSummaryAsync(summaryPrompt, now);
+            return Promise.resolve(this.meetingSummary);
+        }
+
+        // 일반 자동 요약 로직
+        if (this.fullMeetingTranscript.length < 1) {
+            return Promise.resolve(null);
+        }
+
         if (now - this.lastSummaryTime < this.summaryInterval / 2) {
             return Promise.resolve(this.meetingSummary); // 최근에 요약을 생성했으면 스킵
         }

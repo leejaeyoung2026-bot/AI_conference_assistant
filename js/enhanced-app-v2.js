@@ -254,7 +254,7 @@ class EnhancedMeetingApp {
             this.startTimer();
             this.updateButtonStates('recording');
             this.sendLog('녹음 시작', 'success');
-            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) this.startAutoSummaryTimer();
+            if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) this.geminiAPI.startSummaryTimer();
         } catch (e) {
             this.showToast(e.message, 'error');
         }
@@ -265,7 +265,7 @@ class EnhancedMeetingApp {
         this.speechManager.stop();
         this.audioRecorder.stop();
         this.stopTimer();
-        this.stopAutoSummaryTimer();
+        this.geminiAPI.stopSummaryTimer();
         this.stopVisualizer();
         this.state.isRecording = false;
         this.updateButtonStates('idle');
@@ -367,6 +367,10 @@ class EnhancedMeetingApp {
         };
 
         this.data.fullTranscript.push(finalRes);
+        
+        // Gemini API에도 내용 추가 (요약용)
+        this.geminiAPI.addToMeetingTranscript(result.text, finalRes.timestamp);
+
         this.addTranscriptToHistory(finalRes);
         this.updateCurrentSpeech('');
         this.updateStats();
@@ -449,16 +453,6 @@ class EnhancedMeetingApp {
         const s = Math.floor(elapsed / 1000);
         this.elements.timer.textContent = new Date(s * 1000).toISOString().substr(11, 8);
     }
-
-    startAutoSummaryTimer() {
-        this.state.autoSummaryTimer = setInterval(async () => {
-            if (this.data.fullTranscript.length > 5) {
-                const text = this.data.fullTranscript.slice(-10).map(t => t.text).join('\n');
-                await this.geminiAPI.generateMeetingSummary(text);
-            }
-        }, 60000);
-    }
-    stopAutoSummaryTimer() { clearInterval(this.state.autoSummaryTimer); }
 
     updateRecordingStatus(s) {
         const el = this.elements.statusIndicator;
