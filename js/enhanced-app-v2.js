@@ -180,8 +180,10 @@ class EnhancedMeetingApp {
             if (!ok) throw new Error('음성 인식을 시작할 수 없습니다.');
             
             await this.audioRecorder.start();
-            if (this.state.enableSpeakerDetection && this.audioRecorder.stream) {
+            if (this.audioRecorder.stream) {
+                // SpeakerDetector 초기화 (비활성화 상태여도 시각화를 위해 analyser는 필요)
                 this.speakerDetector.initializeAnalyser(this.audioRecorder.stream);
+                this.startVisualizer();
             }
 
             this.state.isRecording = true;
@@ -201,11 +203,47 @@ class EnhancedMeetingApp {
         this.audioRecorder.stop();
         this.stopTimer();
         this.stopAutoSummaryTimer();
+        this.stopVisualizer();
         this.state.isRecording = false;
         this.updateButtonStates('idle');
         this.updateRecordingStatus('stopped');
         this.sendLog('녹음 중지', 'info');
         if (this.data.fullTranscript.length > 0) this.generateFinalSummary();
+    }
+
+    startVisualizer() {
+        this.stopVisualizer();
+        const bars = this.elements.voiceVisualizer?.querySelectorAll('.visualizer-bars span');
+        if (!bars || bars.length === 0) return;
+
+        const animate = () => {
+            if (!this.state.isRecording || this.state.isPaused) return;
+
+            const features = this.speakerDetector.analyzeAudio();
+            if (features) {
+                const vol = features.volume; // 0.0 ~ 1.0 (실제로는 작음)
+                // 감도 조절
+                const scale = Math.min(Math.max(vol * 500, 4), 32); 
+                
+                bars.forEach((bar, i) => {
+                    // 각 바마다 약간의 랜덤성과 시간차를 주어 자연스럽게 보이게 함
+                    const individualScale = scale * (0.8 + Math.random() * 0.4);
+                    bar.style.height = `${individualScale}px`;
+                });
+            }
+            this.state.visualizerFrame = requestAnimationFrame(animate);
+        };
+        this.state.visualizerFrame = requestAnimationFrame(animate);
+    }
+
+    stopVisualizer() {
+        if (this.state.visualizerFrame) {
+            cancelAnimationFrame(this.state.visualizerFrame);
+            this.state.visualizerFrame = null;
+        }
+        // 바 높이 초기화
+        const bars = this.elements.voiceVisualizer?.querySelectorAll('.visualizer-bars span');
+        if (bars) bars.forEach(bar => bar.style.height = '4px');
     }
 
     togglePause() {
@@ -332,7 +370,26 @@ class EnhancedMeetingApp {
 
     updateRecordingStatus(s) {
         const el = this.elements.statusIndicator;
-        if (el) { el.className = `status-indicator ${s}`; el.querySelector('.status-text').textContent = s === 'recording' ? '녹음 중' : '대기 중'; }
+        if (!el) return;
+
+        // active 상태 정의 (녹음 중임을 나타내는 모든 상태)
+        const isActive = ['listening', 'sound-detected', 'sound-ended', 'recording'].includes(s);
+        
+        el.className = `status-indicator ${isActive ? 'recording' : s}`;
+        
+        const statusText = el.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = isActive ? '녹음 중' : (s === 'paused' ? '일시정지' : '대기 중');
+        }
+
+        // 시각화 애니메이션 동기화
+        if (this.elements.voiceVisualizer) {
+            if (isActive) {
+                this.elements.voiceVisualizer.classList.add('active');
+            } else {
+                this.elements.voiceVisualizer.classList.remove('active');
+            }
+        }
     }
 
     updateButtonStates(s) {
