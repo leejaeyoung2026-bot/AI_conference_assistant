@@ -99,6 +99,9 @@ class EnhancedMeetingApp {
             transcriptHistory: document.getElementById('transcriptHistory'),
             questionsList: document.getElementById('questionsList'),
             aiAnswersList: document.getElementById('aiAnswersList'),
+            chatHistory: document.getElementById('chatHistory'),
+            chatInput: document.getElementById('chatInput'),
+            chatSendBtn: document.getElementById('chatSendBtn'),
             meetingSummary: document.getElementById('meetingSummary'),
             questionCount: document.getElementById('questionCount'),
             answerCount: document.getElementById('answerCount'),
@@ -149,6 +152,12 @@ class EnhancedMeetingApp {
         if (el.settingsBtn) el.settingsBtn.addEventListener('click', () => this.openSettings());
         if (el.closeModal) el.closeModal.addEventListener('click', () => this.closeSettings());
         if (el.toggleApiKeyVisibility) el.toggleApiKeyVisibility.addEventListener('click', () => this.toggleApiKeyVisibility());
+
+        // AI 채팅 리스너
+        if (el.chatSendBtn) el.chatSendBtn.addEventListener('click', () => this.handleChatSubmit());
+        if (el.chatInput) el.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleChatSubmit();
+        });
 
         // 설정 변경 리스너
         if (el.languageSelect) el.languageSelect.addEventListener('change', (e) => {
@@ -454,6 +463,52 @@ class EnhancedMeetingApp {
 
     escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
     scrollToBottom(el) { if (el) el.scrollTop = el.scrollHeight; }
+
+    async handleChatSubmit() {
+        const input = this.elements.chatInput;
+        const text = input.value.trim();
+        if (!text) return;
+
+        if (!this.geminiAPI.isConfigured) {
+            this.showToast('API 키를 먼저 설정해 주세요.', 'warning');
+            this.openSettings();
+            return;
+        }
+
+        // 사용자 메시지 추가
+        this.addChatMessage('user', text);
+        input.value = '';
+
+        try {
+            // 회의 컨텍스트 포함하여 질문
+            const context = this.data.fullTranscript.slice(-20).map(t => t.text).join('\n');
+            const response = await this.geminiAPI.generateAnswer(text, context);
+            
+            if (response && response.answer) {
+                this.addChatMessage('ai', response.answer);
+            } else {
+                this.addChatMessage('ai', '죄송합니다. 답변을 생성하지 못했습니다.');
+            }
+        } catch (e) {
+            this.addChatMessage('ai', `오류 발생: ${e.message}`);
+        }
+    }
+
+    addChatMessage(role, text) {
+        const chatHist = this.elements.chatHistory;
+        if (!chatHist) return;
+
+        // 첫 메시지 시 비어있는 상태 제거
+        if (chatHist.querySelector('.empty-state')) {
+            chatHist.innerHTML = '';
+        }
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role}`;
+        msgDiv.innerHTML = `<p>${this.escapeHtml(text)}</p>`;
+        chatHist.appendChild(msgDiv);
+        this.scrollToBottom(chatHist);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => { window.app = new EnhancedMeetingApp(); });
