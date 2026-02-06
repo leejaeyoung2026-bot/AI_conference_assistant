@@ -31,7 +31,8 @@ class EnhancedMeetingApp {
             autoAnswer: true,
             enableCorrection: true,
             enableAutoSummary: true,
-            enableSpeakerDetection: true
+            enableSpeakerDetection: true,
+            chatMode: 'question' // 기본 모드: 질문
         };
 
         // 데이터
@@ -159,17 +160,49 @@ class EnhancedMeetingApp {
             if (e.key === 'Enter') this.handleChatSubmit();
         });
 
+        // 채팅 모드 선택 리스너
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.state.chatMode = btn.dataset.mode;
+                
+                // 플레이스홀더 변경
+                if (el.chatInput) {
+                    el.chatInput.placeholder = this.state.chatMode === 'question' 
+                        ? '질문을 입력하세요...' 
+                        : '중요 메모를 입력하세요...';
+                }
+            });
+        });
+
         // 설정 변경 리스너
         if (el.languageSelect) el.languageSelect.addEventListener('change', (e) => {
             this.state.language = e.target.value;
             this.speechManager.setLanguage(this.state.language);
             this.saveSettings();
         });
-        if (el.geminiApiKey) el.geminiApiKey.addEventListener('change', () => {
-            this.geminiAPI.setApiKey(el.geminiApiKey.value.trim());
-            this.saveSettings();
-            this.updateApiStatusUI();
-        });
+        if (el.geminiApiKey) {
+            el.geminiApiKey.addEventListener('input', () => {
+                this.geminiAPI.setApiKey(el.geminiApiKey.value.trim());
+                this.saveSettings();
+                this.updateApiStatusUI();
+            });
+        }
+        if (el.meetingContext) {
+            el.meetingContext.addEventListener('input', () => {
+                this.geminiAPI.setContext(el.meetingContext.value.trim());
+                this.saveSettings();
+                this.updateContextStatusUI();
+            });
+        }
+        if (el.priorityTerms) {
+            el.priorityTerms.addEventListener('input', () => {
+                this.saveSettings();
+                this.updateContextStatusUI();
+            });
+        }
     }
 
     setupSpeechCallbacks() {
@@ -251,20 +284,23 @@ class EnhancedMeetingApp {
             if (this.speakerDetector.analyser) {
                 this.speakerDetector.analyser.getByteFrequencyData(dataArray);
                 
-                // 바 개수에 맞춰 주파수 영역을 나눔
                 const step = Math.floor(dataArray.length / 2 / bars.length);
+                const time = Date.now() / 1000; // 파동 계산을 위한 시간값
                 
                 bars.forEach((bar, i) => {
-                    // 저주파 영역 위주로 시각화 (인간의 목소리가 주로 분포하는 영역)
                     const index = i * step;
-                    const value = dataArray[index];
+                    const audioValue = dataArray[index] / 255;
                     
-                    // 감도 조절 (0~255 값을 4~32px로 변환)
-                    const scale = Math.min(Math.max((value / 255) * 40, 4), 32); 
+                    // 기본 파동(Sine wave) + 실제 음성 데이터 결합
+                    // i * 0.5는 각 바마다 위차를 두어 파도치는 효과를 줌
+                    const wave = Math.sin(time * 10 + i * 0.8) * 0.5 + 0.5;
+                    const baseHeight = 8; // 최소 높이
+                    const dynamicHeight = audioValue * 25 + wave * 10;
                     
-                    // 약간의 랜덤성을 더해 생동감 부여
-                    const individualScale = scale * (0.9 + Math.random() * 0.2);
-                    bar.style.height = `${individualScale}px`;
+                    const finalHeight = Math.min(Math.max(baseHeight + dynamicHeight, baseHeight), 40);
+                    bar.style.height = `${finalHeight}px`;
+                    // 투명도도 미세하게 조절하여 생동감 부여
+                    bar.style.opacity = 0.5 + (audioValue * 0.5);
                 });
             }
             this.state.visualizerFrame = requestAnimationFrame(animate);
@@ -443,7 +479,12 @@ class EnhancedMeetingApp {
     }
 
     saveSettings() {
-        const s = { language: this.state.language, apiKey: this.elements.geminiApiKey?.value || '' };
+        const s = { 
+            language: this.state.language, 
+            apiKey: this.elements.geminiApiKey?.value || '',
+            meetingContext: this.elements.meetingContext?.value || '',
+            priorityTerms: this.elements.priorityTerms?.value || ''
+        };
         localStorage.setItem('meetingAssistantSettings', JSON.stringify(s));
     }
 
@@ -451,7 +492,29 @@ class EnhancedMeetingApp {
         const saved = JSON.parse(localStorage.getItem('meetingAssistantSettings') || '{}');
         this.state.language = saved.language || 'ko-KR';
         if (this.elements.geminiApiKey) this.elements.geminiApiKey.value = saved.apiKey || '';
+        if (this.elements.meetingContext) this.elements.meetingContext.value = saved.meetingContext || '';
+        if (this.elements.priorityTerms) this.elements.priorityTerms.value = saved.priorityTerms || '';
+        
         this.geminiAPI.setApiKey(saved.apiKey || '');
+        this.updateApiStatusUI();
+        this.updateContextStatusUI();
+    }
+
+    updateApiStatusUI() {
+        const el = this.elements.apiStatus;
+        if (!el) return;
+        const isConfigured = this.geminiAPI.isConfigured;
+        el.className = `api-status ${isConfigured ? 'configured' : ''}`;
+        el.querySelector('.status-text').textContent = isConfigured ? 'API 키 설정 완료' : 'API 키 미설정';
+    }
+
+    updateContextStatusUI() {
+        const el = this.elements.contextStatus;
+        if (!el) return;
+        const hasContext = (this.elements.meetingContext?.value.trim().length > 0) || 
+                          (this.elements.priorityTerms?.value.trim().length > 0);
+        el.className = `context-status ${hasContext ? 'active' : ''}`;
+        el.querySelector('span').textContent = hasContext ? '컨텍스트 설정됨' : '컨텍스트 미설정';
     }
 
     showToast(m, t = 'info') {
@@ -475,13 +538,17 @@ class EnhancedMeetingApp {
             return;
         }
 
-        // 사용자 메시지 추가
-        this.addChatMessage('user', text);
+        const mode = this.state.chatMode;
+
+        // 사용자 메시지 추가 (모드 전달)
+        this.addChatMessage('user', text, mode);
         input.value = '';
 
         try {
             // 회의 컨텍스트 포함하여 질문
             const context = this.data.fullTranscript.slice(-20).map(t => t.text).join('\n');
+            
+            // 메모 모드일 경우 별도의 프롬프트 처리가 가능하지만 일단 공통 답변 생성
             const response = await this.geminiAPI.generateAnswer(text, context);
             
             if (response && response.answer) {
@@ -494,7 +561,7 @@ class EnhancedMeetingApp {
         }
     }
 
-    addChatMessage(role, text) {
+    addChatMessage(role, text, mode = 'question') {
         const chatHist = this.elements.chatHistory;
         if (!chatHist) return;
 
@@ -504,8 +571,17 @@ class EnhancedMeetingApp {
         }
 
         const msgDiv = document.createElement('div');
-        msgDiv.className = `chat-message ${role}`;
-        msgDiv.innerHTML = `<p>${this.escapeHtml(text)}</p>`;
+        // 메모 모드일 경우 특수 클래스 추가
+        const modeClass = (role === 'user' && mode === 'memo') ? 'memo-mode' : '';
+        msgDiv.className = `chat-message ${role} ${modeClass}`;
+        
+        const icon = role === 'ai' ? '🤖' : (mode === 'memo' ? '📌' : '👤');
+        const label = role === 'ai' ? 'Gemini' : (mode === 'memo' ? '중요 메모' : '나의 질문');
+
+        msgDiv.innerHTML = `
+            <div class="message-info"><span class="icon">${icon}</span> <span class="label">${label}</span></div>
+            <p>${this.escapeHtml(text)}</p>
+        `;
         chatHist.appendChild(msgDiv);
         this.scrollToBottom(chatHist);
     }
