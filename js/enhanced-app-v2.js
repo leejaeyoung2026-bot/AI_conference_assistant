@@ -144,6 +144,7 @@ class EnhancedMeetingApp {
         if (el.pauseBtn) el.pauseBtn.addEventListener('click', () => this.togglePause());
         if (el.clearBtn) el.clearBtn.addEventListener('click', () => this.clearAll());
         if (el.exportBtn) el.exportBtn.addEventListener('click', () => this.showExportMenu());
+        if (el.exportAudioBtn) el.exportAudioBtn.addEventListener('click', () => this.exportAudio());
         if (el.setPrimarySpeakerBtn) el.setPrimarySpeakerBtn.addEventListener('click', () => this.setPrimarySpeaker());
         if (el.settingsBtn) el.settingsBtn.addEventListener('click', () => this.openSettings());
         if (el.closeModal) el.closeModal.addEventListener('click', () => this.closeSettings());
@@ -208,7 +209,22 @@ class EnhancedMeetingApp {
         this.updateButtonStates('idle');
         this.updateRecordingStatus('stopped');
         this.sendLog('녹음 중지', 'info');
+
+        // 음성 내보내기 버튼 활성화
+        if (this.elements.exportAudioBtn) {
+            this.elements.exportAudioBtn.disabled = false;
+        }
+
         if (this.data.fullTranscript.length > 0) this.generateFinalSummary();
+    }
+
+    exportAudio() {
+        const success = this.audioRecorder.downloadRecording(`VORA_Meeting`);
+        if (success) {
+            this.showToast('음성 파일 다운로드를 시작합니다.', 'success');
+        } else {
+            this.showToast('다운로드할 녹음 데이터가 없습니다.', 'error');
+        }
     }
 
     startVisualizer() {
@@ -216,18 +232,29 @@ class EnhancedMeetingApp {
         const bars = this.elements.voiceVisualizer?.querySelectorAll('.visualizer-bars span');
         if (!bars || bars.length === 0) return;
 
+        // 주파수 데이터를 담을 배열 (바 개수만큼)
+        const bufferLength = this.speakerDetector.analyser?.frequencyBinCount || 1024;
+        const dataArray = new Uint8Array(bufferLength);
+
         const animate = () => {
             if (!this.state.isRecording || this.state.isPaused) return;
 
-            const features = this.speakerDetector.analyzeAudio();
-            if (features) {
-                const vol = features.volume; // 0.0 ~ 1.0 (실제로는 작음)
-                // 감도 조절
-                const scale = Math.min(Math.max(vol * 500, 4), 32); 
+            if (this.speakerDetector.analyser) {
+                this.speakerDetector.analyser.getByteFrequencyData(dataArray);
+                
+                // 바 개수에 맞춰 주파수 영역을 나눔
+                const step = Math.floor(dataArray.length / 2 / bars.length);
                 
                 bars.forEach((bar, i) => {
-                    // 각 바마다 약간의 랜덤성과 시간차를 주어 자연스럽게 보이게 함
-                    const individualScale = scale * (0.8 + Math.random() * 0.4);
+                    // 저주파 영역 위주로 시각화 (인간의 목소리가 주로 분포하는 영역)
+                    const index = i * step;
+                    const value = dataArray[index];
+                    
+                    // 감도 조절 (0~255 값을 4~32px로 변환)
+                    const scale = Math.min(Math.max((value / 255) * 40, 4), 32); 
+                    
+                    // 약간의 랜덤성을 더해 생동감 부여
+                    const individualScale = scale * (0.9 + Math.random() * 0.2);
                     bar.style.height = `${individualScale}px`;
                 });
             }
