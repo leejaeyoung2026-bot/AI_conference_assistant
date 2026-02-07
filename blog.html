@@ -52,7 +52,6 @@
         .nav-links a:hover { color: var(--primary); }
         .lang-switch { font-weight: 700; color: var(--primary) !important; }
 
-        /* Blog Hero */
         .blog-hero {
             padding: 100px 20px 60px;
             text-align: center;
@@ -61,7 +60,6 @@
         .blog-hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -2px; }
         .blog-hero p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
 
-        /* Board Container */
         .container {
             max-width: 1200px;
             margin: 0 auto 100px;
@@ -71,10 +69,9 @@
             gap: 40px;
         }
 
-        /* Post Grid */
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
         }
 
@@ -86,7 +83,7 @@
             transition: 0.3s;
             display: flex;
             flex-direction: row;
-            height: 280px;
+            min-height: 280px;
             cursor: pointer;
         }
         .blog-card:hover {
@@ -100,6 +97,7 @@
             background-size: cover;
             background-position: center;
             position: relative;
+            min-height: 200px;
         }
 
         .card-content {
@@ -146,6 +144,43 @@
             align-items: center;
             font-size: 0.85rem;
             color: var(--text-muted);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .widget {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 20px;
+        }
+        .widget h3 {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
+        }
+
+        .category-list { list-style: none; }
+        .category-list li {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255,255,255,0.02);
+        }
+        .category-list li:hover, .category-list li.active {
+            background: var(--primary);
+            color: #fff;
         }
 
         /* Modal Style */
@@ -217,51 +252,65 @@
     </header>
 
     <section class="blog-hero">
-        <div class="card-tag">TECH INSIGHTS</div>
-        <h1>STT & AI Knowledge Base</h1>
-        <p>최신 음성 인식 모델과 대규모 언어 모델(LLM)의 실제 성능을 심층 분석합니다.</p>
+        <div class="card-tag">DEVELOPMENT LOG</div>
+        <h1>AI Meeting Assistant Research</h1>
+        <p>Gemini 모델 병렬 운용 전략과 STT 기술의 미래를 탐구합니다.</p>
     </section>
 
     <div class="container">
         <main class="blog-grid" id="blogGrid">
-            <!-- Post 1: OpenAI Whisper v3 -->
-            <article class="blog-card" onclick="openPost(1)">
-                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800');"></div>
+             <!-- Post 3: Google Gemini 3 -->
+            <article class="blog-card" data-category="News" onclick="openPost(3)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1718169950204-63ed565251ea?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">STT MODEL</span>
-                    <h2>OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능</h2>
-                    <p>OpenAI의 최신 Whisper v3 모델은 기존 80 Mel bins에서 128로 아키텍처를 확장하여 한국어 포함 다국어 인식률을 획기적으로 개선했습니다. 실제 WER 성능 변화를 살펴봅니다.</p>
+                    <span class="card-tag">Latest News</span>
+                    <h2>Google Gemini 3 공개: 멀티모달 AI의 새로운 시대</h2>
+                    <p>Google이 차세대 AI 모델 Gemini 3를 발표했습니다. Ultra, Pro, Flash로 구성된 이번 라인업은 확장된 컨텍스트 창, 향상된 멀티모달 추론 능력, 그리고 경량 모델의 혁신을 통해 AI 에이전트 개발의 새로운 가능성을 제시합니다.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
-                        <span><i class="far fa-user"></i> VORA Research</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 09</span>
+                        <span><i class="far fa-user"></i> Tech News</span>
                     </div>
                 </div>
             </article>
 
-            <!-- Post 2: Gemini 2.0 Flash -->
-            <article class="blog-card" onclick="openPost(2)">
+            <!-- Post 4: SenseVoice Small -->
+            <article class="blog-card" data-category="RD" onclick="openPost(4)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1587440871875-191322ee64b0?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="card-content">
+                    <span class="card-tag">R&D</span>
+                    <h2>SenseVoice Small: 경량 음성 인식 모델 심층 분석</h2>
+                    <p>VORA 팀은 알리바바의 경량 고성능 음성 인식 모델 SenseVoice Small의 내부 테스트를 진행 중입니다. 기술적 특징과 온디바이스 적용 가능성을 탐구합니다.</p>
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 08</span>
+                        <span><i class="far fa-user"></i> STT Researcher</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Post 1: Parallel Gemini Architecture -->
+            <article class="blog-card" data-category="Architecture" onclick="openPost(1)">
                 <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">AI ANALYSIS</span>
-                    <h2>Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막</h2>
-                    <p>2025년 2월 정식 출시된 Gemini 2.0 Flash는 1.5 Flash 대비 2배 빠른 처리 속도와 강력한 실시간 추론 능력을 갖추었습니다. VORA의 엔진에 미치는 영향을 분석합니다.</p>
+                    <span class="card-tag">Architecture</span>
+                    <h2>Gemini 3/2.5/2.0 병렬 운용: 입구 최적화 전략</h2>
+                    <p>하나의 회의에서 3개의 제미나이 모델을 동시에 사용한다면? 'Front-line First' 전략을 통한 데이터 파이프라인 품질 극대화 방안을 공유합니다.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span>
-                        <span><i class="far fa-user"></i> AI Engineer</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 07</span>
+                        <span><i class="far fa-user"></i> Dev Lead</span>
                     </div>
                 </div>
             </article>
 
-            <!-- Post 3: Open Source STT Trends -->
-            <article class="blog-card" onclick="openPost(3)">
-                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800');"></div>
+            <!-- Post 2: Whisper v3 Exploration -->
+            <article class="blog-card" data-category="RD" onclick="openPost(2)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">OPEN SOURCE</span>
-                    <h2>2026 오픈소스 STT 트렌드: On-Device & Low Latency</h2>
-                    <p>Moonshine, Canary Qwen, Sherpa-ONNX 등 2026년 주목받는 오픈소스 STT 모델들을 비교합니다. 클라우드 의존도를 낮추고 보안을 강화하는 최신 아키텍처를 탐구합니다.</p>
+                    <span class="card-tag">R&D</span>
+                    <h2>OpenAI Whisper v3 도입을 위한 기술적 검토 및 테스트</h2>
+                    <p>VORA의 차세대 엔진으로 Whisper v3-large를 검토 중입니다. 브라우저 환경에서의 실행 가능성과 한국어 인식 성능 테스트 결과를 공개합니다.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 01. 30</span>
-                        <span><i class="far fa-user"></i> VORA Dev Team</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
+                        <span><i class="far fa-user"></i> STT Researcher</span>
                     </div>
                 </div>
             </article>
@@ -270,11 +319,11 @@
         <aside class="sidebar">
             <div class="widget">
                 <h3>카테고리</h3>
-                <ul class="category-list">
-                    <li><span>STT 기술 분석</span></li>
-                    <li><span>LLM & 추론</span></li>
-                    <li><span>온디바이스 AI</span></li>
-                    <li><span>데이터 보안</span></li>
+                <ul class="category-list" id="categoryList">
+                    <li class="active" onclick="filterPosts('all')"><span>전체 보기</span></li>
+                    <li onclick="filterPosts('RD')"><span>연구 및 개발 (R&D)</span></li>
+                    <li onclick="filterPosts('Architecture')"><span>시스템 아키텍처</span></li>
+                    <li onclick="filterPosts('News')"><span>업계 최신 소식</span></li>
                 </ul>
             </div>
         </aside>
@@ -284,9 +333,7 @@
     <div class="modal" id="postModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closePost()">&times;</span>
-            <div id="modalBody">
-                <!-- Content will be injected here -->
-            </div>
+            <div id="modalBody"></div>
         </div>
     </div>
 
@@ -297,100 +344,119 @@
     <script>
         const posts = {
             1: {
-                tag: "STT MODEL",
-                title: "OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능",
-                author: "VORA Research",
-                date: "2026. 02. 05",
                 content: `
                     <div class="post-header">
-                        <span class="card-tag">STT MODEL</span>
-                        <h2>OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능</h2>
-                        <div class="post-meta">
-                            <span><i class="far fa-user"></i> VORA Research</span>
-                            <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
-                        </div>
+                        <span class="card-tag">Architecture</span>
+                        <h2>Gemini 3/2.5/2.0 병렬 운용: 입구 최적화 전략</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> Dev Lead</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 07</span></div>
                     </div>
                     <div class="post-body">
-                        <p>OpenAI는 2023년 말 Whisper v3를 출시하며 음성 인식 분야의 새로운 표준을 제시했습니다. 이전 버전인 v2와 비교했을 때 가장 큰 변화는 아키텍처의 확장과 다국어 데이터의 정교화입니다.</p>
-                        
-                        <h3>주요 기술적 개선 사항</h3>
+                        <p>VORA 팀은 회의 데이터 처리의 정밀도를 높이기 위해 구글의 최신 모델 3종을 병렬로 운용하는 새로운 아키텍처를 시도하고 있습니다. 핵심은 <strong>'Front-line First(입구 최적화)'</strong>입니다.</p>
+                        <h3>모델별 역할 배분</h3>
                         <ul>
-                            <li><strong>Mel Frequency Bins 확장:</strong> 기존 80 bins에서 128 bins로 확장되었습니다. 이는 오디오 신호에서 더 세밀한 특징을 추출할 수 있게 하여, 배경 소음이 심하거나 목소리가 작은 환경에서도 인식 정확도를 높여줍니다.</li>
-                            <li><strong>에러율(WER) 감소:</strong> Whisper v2 대비 비영어권 언어에서 20~30%의 오류 감소율을 보여줍니다. 특히 한국어의 경우, 대화체와 전문 용어 인식 성능이 눈에 띄게 향상되었습니다.</li>
-                            <li><strong>V3 Turbo의 등장:</strong> 처리 속도를 획기적으로 높인 Turbo 모델은 실시간성이 중요한 VORA와 같은 서비스에서 핵심적인 역할을 수행합니다.</li>
+                            <li><strong>Gemini 3 Flash Preview (보정):</strong> 파이프라인의 최전선에서 음성 인식 결과를 교정합니다. 가장 똑똑한 모델이 원본 텍스트의 오타를 잡아줘야 뒤따르는 분석 품질이 보장됩니다.</li>
+                            <li><strong>Gemini 2.5 Flash (질문 답변):</strong> 보정된 고품질 텍스트를 바탕으로 사용자의 복잡한 질문에 대한 논리적 근거와 답변을 생성합니다.</li>
+                            <li><strong>Gemini 2.0 Flash (요약):</strong> 이미 정제된 데이터를 활용하여 빠르고 효율적으로 전체 내용을 압축합니다.</li>
                         </ul>
-
-                        <h3>VORA의 도입 전략</h3>
-                        <p>VORA는 Whisper v3 아키텍처를 기반으로 사용자 브라우저에서 직접 구동되는 온디바이스 STT와 클라우드 정밀 STT를 혼합하여 사용합니다. 이를 통해 보안성과 정확도라는 두 마리 토끼를 잡고 있습니다.</p>
+                        <p>이러한 병렬 처리 방식은 각 모델의 토큰 할당량(RPM/TPM)을 효율적으로 분산시키는 동시에, 업무 난이도에 따른 최적의 추론 엔진을 매칭하는 효과가 있습니다.</p>
                     </div>
                 `
             },
             2: {
-                tag: "AI ANALYSIS",
-                title: "Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막",
-                author: "AI Engineer",
-                date: "2026. 02. 06",
                 content: `
                     <div class="post-header">
-                        <span class="card-tag">AI ANALYSIS</span>
-                        <h2>Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막</h2>
-                        <div class="post-meta">
-                            <span><i class="far fa-user"></i> AI Engineer</span>
-                            <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span>
-                        </div>
+                        <span class="card-tag">R&D</span>
+                        <h2>OpenAI Whisper v3 도입을 위한 기술적 검토 및 테스트</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> STT Researcher</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span></div>
                     </div>
                     <div class="post-body">
-                        <p>Google은 2025년 2월 5일, Gemini 2.0 Flash의 일반 가용성(GA)을 발표했습니다. 이 모델은 "Flash"라는 이름에 걸맞게 극도로 빠른 응답 속도와 효율성에 초점이 맞춰져 있습니다.</p>
-                        
-                        <h3>왜 2.0 Flash인가?</h3>
+                        <p>VORA는 현재 브라우저 내장 Web Speech API를 주력으로 사용하고 있지만, 더 높은 정확도와 오프라인 환경 대응을 위해 OpenAI의 <strong>Whisper v3-large</strong> 도입을 적극 검토하고 있습니다.</p>
+                        <h3>주요 테스트 항목</h3>
                         <ul>
-                            <li><strong>압도적인 속도:</strong> Gemini 1.5 Flash 대비 첫 토큰 출력 속도(TTFT)가 2배 이상 빨라졌습니다. 이는 VORA의 '실시간 질문 답변' 기능에서 지연 시간을 거의 느낄 수 없게 만듭니다.</li>
-                            <li><strong>100만 토큰 컨텍스트:</strong> 거대한 컨텍스트 윈도우를 유지하면서도 속도를 놓치지 않았습니다. 10시간이 넘는 마라톤 회의 데이터도 한 번에 처리하여 요약할 수 있습니다.</li>
-                            <li><strong>기본 도구 사용(Native Tool Use):</strong> 구글 검색 검색 기능을 기본적으로 지원하여, 회의 중 모르는 용어가 나오면 AI가 실시간으로 최신 정보를 검색하여 답변의 정확도를 높여줍니다.</li>
+                            <li><strong>ONNX 기반 WASM 실행:</strong> 서버 없이 브라우저 단에서 Whisper를 구동했을 때의 Latency와 CPU 점유율 측정.</li>
+                            <li><strong>한국어 방언 및 전문 용어:</strong> 기존 API 대비 한국어 전문 용어(제약, IT 등) 인식률 향상 폭 분석.</li>
+                            <li><strong>V3-Turbo 활용성:</strong> 인식 속도가 비약적으로 향상된 Turbo 모델이 실시간 전사에 적합한지 검증 중입니다.</li>
                         </ul>
-
-                        <h3>VORA 엔진과의 시너지</h3>
-                        <p>현재 VORA는 Gemini 2.0 Flash API를 통해 실시간 보정 및 요약을 수행합니다. 특히 멀티모달 능력을 활용하여 향후 회의 중 공유되는 이미지나 차트까지 분석하는 기능을 준비 중입니다.</p>
+                        <p>Whisper 엔진이 성공적으로 도입된다면, VORA는 클라우드 의존도를 낮추고 보안성을 한 차원 더 끌어올릴 수 있을 것으로 기대됩니다.</p>
                     </div>
                 `
             },
             3: {
-                tag: "OPEN SOURCE",
-                title: "2026 오픈소스 STT 트렌드: On-Device & Low Latency",
-                author: "VORA Dev Team",
-                date: "2026. 01. 30",
                 content: `
                     <div class="post-header">
-                        <span class="card-tag">OPEN SOURCE</span>
-                        <h2>2026 오픈소스 STT 트렌드: On-Device & Low Latency</h2>
-                        <div class="post-meta">
-                            <span><i class="far fa-user"></i> VORA Dev Team</span>
-                            <span><i class="far fa-calendar-alt"></i> 2026. 01. 30</span>
-                        </div>
+                        <span class="card-tag">Latest News</span>
+                        <h2>Google Gemini 3 공개: 멀티모달 AI의 새로운 시대</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> Tech News</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 09</span></div>
                     </div>
                     <div class="post-body">
-                        <p>2026년 STT 시장은 대형 클라우드 모델뿐만 아니라, 로컬 장치에서 돌아가는 가벼우면서도 강력한 오픈소스 모델들이 주도하고 있습니다.</p>
+                        <p>Google이 AI 분야의 새로운 이정표를 세웠습니다. 차세대 멀티모달 모델인 <strong>Gemini 3</strong> 제품군(Ultra, Pro, Flash)의 공식 출시를 발표하며, AI 에이전트와 복합적인 추론 작업의 미래를 재정의하고 있습니다.</p>
                         
-                        <h3>주목해야 할 오픈소스 모델</h3>
-                        <ul>
-                            <li><strong>Canary Qwen 2.5B:</strong> 영어권에서 극강의 정확도를 보여주며, 적은 파라미터로도 엔터프라이즈급 성능을 발휘합니다.</li>
-                            <li><strong>Sherpa-ONNX:</strong> WebAssembly(WASM)를 통해 브라우저에서 직접 Whisper 모델을 실행할 수 있게 해주는 핵심 프레임워크입니다. VORA의 서버리스 모드의 근간이 됩니다.</li>
-                            <li><strong>Moonshine:</strong> 에지 디바이스와 모바일 환경에 최적화된 초경량 모델로, 밀리초 단위의 지연 시간을 보장합니다.</li>
-                        </ul>
+                        <h3>핵심 혁신: 200만 토큰 컨텍스트 창</h3>
+                        <p>Gemini 3의 가장 큰 특징은 최대 200만 토큰에 달하는 방대한 컨텍스트 창입니다. 이는 약 150만 단어, 20시간 분량의 오디오, 또는 2시간 분량의 동영상을 한 번에 처리할 수 있는 규모로, 이전 모델들의 한계를 뛰어넘는 정보 처리 능력을 보여줍니다. 개발자들은 이제 전체 코드베이스, 방대한 양의 문서, 긴 동영상을 모델에 직접 제공하여 심층적인 분석과 상호작용이 가능합니다.</p>
+                        
+                        <h3>진정한 네이티브 멀티모달</h3>
+                        <p>Gemini 3는 텍스트뿐만 아니라 이미지, 오디오, 비디오 데이터를 기반으로 처음부터 훈련된 '네이티브 멀티모달' 아키텍처를 채택했습니다. 이를 통해 여러 데이터 유형을 넘나드는 복합적인 추론에서 인간에 가까운 성능을 발휘하며, 특히 멀티모달 벤치마크(MMMU)에서 기존 모델 대비 10% 이상 향상된 점수를 기록했습니다.</p>
+                        
+                        <h3>Gemini 3 Flash: 속도와 성능의 결합</h3>
+                        <p>함께 공개된 <strong>Gemini 3 Flash</strong> 모델은 경량화의 새로운 기준을 제시합니다. 대형 모델의 핵심 성능을 유지하면서도, 기기 내(on-device)에서 직접 실행될 수 있을 만큼 빠르고 효율적으로 설계되었습니다. 이는 복잡한 작업을 실시간으로 처리해야 하는 AI 에이전트나 모바일 애플리케이션 개발에 혁신적인 가능성을 열어줍니다.</p>
 
-                        <h3>기술적 전망</h3>
-                        <p>앞으로의 STT는 단순한 텍스트 변환을 넘어, <strong>'Context-Aware ASR'</strong>로 진화할 것입니다. 대화의 주제를 AI가 미리 파악하고, 그 주제에 맞는 전문 용어 사전을 동적으로 로드하여 인식률을 높이는 방식이 주류가 될 것으로 보입니다.</p>
+                        <h3>개발자를 위한 새로운 기회</h3>
+                        <p>Gemini 3 제품군은 단순한 성능 향상을 넘어, AI가 적용될 수 있는 영역을 근본적으로 확장하고 있습니다. 대규모 컨텍스트 처리와 멀티모달 능력의 결합은 더욱 정교하고, 유용하며, 상황을 완벽하게 이해하는 차세대 AI 서비스 개발을 촉진할 것으로 기대됩니다.</p>
+                    </div>
+                `
+            },
+            4: {
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">R&D</span>
+                        <h2>SenseVoice Small: 경량 음성 인식 모델 심층 분석</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> STT Researcher</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 08</span></div>
+                    </div>
+                    <div class="post-body">
+                        <p>최근 VORA 팀은 알리바바 DAMO 아카데미가 개발한 오픈소스 경량 음성 인식(ASR) 모델인 <strong>SenseVoice Small</strong>의 내부 벤치마크 테스트를 진행하고 있습니다.</p>
+                        <h3>주요 기술적 특징</h3>
+                        <ul>
+                            <li><strong>효율적인 모델 구조:</strong> 적은 파라미터로 높은 계산 효율성을 달성하여, 온디바이스 환경이나 브라우저에서의 직접 실행 가능성을 열어줍니다.</li>
+                            <li><strong>다국어 및 코드 스위칭 지원:</strong> 한국어와 영어가 혼용되는 문장에 대한 원활한 인식을 지원하여, 국내 실제 사용 환경에 매우 적합합니다.</li>
+                        </ul>
+                        <p>VORA는 SenseVoice의 도입을 통해 사용자에게 더 빠르고, 안정적이며, 안전한 음성 인식 경험을 제공하기 위한 연구를 계속해 나갈 것입니다.</p>
                     </div>
                 `
             }
         };
+
+        function filterPosts(category) {
+            // Update active state in sidebar
+            const items = document.querySelectorAll('#categoryList li');
+            items.forEach(item => item.classList.remove('active'));
+            
+            // Find the clicked item and mark active
+            const clickedItem = Array.from(items).find(item => {
+                if (category === 'all') return item.textContent.includes('전체 보기');
+                if (category === 'RD') return item.textContent.includes('연구 및 개발');
+                if (category === 'Architecture') return item.textContent.includes('시스템 아키텍처');
+                if (category === 'News') return item.textContent.includes('업계 최신 소식');
+                return false;
+            });
+            if (clickedItem) clickedItem.classList.add('active');
+
+            // Filter cards
+            const cards = document.querySelectorAll('.blog-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
 
         function openPost(id) {
             const post = posts[id];
             if (post) {
                 document.getElementById('modalBody').innerHTML = post.content;
                 document.getElementById('postModal').classList.add('active');
-                document.body.style.overflow = 'hidden'; // Scroll lock
+                document.body.style.overflow = 'hidden';
             }
         }
 
@@ -401,9 +467,7 @@
 
         window.onclick = function(event) {
             const modal = document.getElementById('postModal');
-            if (event.target == modal) {
-                closePost();
-            }
+            if (event.target == modal) closePost();
         }
     </script>
 </body>

@@ -52,7 +52,6 @@
         .nav-links a:hover { color: var(--primary); }
         .lang-switch { font-weight: 700; color: var(--primary) !important; }
 
-        /* Blog Hero */
         .blog-hero {
             padding: 100px 20px 60px;
             text-align: center;
@@ -61,7 +60,6 @@
         .blog-hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -2px; }
         .blog-hero p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
 
-        /* Board Container */
         .container {
             max-width: 1200px;
             margin: 0 auto 100px;
@@ -71,10 +69,9 @@
             gap: 40px;
         }
 
-        /* Post Grid */
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
         }
 
@@ -86,7 +83,8 @@
             transition: 0.3s;
             display: flex;
             flex-direction: row;
-            height: 280px;
+            min-height: 280px;
+            cursor: pointer;
         }
         .blog-card:hover {
             transform: translateY(-5px);
@@ -99,12 +97,7 @@
             background-size: cover;
             background-position: center;
             position: relative;
-        }
-        .card-image::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(30, 41, 59, 0.5));
+            min-height: 200px;
         }
 
         .card-content {
@@ -176,20 +169,69 @@
         .category-list { list-style: none; }
         .category-list li {
             margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             font-size: 0.9rem;
             cursor: pointer;
             transition: 0.2s;
+            background: rgba(255,255,255,0.02);
         }
-        .category-list li:hover { color: var(--primary); }
-        .category-count { color: var(--text-muted); font-size: 0.8rem; }
+        .category-list li:hover, .category-list li.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* Modal Style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 11, 26, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        .modal.active { display: block; }
+        .modal-content {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            border-radius: 30px;
+            padding: 60px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .modal-close {
+            position: absolute;
+            top: 30px; right: 30px;
+            font-size: 2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .modal-close:hover { color: #fff; }
+        
+        .post-header { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 30px; }
+        .post-header h2 { font-size: 2.5rem; color: #fff; margin: 15px 0; line-height: 1.2; }
+        .post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.9rem; }
+
+        .post-body { font-size: 1.15rem; line-height: 1.8; color: #cbd5e1; }
+        .post-body h3 { color: #fff; margin: 40px 0 20px; font-size: 1.5rem; border-left: 4px solid var(--primary); padding-left: 15px; }
+        .post-body p { margin-bottom: 25px; text-align: justify; }
+        .post-body ul { margin-bottom: 30px; padding-left: 25px; }
+        .post-body li { margin-bottom: 12px; }
+        .post-body strong { color: var(--primary); }
 
         @media (max-width: 992px) {
             .container { grid-template-columns: 1fr; }
             .blog-card { flex-direction: column; height: auto; }
             .card-image { width: 100%; height: 200px; }
             .card-content { width: 100%; }
+            .modal-content { padding: 30px; border-radius: 20px; }
+            .post-header h2 { font-size: 1.8rem; }
         }
 
         footer { padding: 80px 20px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-muted); }
@@ -210,65 +252,65 @@
     </header>
 
     <section class="blog-hero">
-        <div class="card-tag">TECH INSIGHTS</div>
-        <h1>STT & AI Knowledge Base</h1>
-        <p>Sharing deep insights into the future of speech recognition and the latest AI models.</p>
+        <div class="card-tag">DEVELOPMENT LOG</div>
+        <h1>AI Meeting Assistant Research</h1>
+        <p>Exploring parallel AI architectures and the future of STT technology.</p>
     </section>
 
     <div class="container">
-        <main class="blog-grid">
-            <!-- Post 1: OpenAI Whisper v3 -->
-            <article class="blog-card">
-                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800');"></div>
+        <main class="blog-grid" id="blogGrid">
+            <!-- Post 4: SenseVoice Small -->
+            <article class="blog-card" data-category="RD" onclick="openPost(4)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1587440871875-191322ee64b0?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">Latest Model</span>
-                    <h2>OpenAI Whisper Large-v3: Revolutionary Improvement in Recognition</h2>
-                    <p>OpenAI's Whisper v3 model has been released. While maintaining the same number of parameters, the performance for multi-language recognition, including Korean, has been drastically improved through data refinement. Its robustness in noisy environments is particularly noteworthy.</p>
+                    <span class="card-tag">R&D</span>
+                    <h2>SenseVoice Small: Deep Dive into Lightweight ASR</h2>
+                    <p>The VORA team is conducting internal tests on Alibaba's high-performance lightweight model, SenseVoice Small. Exploring technical features and on-device feasibility.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
-                        <span><i class="far fa-user"></i> VORA Team</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 08</span>
+                        <span><i class="far fa-user"></i> STT Researcher</span>
                     </div>
                 </div>
             </article>
 
-            <!-- Post 2: Sherpa-ONNX -->
-            <article class="blog-card">
-                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800');"></div>
-                <div class="card-content">
-                    <span class="card-tag">On-Device AI</span>
-                    <h2>Implementing Browser-based Real-time Transcription with Sherpa-ONNX</h2>
-                    <p>Introducing Sherpa-ONNX technology, which performs speech recognition directly in the browser without a server. We analyze how to achieve both security and speed by running high-performance deep learning models on the web using WebAssembly (WASM).</p>
-                    <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 01. 28</span>
-                        <span><i class="far fa-user"></i> Tech Lead</span>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Post 3: Gemini 2.5 Flash -->
-            <article class="blog-card">
+            <!-- Post 1: Parallel Gemini Architecture -->
+            <article class="blog-card" data-category="Architecture" onclick="openPost(1)">
                 <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">AI Analysis</span>
-                    <h2>Gemini 2.5 Flash: The Pinnacle of Meeting Context Understanding</h2>
-                    <p>Google's new Gemini 2.5 Flash model has been applied to VORA's intelligent correction engine. We detail the mechanism of how it analyzes vast amounts of real-time conversation data and provides key insights to users.</p>
+                    <span class="card-tag">Architecture</span>
+                    <h2>Parallel Gemini 3/2.5/2.0: Front-line Optimization</h2>
+                    <p>What if you use 3 Gemini models simultaneously? Sharing our strategy to maximize data pipeline quality through 'Front-line First' approach.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 01. 15</span>
-                        <span><i class="far fa-user"></i> AI Engineer</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 07</span>
+                        <span><i class="far fa-user"></i> Dev Lead</span>
                     </div>
                 </div>
             </article>
 
-            <!-- Post 4: Security -->
-            <article class="blog-card">
-                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=800');"></div>
+            <!-- Post 2: Whisper v3 Exploration -->
+            <article class="blog-card" data-category="RD" onclick="openPost(2)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800');"></div>
                 <div class="card-content">
-                    <span class="card-tag">Security</span>
-                    <h2>Architecture Guide for Secure Serverless STT in Enterprises</h2>
-                    <p>Explaining the benefits of the serverless architecture adopted by VORA for secure AI introduction without data leakage concerns. Deep dive into training data usage policies by API plan and local data processing methods.</p>
+                    <span class="card-tag">R&D</span>
+                    <h2>Technical Review: Testing OpenAI Whisper v3 Integration</h2>
+                    <p>Reviewing Whisper v3-large as VORA's next-gen engine. Testing feasibility in browser environments and Korean recognition performance.</p>
                     <div class="card-footer">
-                        <span><i class="far fa-calendar-alt"></i> 2026. 01. 05</span>
-                        <span><i class="far fa-user"></i> Security Expert</span>
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
+                        <span><i class="far fa-user"></i> STT Researcher</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Post 3: Gemini 2.0 Flash GA -->
+            <article class="blog-card" data-category="News" onclick="openPost(3)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="card-content">
+                    <span class="card-tag">Latest News</span>
+                    <h2>Google Gemini 2.0 Flash GA: New Standard for Real-time Inference</h2>
+                    <p>Google released Gemini 2.0 Flash on Feb 5, 2025. Summarizing the core of its 2x faster processing and multimodal capabilities.</p>
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span>
+                        <span><i class="far fa-user"></i> Tech News</span>
                     </div>
                 </div>
             </article>
@@ -277,32 +319,149 @@
         <aside class="sidebar">
             <div class="widget">
                 <h3>Categories</h3>
-                <ul class="category-list">
-                    <li><span>STT Technology</span> <span class="category-count">(12)</span></li>
-                    <li><span>AI Analysis Models</span> <span class="category-count">(8)</span></li>
-                    <li><span>On-Device Implementation</span> <span class="category-count">(5)</span></li>
-                    <li><span>Security & Policy</span> <span class="category-count">(3)</span></li>
-                    <li><span>Update News</span> <span class="category-count">(10)</span></li>
-                </ul>
-            </div>
-
-            <div class="widget">
-                <h3>Popular Posts</h3>
-                <ul class="category-list">
-                    <li>Whisper v3 Benchmark Results</li>
-                    <li>Free API Key Issuance Guide</li>
-                    <li>How to Set Browser Mic Permissions</li>
+                <ul class="category-list" id="categoryList">
+                    <li class="active" onclick="filterPosts('all')"><span>View All</span></li>
+                    <li onclick="filterPosts('RD')"><span>R&D</span></li>
+                    <li onclick="filterPosts('Architecture')"><span>Architecture</span></li>
+                    <li onclick="filterPosts('News')"><span>Industry News</span></li>
                 </ul>
             </div>
         </aside>
     </div>
 
+    <!-- Modal Container -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closePost()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
     <footer>
         <p>© 2026 VORA. Empowering professional communication with intelligent AI solutions.</p>
-        <div style="margin-top: 15px;">
-            <a href="terms.html" style="color: var(--text-muted); margin: 0 10px; text-decoration: none;">Terms of Service</a>
-            <a href="privacy.html" style="color: var(--text-muted); margin: 0 10px; text-decoration: none;">Privacy Policy</a>
-        </div>
     </footer>
+
+    <script>
+        const posts = {
+            1: {
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">Architecture</span>
+                        <h2>Parallel Gemini 3/2.5/2.0: Front-line Optimization</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> Dev Lead</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 07</span></div>
+                    </div>
+                    <div class="post-body">
+                        <p>The VORA team is experimenting with a new architecture that runs three of Google's latest models in parallel to increase the precision of meeting data processing. The key is <strong>'Front-line First'</strong> optimization.</p>
+                        <h3>Role Distribution by Model</h3>
+                        <ul>
+                            <li><strong>Gemini 3 Flash Preview (Correction):</strong> Corrects voice recognition results at the forefront of the pipeline. The smartest model must catch typos in the raw text to ensure the quality of subsequent analysis.</li>
+                            <li><strong>Gemini 2.5 Flash (Q&A):</strong> Generates logical reasoning and answers to complex user questions based on high-quality corrected text.</li>
+                            <li><strong>Gemini 2.0 Flash (Summary):</strong> Rapidly and efficiently compresses the entire content using already refined data.</li>
+                        </ul>
+                        <p>This parallel processing approach efficiently distributes token quotas (RPM/TPM) for each model while matching the optimal inference engine according to the difficulty of the task.</p>
+                    </div>
+                `
+            },
+            2: {
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">R&D</span>
+                        <h2>Technical Review: Testing OpenAI Whisper v3 Integration</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> STT Researcher</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span></div>
+                    </div>
+                    <div class="post-body">
+                        <p>While VORA currently uses the browser's built-in Web Speech API as its primary engine, we are actively reviewing the introduction of OpenAI's <strong>Whisper v3-large</strong> for higher accuracy and offline support.</p>
+                        <h3>Key Test Items</h3>
+                        <ul>
+                            <li><strong>ONNX-based WASM Execution:</strong> Measuring latency and CPU usage when running Whisper directly in the browser without a server.</li>
+                            <li><strong>Korean Dialects & Technical Terms:</strong> Analyzing the improvement in recognition rates for Korean technical terms (Pharma, IT, etc.) compared to existing APIs.</li>
+                            <li><strong>V3-Turbo Feasibility:</strong> Verifying if the Turbo model, with its significantly improved speed, is suitable for real-time transcription.</li>
+                        </ul>
+                        <p>If the Whisper engine is successfully integrated, VORA is expected to reduce cloud dependency and raise security to the next level.</p>
+                    </div>
+                `
+            },
+            3: {
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">Latest News</span>
+                        <h2>Google Gemini 2.0 Flash GA: New Standard for Real-time Inference</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> Tech News</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span></div>
+                    </div>
+                    <div class="post-body">
+                        <p>On February 5, 2025, Google announced the General Availability (GA) of <strong>Gemini 2.0 Flash</strong>, its next-generation AI model. This release is making waves in the real-time AI application market.</p>
+                        <h3>Key Features</h3>
+                        <ul>
+                            <li><strong>Ultra-low Latency:</strong> TTFT (Time to First Token) has improved more than 2x compared to the 1.5 Flash model, providing real-time responsiveness like talking to a person.</li>
+                            <li><strong>Enhanced Multimodality:</strong> Significant progress in understanding real-time video streaming as well as text and audio.</li>
+                            <li><strong>Native Google Search:</strong> AI directly performs Google searches to verify facts without separate tools.</li>
+                        </ul>
+                        <p>The VORA team is continuously working to reflect these latest GA news into our service infrastructure.</p>
+                    </div>
+                `
+            },
+            4: {
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">R&D</span>
+                        <h2>SenseVoice Small: Deep Dive into Lightweight ASR</h2>
+                        <div class="post-meta"><span><i class="far fa-user"></i> STT Researcher</span> <span><i class="far fa-calendar-alt"></i> 2026. 02. 08</span></div>
+                    </div>
+                    <div class="post-body">
+                        <p>The VORA team is currently conducting internal benchmark tests for <strong>SenseVoice Small</strong>, a high-performance lightweight speech recognition (ASR) model developed by Alibaba DAMO Academy.</p>
+                        <h3>Key Technical Features</h3>
+                        <ul>
+                            <li><strong>Efficient Architecture:</strong> Achieve high computational efficiency with less than 100M parameters, enabling direct execution in browsers.</li>
+                            <li><strong>Robustness to Noise:</strong> Trained on massive diversified datasets, providing stable recognition rates even in noisy environments.</li>
+                            <li><strong>Multilingual & Code-switching:</strong> Excellent support for mixing languages like Korean and English.</li>
+                        </ul>
+                        <p>VORA aims to provide a faster, more stable, and secure voice recognition experience by integrating lightweight models like SenseVoice Small.</p>
+                    </div>
+                `
+            }
+        };
+
+        function filterPosts(category) {
+            const items = document.querySelectorAll('#categoryList li');
+            items.forEach(item => item.classList.remove('active'));
+            
+            const clickedItem = Array.from(items).find(item => {
+                if (category === 'all') return item.textContent.includes('View All');
+                if (category === 'RD') return item.textContent.includes('R&D');
+                if (category === 'Architecture') return item.textContent.includes('Architecture');
+                if (category === 'News') return item.textContent.includes('Industry News');
+                return false;
+            });
+            if (clickedItem) clickedItem.classList.add('active');
+
+            const cards = document.querySelectorAll('.blog-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openPost(id) {
+            const post = posts[id];
+            if (post) {
+                document.getElementById('modalBody').innerHTML = post.content;
+                document.getElementById('postModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePost() {
+            document.getElementById('postModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('postModal');
+            if (event.target == modal) closePost();
+        }
+    </script>
 </body>
 </html>
