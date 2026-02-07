@@ -374,7 +374,7 @@ ${text}
             const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
 
             const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiAPI.apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiAPI.apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -443,7 +443,7 @@ ${previousSentences.length > 0 ? `[이전 대화 내용]:\n${previousSentences.m
             const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
 
             const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiAPI.apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiAPI.apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

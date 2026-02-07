@@ -10,13 +10,16 @@
 class GeminiAPI {
     constructor() {
         this.apiKey = '';
-        // Gemini 모델 설정 (역할별 분담)
-        // - 음성인식 보정: gemini-2.5-flash-preview-05-20 (빠른 처리)
-        // - 실시간 요약: gemini-2.0-flash (안정적인 요약)
-        // - QA 답변: gemini-2.0-flash (검색 기반 답변)
-        this.model = 'gemini-2.0-flash';                      // 요약용 (안정적)
-        this.qaModel = 'gemini-2.0-flash';                    // QA용 (검색 기반)
-        this.correctionModel = 'gemini-2.0-flash';  // 보정용 (빠른 처리)
+        // ========== [사용자 제안] Front-line First 모델 배분 전략 ==========
+        // 1. 음성인식 보정: gemini-3-flash-preview (최전선에서 가장 정밀한 교정 수행)
+        // 2. QA 답변: gemini-2.5-flash (보정된 텍스트를 바탕으로 고품질 답변 생성)
+        // 3. 실시간 요약: gemini-2.0-flash (정제된 데이터를 활용해 효율적인 압축 및 요약)
+        
+        this.correctionModel = 'gemini-3-flash-preview';
+        this.qaModel = 'gemini-2.5-flash';
+        this.summaryModel = 'gemini-2.0-flash';
+        
+        this.model = this.correctionModel; // 기본 모델
 
 
         // 시스템 프롬프트 (회의 컨텍스트 관리)

@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VORA 기술 블로그 - 음성인식 및 AI 분석 기술 지식창고</title>
+    <title>VORA 기술 블로그 - STT & AI 최신 소식</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6874320463657568"
      crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #6366f1;
+            --primary-hover: #4f46e5;
             --bg-main: #0f172a;
             --bg-panel: #1e293b;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent: #06b6d4;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,17 +25,17 @@
             font-family: 'Noto Sans KR', sans-serif;
             background: var(--bg-main);
             color: var(--text-main);
-            line-height: 1.8;
+            line-height: 1.6;
         }
 
         header {
             background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(10px);
-            padding: 20px;
+            padding: 20px 40px;
             position: sticky;
             top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         nav {
@@ -44,109 +46,365 @@
             align-items: center;
         }
 
-        .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: white; text-decoration: none; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
         .nav-links a:hover { color: var(--primary); }
+        .lang-switch { font-weight: 700; color: var(--primary) !important; }
 
-        .container { max-width: 900px; margin: 60px auto; padding: 0 20px; }
-        
-        .article { margin-bottom: 80px; }
-        .article-category { color: var(--accent); font-size: 0.9rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: block; }
-        .article h2 { font-size: 2.5rem; margin-bottom: 25px; line-height: 1.3; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .article p { margin-bottom: 20px; font-size: 1.1rem; color: var(--text-secondary); text-align: justify; }
-        .article img { width: 100%; border-radius: 15px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); }
-        
-        .info-box { background: var(--bg-panel); padding: 30px; border-radius: 15px; border-left: 5px solid var(--primary); margin: 30px 0; }
-        .info-box h4 { margin-bottom: 15px; color: var(--primary); }
+        /* Blog Hero */
+        .blog-hero {
+            padding: 100px 20px 60px;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        }
+        .blog-hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -2px; }
+        .blog-hero p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
 
-        footer { padding: 60px 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-dim); }
+        /* Board Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 100px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+        }
+
+        /* Post Grid */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            gap: 30px;
+        }
+
+        .blog-card {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: row;
+            height: 280px;
+            cursor: pointer;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-image {
+            width: 35%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .card-content {
+            width: 65%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .blog-card h2 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            line-height: 1.3;
+            color: #fff;
+        }
+
+        .blog-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal Style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 11, 26, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        .modal.active { display: block; }
+        .modal-content {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            border-radius: 30px;
+            padding: 60px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .modal-close {
+            position: absolute;
+            top: 30px; right: 30px;
+            font-size: 2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .modal-close:hover { color: #fff; }
         
-        .sidebar-nav { position: fixed; right: 40px; top: 150px; width: 200px; display: none; }
-        @media (min-width: 1400px) { .sidebar-nav { display: block; } }
-        .sidebar-nav ul { list-style: none; }
-        .sidebar-nav li { margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
-        .sidebar-nav li:hover { color: var(--primary); }
+        .post-header { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 30px; }
+        .post-header h2 { font-size: 2.5rem; color: #fff; margin: 15px 0; line-height: 1.2; }
+        .post-meta { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.9rem; }
+
+        .post-body { font-size: 1.15rem; line-height: 1.8; color: #cbd5e1; }
+        .post-body h3 { color: #fff; margin: 40px 0 20px; font-size: 1.5rem; border-left: 4px solid var(--primary); padding-left: 15px; }
+        .post-body p { margin-bottom: 25px; text-align: justify; }
+        .post-body ul { margin-bottom: 30px; padding-left: 25px; }
+        .post-body li { margin-bottom: 12px; }
+        .post-body strong { color: var(--primary); }
+
+        @media (max-width: 992px) {
+            .container { grid-template-columns: 1fr; }
+            .blog-card { flex-direction: column; height: auto; }
+            .card-image { width: 100%; height: 200px; }
+            .card-content { width: 100%; }
+            .modal-content { padding: 30px; border-radius: 20px; }
+            .post-header h2 { font-size: 1.8rem; }
+        }
+
+        footer { padding: 80px 20px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-muted); }
     </style>
 </head>
 <body>
     <header>
         <nav>
-            <a href="index.html" class="logo" style="font-weight:900; letter-spacing:-1px;"><i class="fas fa-magic"></i> VORA</a>
+            <a href="index.html" class="logo">VORA</a>
             <div class="nav-links">
                 <a href="index.html">홈</a>
                 <a href="blog.html" style="color: var(--primary);">기술 블로그</a>
                 <a href="faq.html">FAQ</a>
                 <a href="blog_en.html" class="lang-switch"><i class="fas fa-globe"></i> EN</a>
-                <a href="app.html">앱 시작하기</a>
+                <a href="app.html" style="background: var(--primary); color: white !important; padding: 8px 20px; border-radius: 8px; font-weight: 700;">지금 시작하기</a>
             </div>
         </nav>
     </header>
 
+    <section class="blog-hero">
+        <div class="card-tag">TECH INSIGHTS</div>
+        <h1>STT & AI Knowledge Base</h1>
+        <p>최신 음성 인식 모델과 대규모 언어 모델(LLM)의 실제 성능을 심층 분석합니다.</p>
+    </section>
+
     <div class="container">
-        <article class="article">
-            <span class="article-category">Technological Insight</span>
-            <h2>음성 인식 기술(ASR)의 진화: HMM에서 End-to-End 신경망까지</h2>
-            <p>자동 음성 인식(Automatic Speech Recognition, ASR)은 지난 수십 년 동안 비약적인 발전을 거듭해 왔습니다. 초기 음성 인식 시스템은 은닉 마르코프 모델(Hidden Markov Model, HMM)과 가우시안 혼합 모델(GMM)에 기반을 두어 통계적인 방식으로 소리의 단위를 구분했습니다. 그러나 이 방식은 복잡한 배경 소음이나 다양한 억양을 처리하는 데 한계가 있었습니다.</p>
-            <div class="info-box">
-                <h4>신경망 기술의 도입</h4>
-                <p>2010년대에 들어서면서 딥러닝(Deep Learning)이 도입되었습니다. 특히 순환 신경망(RNN)과 LSTM(Long Short-Term Memory) 구조는 음성 데이터와 같은 시계열 데이터를 처리하는 데 탁월한 성능을 보였으며, 최근에는 트랜스포머(Transformer) 구조를 기반으로 한 모델들이 압도적인 정확도를 보여주고 있습니다.</p>
-            </div>
-            <p>본 서비스가 채택한 Web Speech API는 이러한 현대적인 음성 인식 기술을 브라우저 표준으로 구현한 것입니다. 클라우드 서버와의 실시간 통신을 통해 높은 인식률을 유지하면서도, 사용자 단말기에서 즉각적인 피드백을 제공할 수 있는 장점이 있습니다.</p>
-        </article>
+        <main class="blog-grid" id="blogGrid">
+            <!-- Post 1: OpenAI Whisper v3 -->
+            <article class="blog-card" onclick="openPost(1)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="card-content">
+                    <span class="card-tag">STT MODEL</span>
+                    <h2>OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능</h2>
+                    <p>OpenAI의 최신 Whisper v3 모델은 기존 80 Mel bins에서 128로 아키텍처를 확장하여 한국어 포함 다국어 인식률을 획기적으로 개선했습니다. 실제 WER 성능 변화를 살펴봅니다.</p>
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
+                        <span><i class="far fa-user"></i> VORA Research</span>
+                    </div>
+                </div>
+            </article>
 
-        <article class="article">
-            <span class="article-category">Artificial Intelligence</span>
-            <h2>LLM을 활용한 음성 전사 결과의 문맥 보정 원리</h2>
-            <p>음성 인식 엔진이 100% 완벽한 텍스트를 출력하기는 어렵습니다. 특히 '에이피아이'와 같이 전문 용어를 발음할 때 시스템은 이를 'API'로 인식할지, 아니면 들리는 그대로 '에이피아이'로 적을지 혼란을 겪습니다. 여기서 대규모 언어 모델(LLM)인 Gemini AI의 역할이 중요해집니다.</p>
-            <p>Gemini AI는 단순히 단어를 고치는 것에 그치지 않고, 문장 전체의 문맥(Context)을 파악합니다. 회의 주제가 'IT 프로젝트'라면 '에이피아이'는 당연히 'API'로 보정되어야 하며, 전후 문장에 '데이터베이스'나 '엔드포인트'라는 단어가 등장한다면 보정의 신뢰도는 더욱 높아집니다.</p>
-            <div class="info-box">
-                <h4>지능형 요약의 가치</h4>
-                <p>단순한 텍스트 기록보다 중요한 것은 '통찰'입니다. Gemini AI는 실시간 전사 데이터를 분석하여 질문 사항을 자동으로 추출하고, 회의가 끝날 때쯤 전체 내용을 요약하여 액션 아이템을 제안합니다. 이는 단순한 기록 도구를 넘어 전략적인 의사결정 지원 도구로서의 가치를 제공합니다.</p>
-            </div>
-        </article>
+            <!-- Post 2: Gemini 2.0 Flash -->
+            <article class="blog-card" onclick="openPost(2)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="card-content">
+                    <span class="card-tag">AI ANALYSIS</span>
+                    <h2>Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막</h2>
+                    <p>2025년 2월 정식 출시된 Gemini 2.0 Flash는 1.5 Flash 대비 2배 빠른 처리 속도와 강력한 실시간 추론 능력을 갖추었습니다. VORA의 엔진에 미치는 영향을 분석합니다.</p>
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span>
+                        <span><i class="far fa-user"></i> AI Engineer</span>
+                    </div>
+                </div>
+            </article>
 
-        <article class="article">
-            <span class="article-category">Core Technology</span>
-            <h2>VORA의 지능형 엔진: 실시간 요약 피드백 루프의 원리</h2>
-            <p>전통적인 음성 인식 시스템의 가장 큰 한계는 '맥락의 단절'입니다. 대화가 길어질수록 AI는 초반에 논의된 중요한 주제를 잊거나, 현재 언급되는 '그것'이 무엇을 의미하는지 파악하지 못하는 경우가 빈번합니다. VORA는 이를 해결하기 위해 <strong>'실시간 요약 피드백 루프(Summary Feedback Loop)'</strong> 기술을 도입했습니다.</p>
-            
-            <div class="info-box">
-                <h4>1. 1분 단위의 동적 컨텍스트 업데이트</h4>
-                <p>VORA는 회의가 진행되는 동안 1분마다 현재까지의 대화 내용을 압축하여 핵심 요약본을 생성합니다. 이 요약본은 단순히 사용자에게 보여주기 위한 용도가 아닙니다. 생성된 요약 데이터는 **즉시 AI의 시스템 프롬프트로 다시 주입**됩니다. 이는 AI에게 매 분마다 '현재 우리가 무엇을 논의하고 있는지'에 대한 최신 기억을 업데이트해주는 것과 같습니다.</p>
-            </div>
+            <!-- Post 3: Open Source STT Trends -->
+            <article class="blog-card" onclick="openPost(3)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="card-content">
+                    <span class="card-tag">OPEN SOURCE</span>
+                    <h2>2026 오픈소스 STT 트렌드: On-Device & Low Latency</h2>
+                    <p>Moonshine, Canary Qwen, Sherpa-ONNX 등 2026년 주목받는 오픈소스 STT 모델들을 비교합니다. 클라우드 의존도를 낮추고 보안을 강화하는 최신 아키텍처를 탐구합니다.</p>
+                    <div class="card-footer">
+                        <span><i class="far fa-calendar-alt"></i> 2026. 01. 30</span>
+                        <span><i class="far fa-user"></i> VORA Dev Team</span>
+                    </div>
+                </div>
+            </article>
+        </main>
 
-            <div class="info-box">
-                <h4>2. 요약 기반의 고정밀 문맥 보정</h4>
-                <p>음성 인식 과정에서 발생하는 오타는 대부분 주변 단어와의 연관성 부족에서 옵니다. VORA의 보정 엔진은 개별 단어만 보지 않습니다. 재주입된 요약본을 통해 확보된 전체 맥락을 바탕으로, 발음이 유사한 수많은 후보 중 **현재 비즈니스 상황에 가장 적합한 용어**를 확률적으로 선택하여 교정합니다.</p>
+        <aside class="sidebar">
+            <div class="widget">
+                <h3>카테고리</h3>
+                <ul class="category-list">
+                    <li><span>STT 기술 분석</span></li>
+                    <li><span>LLM & 추론</span></li>
+                    <li><span>온디바이스 AI</span></li>
+                    <li><span>데이터 보안</span></li>
+                </ul>
             </div>
+        </aside>
+    </div>
 
-            <div class="info-box">
-                <h4>3. 토큰 효율성과 장기 기억력 유지</h4>
-                <p>긴 회의의 모든 텍스트 스크립트를 AI에게 매번 보내는 것은 기술적으로 불가능하거나 매우 비효율적입니다. VORA는 전체 스크립트 대신 정제된 '핵심 요약본'을 AI의 피드백으로 활용함으로써, 수 시간의 긴 대화 속에서도 AI가 지치지 않고 일관된 논리 체계를 유지하며 통찰을 제공할 수 있도록 설계되었습니다.</p>
+    <!-- Modal Container -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closePost()">&times;</span>
+            <div id="modalBody">
+                <!-- Content will be injected here -->
             </div>
-            <p>이러한 피드백 루프 기술은 VORA가 단순한 받아쓰기 앱을 넘어, 회의의 흐름을 완벽하게 이해하는 '디지털 현자(Voice Oracle)'로 거듭나게 하는 핵심 동력입니다.</p>
-        </article>
-
-        <article class="article">
-            <span class="article-category">Security & Privacy</span>
-            <h2>기업 환경에서의 데이터 보안: API 플랜별 정책 차이</h2>
-            <p>인공지능 도입을 검토하는 많은 기업들이 가장 중요하게 생각하는 요소는 '데이터 주권'입니다. 회의 내용은 기업의 핵심 자산이자 기밀이기 때문입니다. 본 서비스는 사용자가 직접 발급받은 Google Gemini API 키를 통해 작동하며, 데이터 보안 수준은 사용자의 API 플랜에 따라 결정됩니다.</p>
-            <p>Google AI Studio의 정책에 따르면, <strong>유료 결제가 설정된 API(Paid Tier)</strong>를 사용할 경우 입력되는 모든 회의 텍스트는 모델 학습에 사용되지 않으며 완전한 독립성이 보장됩니다. 반면, <strong>무료 플랜(Free Tier)</strong>의 경우 서비스 개선을 위한 학습에 활용될 가능성이 있으므로, 보안이 중요한 정식 회의에서는 유료 플랜 사용을 권장합니다.</p>
-            <div class="info-box">
-                <h4>Privacy-by-Design</h4>
-                <p>당사는 어떠한 경우에도 사용자의 음성이나 전사된 텍스트 데이터를 자체 서버에 수집하거나 저장하지 않습니다. 모든 데이터 처리는 사용자의 브라우저와 Google의 보안 서버 간의 직접 통신(HTTPS)을 통해 이루어집니다.</p>
-            </div>
-        </article>
+        </div>
     </div>
 
     <footer>
-        <p>© 2026 AI MEETING. Empowering professional communication with intelligent AI solutions.</p>
-        <div style="margin-top: 15px;">
-            <a href="terms.html" style="color: var(--text-muted); margin: 0 10px;">이용약관</a>
-            <a href="privacy.html" style="color: var(--text-muted); margin: 0 10px;">개인정보처리방침</a>
-            <a href="admin.html" style="color: var(--text-muted); margin: 0 10px;">관리자</a>
-        </div>
+        <p>© 2026 VORA. Empowering professional communication with intelligent AI solutions.</p>
     </footer>
+
+    <script>
+        const posts = {
+            1: {
+                tag: "STT MODEL",
+                title: "OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능",
+                author: "VORA Research",
+                date: "2026. 02. 05",
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">STT MODEL</span>
+                        <h2>OpenAI Whisper v3: 128 Mel Bins로 진화한 인식 성능</h2>
+                        <div class="post-meta">
+                            <span><i class="far fa-user"></i> VORA Research</span>
+                            <span><i class="far fa-calendar-alt"></i> 2026. 02. 05</span>
+                        </div>
+                    </div>
+                    <div class="post-body">
+                        <p>OpenAI는 2023년 말 Whisper v3를 출시하며 음성 인식 분야의 새로운 표준을 제시했습니다. 이전 버전인 v2와 비교했을 때 가장 큰 변화는 아키텍처의 확장과 다국어 데이터의 정교화입니다.</p>
+                        
+                        <h3>주요 기술적 개선 사항</h3>
+                        <ul>
+                            <li><strong>Mel Frequency Bins 확장:</strong> 기존 80 bins에서 128 bins로 확장되었습니다. 이는 오디오 신호에서 더 세밀한 특징을 추출할 수 있게 하여, 배경 소음이 심하거나 목소리가 작은 환경에서도 인식 정확도를 높여줍니다.</li>
+                            <li><strong>에러율(WER) 감소:</strong> Whisper v2 대비 비영어권 언어에서 20~30%의 오류 감소율을 보여줍니다. 특히 한국어의 경우, 대화체와 전문 용어 인식 성능이 눈에 띄게 향상되었습니다.</li>
+                            <li><strong>V3 Turbo의 등장:</strong> 처리 속도를 획기적으로 높인 Turbo 모델은 실시간성이 중요한 VORA와 같은 서비스에서 핵심적인 역할을 수행합니다.</li>
+                        </ul>
+
+                        <h3>VORA의 도입 전략</h3>
+                        <p>VORA는 Whisper v3 아키텍처를 기반으로 사용자 브라우저에서 직접 구동되는 온디바이스 STT와 클라우드 정밀 STT를 혼합하여 사용합니다. 이를 통해 보안성과 정확도라는 두 마리 토끼를 잡고 있습니다.</p>
+                    </div>
+                `
+            },
+            2: {
+                tag: "AI ANALYSIS",
+                title: "Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막",
+                author: "AI Engineer",
+                date: "2026. 02. 06",
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">AI ANALYSIS</span>
+                        <h2>Gemini 2.0 Flash GA: 실시간 멀티모달 시대의 개막</h2>
+                        <div class="post-meta">
+                            <span><i class="far fa-user"></i> AI Engineer</span>
+                            <span><i class="far fa-calendar-alt"></i> 2026. 02. 06</span>
+                        </div>
+                    </div>
+                    <div class="post-body">
+                        <p>Google은 2025년 2월 5일, Gemini 2.0 Flash의 일반 가용성(GA)을 발표했습니다. 이 모델은 "Flash"라는 이름에 걸맞게 극도로 빠른 응답 속도와 효율성에 초점이 맞춰져 있습니다.</p>
+                        
+                        <h3>왜 2.0 Flash인가?</h3>
+                        <ul>
+                            <li><strong>압도적인 속도:</strong> Gemini 1.5 Flash 대비 첫 토큰 출력 속도(TTFT)가 2배 이상 빨라졌습니다. 이는 VORA의 '실시간 질문 답변' 기능에서 지연 시간을 거의 느낄 수 없게 만듭니다.</li>
+                            <li><strong>100만 토큰 컨텍스트:</strong> 거대한 컨텍스트 윈도우를 유지하면서도 속도를 놓치지 않았습니다. 10시간이 넘는 마라톤 회의 데이터도 한 번에 처리하여 요약할 수 있습니다.</li>
+                            <li><strong>기본 도구 사용(Native Tool Use):</strong> 구글 검색 검색 기능을 기본적으로 지원하여, 회의 중 모르는 용어가 나오면 AI가 실시간으로 최신 정보를 검색하여 답변의 정확도를 높여줍니다.</li>
+                        </ul>
+
+                        <h3>VORA 엔진과의 시너지</h3>
+                        <p>현재 VORA는 Gemini 2.0 Flash API를 통해 실시간 보정 및 요약을 수행합니다. 특히 멀티모달 능력을 활용하여 향후 회의 중 공유되는 이미지나 차트까지 분석하는 기능을 준비 중입니다.</p>
+                    </div>
+                `
+            },
+            3: {
+                tag: "OPEN SOURCE",
+                title: "2026 오픈소스 STT 트렌드: On-Device & Low Latency",
+                author: "VORA Dev Team",
+                date: "2026. 01. 30",
+                content: `
+                    <div class="post-header">
+                        <span class="card-tag">OPEN SOURCE</span>
+                        <h2>2026 오픈소스 STT 트렌드: On-Device & Low Latency</h2>
+                        <div class="post-meta">
+                            <span><i class="far fa-user"></i> VORA Dev Team</span>
+                            <span><i class="far fa-calendar-alt"></i> 2026. 01. 30</span>
+                        </div>
+                    </div>
+                    <div class="post-body">
+                        <p>2026년 STT 시장은 대형 클라우드 모델뿐만 아니라, 로컬 장치에서 돌아가는 가벼우면서도 강력한 오픈소스 모델들이 주도하고 있습니다.</p>
+                        
+                        <h3>주목해야 할 오픈소스 모델</h3>
+                        <ul>
+                            <li><strong>Canary Qwen 2.5B:</strong> 영어권에서 극강의 정확도를 보여주며, 적은 파라미터로도 엔터프라이즈급 성능을 발휘합니다.</li>
+                            <li><strong>Sherpa-ONNX:</strong> WebAssembly(WASM)를 통해 브라우저에서 직접 Whisper 모델을 실행할 수 있게 해주는 핵심 프레임워크입니다. VORA의 서버리스 모드의 근간이 됩니다.</li>
+                            <li><strong>Moonshine:</strong> 에지 디바이스와 모바일 환경에 최적화된 초경량 모델로, 밀리초 단위의 지연 시간을 보장합니다.</li>
+                        </ul>
+
+                        <h3>기술적 전망</h3>
+                        <p>앞으로의 STT는 단순한 텍스트 변환을 넘어, <strong>'Context-Aware ASR'</strong>로 진화할 것입니다. 대화의 주제를 AI가 미리 파악하고, 그 주제에 맞는 전문 용어 사전을 동적으로 로드하여 인식률을 높이는 방식이 주류가 될 것으로 보입니다.</p>
+                    </div>
+                `
+            }
+        };
+
+        function openPost(id) {
+            const post = posts[id];
+            if (post) {
+                document.getElementById('modalBody').innerHTML = post.content;
+                document.getElementById('postModal').classList.add('active');
+                document.body.style.overflow = 'hidden'; // Scroll lock
+            }
+        }
+
+        function closePost() {
+            document.getElementById('postModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('postModal');
+            if (event.target == modal) {
+                closePost();
+            }
+        }
+    </script>
 </body>
 </html>
