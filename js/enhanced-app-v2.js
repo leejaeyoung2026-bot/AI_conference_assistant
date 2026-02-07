@@ -46,6 +46,69 @@ class EnhancedMeetingApp {
             speakerHistory: []
         };
 
+        // 다국어 지원
+        this.i18n = {
+            ko: {
+                recording: '녹음 중',
+                waiting: '대기 중',
+                paused: '일시정지',
+                startRecording: '녹음 시작',
+                stopRecording: '녹음 중지',
+                recordingStarted: '녹음 시작됨',
+                recordingStopped: '녹음 중지됨',
+                apiKeyNotSet: 'API 키 미설정',
+                apiKeySet: 'API 키 설정 완료',
+                contextNotSet: '컨텍스트 미설정',
+                contextSet: '컨텍스트 설정됨',
+                placeholderQuestion: '질문을 입력하세요...',
+                placeholderMemo: '중요 메모를 입력하세요...',
+                noiseSuppression: '노이즈 억제가',
+                echoCancellation: '에코 캔슬링이',
+                enabled: '활성화되었습니다.',
+                disabled: '비활성화되었습니다.',
+                apiWarning: 'API 키를 먼저 설정해 주세요.',
+                aiError: '죄송합니다. 답변을 생성하지 못했습니다.',
+                error: '오류 발생',
+                userLabel: '나의 질문',
+                aiLabel: 'Gemini',
+                memoLabel: '중요 메모',
+                speakerLabel: '발표자',
+                sensitivityNormal: '보통',
+                downloadStarted: '음성 파일 다운로드를 시작합니다.',
+                noDownloadData: '다운로드할 녹음 데이터가 없습니다.'
+            },
+            en: {
+                recording: 'Recording',
+                waiting: 'Waiting',
+                paused: 'Paused',
+                startRecording: 'Start Recording',
+                stopRecording: 'Stop Recording',
+                recordingStarted: 'Recording Started',
+                recordingStopped: 'Recording Stopped',
+                apiKeyNotSet: 'API Key Not Set',
+                apiKeySet: 'API Key Configured',
+                contextNotSet: 'Context Not Set',
+                contextSet: 'Context Configured',
+                placeholderQuestion: 'Type your question...',
+                placeholderMemo: 'Type an important memo...',
+                noiseSuppression: 'Noise suppression is',
+                echoCancellation: 'Echo cancellation is',
+                enabled: 'enabled.',
+                disabled: 'disabled.',
+                apiWarning: 'Please set your API key first.',
+                aiError: 'Sorry, I could not generate an answer.',
+                error: 'Error occurred',
+                userLabel: 'My Question',
+                aiLabel: 'Gemini',
+                memoLabel: 'Important Memo',
+                speakerLabel: 'Speaker',
+                sensitivityNormal: 'Normal',
+                downloadStarted: 'Starting audio file download.',
+                noDownloadData: 'No recording data to download.'
+            }
+        };
+        this.currentLang = document.documentElement.lang === 'en' ? 'en' : 'ko';
+
         // 관리자 채널 초기화
         this.adminChannel = new BroadcastChannel('app_status_channel');
         this.startHeartbeat();
@@ -80,6 +143,10 @@ class EnhancedMeetingApp {
 
     sendLog(message, level = 'info') {
         this.adminChannel.postMessage({ type: 'LOG', data: { message, level } });
+    }
+
+    t(key) {
+        return this.i18n[this.currentLang][key] || key;
     }
 
     initializeElements() {
@@ -175,8 +242,8 @@ class EnhancedMeetingApp {
                 // 플레이스홀더 변경
                 if (el.chatInput) {
                     el.chatInput.placeholder = this.state.chatMode === 'question' 
-                        ? '질문을 입력하세요...' 
-                        : '중요 메모를 입력하세요...';
+                        ? this.t('placeholderQuestion') 
+                        : this.t('placeholderMemo');
                 }
             });
         });
@@ -213,14 +280,14 @@ class EnhancedMeetingApp {
             el.enableNoiseSuppression.addEventListener('change', (e) => {
                 this.state.enableNoiseSuppression = e.target.checked;
                 this.saveSettings();
-                this.showToast(`노이즈 억제가 ${e.target.checked ? '활성화' : '비활성화'}되었습니다.`, 'info');
+                this.showToast(`${this.t('noiseSuppression')} ${e.target.checked ? this.t('enabled') : this.t('disabled')}`, 'info');
             });
         }
         if (el.enableEchoCancellation) {
             el.enableEchoCancellation.addEventListener('change', (e) => {
                 this.state.enableEchoCancellation = e.target.checked;
                 this.saveSettings();
-                this.showToast(`에코 캔슬링이 ${e.target.checked ? '활성화' : '비활성화'}되었습니다.`, 'info');
+                this.showToast(`${this.t('echoCancellation')} ${e.target.checked ? this.t('enabled') : this.t('disabled')}`, 'info');
             });
         }
     }
@@ -253,7 +320,7 @@ class EnhancedMeetingApp {
             this.state.startTime = Date.now();
             this.startTimer();
             this.updateButtonStates('recording');
-            this.sendLog('녹음 시작', 'success');
+            this.sendLog(this.t('recordingStarted'), 'success');
             if (this.state.enableAutoSummary && this.geminiAPI.isConfigured) this.geminiAPI.startSummaryTimer();
         } catch (e) {
             this.showToast(e.message, 'error');
@@ -270,7 +337,7 @@ class EnhancedMeetingApp {
         this.state.isRecording = false;
         this.updateButtonStates('idle');
         this.updateRecordingStatus('stopped');
-        this.sendLog('녹음 중지', 'info');
+        this.sendLog(this.t('recordingStopped'), 'info');
 
         // 음성 내보내기 버튼 활성화
         if (this.elements.exportAudioBtn) {
@@ -283,9 +350,9 @@ class EnhancedMeetingApp {
     exportAudio() {
         const success = this.audioRecorder.downloadRecording(`VORA_Meeting`);
         if (success) {
-            this.showToast('음성 파일 다운로드를 시작합니다.', 'success');
+            this.showToast(this.t('downloadStarted'), 'success');
         } else {
-            this.showToast('다운로드할 녹음 데이터가 없습니다.', 'error');
+            this.showToast(this.t('noDownloadData'), 'error');
         }
     }
 
@@ -436,10 +503,14 @@ class EnhancedMeetingApp {
 
     updateSpeakerIndicator(type) {
         const el = this.elements.speakerIndicator;
-        if (el) el.className = `speaker-indicator ${type}`;
+        if (el) {
+            el.className = `speaker-indicator ${type}`;
+            const label = el.querySelector('.speaker-label');
+            if (label) label.textContent = this.t('speakerLabel');
+        }
     }
 
-    setPrimarySpeaker() { this.speakerDetector.setPrimarySpeaker(); this.showToast('발표자 설정됨', 'success'); }
+    setPrimarySpeaker() { this.speakerDetector.setPrimarySpeaker(); this.showToast(this.t('contextSet'), 'success'); }
 
     updateStats() {
         if (this.elements.totalSentences) this.elements.totalSentences.textContent = this.data.fullTranscript.length;
@@ -465,7 +536,7 @@ class EnhancedMeetingApp {
         
         const statusText = el.querySelector('.status-text');
         if (statusText) {
-            statusText.textContent = isActive ? '녹음 중' : (s === 'paused' ? '일시정지' : '대기 중');
+            statusText.textContent = isActive ? this.t('recording') : (s === 'paused' ? this.t('paused') : this.t('waiting'));
         }
 
         // 시각화 애니메이션 동기화
@@ -547,7 +618,7 @@ class EnhancedMeetingApp {
         if (!el) return;
         const isConfigured = this.geminiAPI.isConfigured;
         el.className = `api-status ${isConfigured ? 'configured' : ''}`;
-        el.querySelector('.status-text').textContent = isConfigured ? 'API 키 설정 완료' : 'API 키 미설정';
+        el.querySelector('.status-text').textContent = isConfigured ? this.t('apiKeySet') : this.t('apiKeyNotSet');
     }
 
     updateContextStatusUI() {
@@ -556,7 +627,7 @@ class EnhancedMeetingApp {
         const hasContext = (this.elements.meetingContext?.value.trim().length > 0) || 
                           (this.elements.priorityTerms?.value.trim().length > 0);
         el.className = `context-status ${hasContext ? 'active' : ''}`;
-        el.querySelector('span').textContent = hasContext ? '컨텍스트 설정됨' : '컨텍스트 미설정';
+        el.querySelector('span').textContent = hasContext ? this.t('contextSet') : this.t('contextNotSet');
     }
 
     showToast(m, t = 'info') {
@@ -575,7 +646,7 @@ class EnhancedMeetingApp {
         if (!text) return;
 
         if (!this.geminiAPI.isConfigured) {
-            this.showToast('API 키를 먼저 설정해 주세요.', 'warning');
+            this.showToast(this.t('apiWarning'), 'warning');
             this.openSettings();
             return;
         }
@@ -596,10 +667,10 @@ class EnhancedMeetingApp {
             if (response && response.answer) {
                 this.addChatMessage('ai', response.answer);
             } else {
-                this.addChatMessage('ai', '죄송합니다. 답변을 생성하지 못했습니다.');
+                this.addChatMessage('ai', this.t('aiError'));
             }
         } catch (e) {
-            this.addChatMessage('ai', `오류 발생: ${e.message}`);
+            this.addChatMessage('ai', `${this.t('error')}: ${e.message}`);
         }
     }
 
@@ -618,7 +689,7 @@ class EnhancedMeetingApp {
         msgDiv.className = `chat-message ${role} ${modeClass}`;
         
         const icon = role === 'ai' ? '🤖' : (mode === 'memo' ? '📌' : '👤');
-        const label = role === 'ai' ? 'Gemini' : (mode === 'memo' ? '중요 메모' : '나의 질문');
+        const label = role === 'ai' ? this.t('aiLabel') : (mode === 'memo' ? this.t('memoLabel') : this.t('userLabel'));
 
         msgDiv.innerHTML = `
             <div class="message-info"><span class="icon">${icon}</span> <span class="label">${label}</span></div>

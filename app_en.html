@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VORA - 실시간 지능형 회의 보조 시스템</title>
+    <title>VORA - Real-time Intelligent Meeting Assistant</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6874320463657568"
      crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
@@ -14,18 +14,18 @@
 </head>
 
 <body>
-    <!-- 상단 네비게이션 추가 -->
+    <!-- Top Navigation -->
     <nav style="background: #0f172a; padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
-        <a href="index.html" style="color: white; text-decoration: none; font-weight: 900; font-size: 0.9rem;"><i class="fas fa-arrow-left"></i> 홈으로</a>
+        <a href="index_en.html" style="color: white; text-decoration: none; font-weight: 900; font-size: 0.9rem;"><i class="fas fa-arrow-left"></i> Home</a>
         <div style="display: flex; gap: 20px;">
-            <a href="blog.html" style="color: #94a3b8; text-decoration: none; font-size: 0.8rem;">기술 가이드</a>
-            <a href="admin.html" style="color: #94a3b8; text-decoration: none; font-size: 0.8rem;">시스템 상태</a>
-            <a href="app_en.html" style="color: #6366f1; text-decoration: none; font-size: 0.8rem; font-weight: 700;">EN</a>
+            <a href="blog.html" style="color: #94a3b8; text-decoration: none; font-size: 0.8rem;">Tech Guide</a>
+            <a href="admin.html" style="color: #94a3b8; text-decoration: none; font-size: 0.8rem;">System Status</a>
+            <a href="app.html" style="color: #6366f1; text-decoration: none; font-size: 0.8rem; font-weight: 700;">KO</a>
         </div>
     </nav>
 
     <div class="app-container">
-        <!-- 헤더 -->
+        <!-- Header -->
         <header class="app-header">
             <div class="logo">
                 <i class="fas fa-magic"></i>
@@ -37,30 +37,30 @@
                     <i class="fas fa-clock"></i>
                     <span id="timer">00:00:00</span>
                 </div>
-                <!-- 발화자 표시 -->
+                <!-- Speaker Indicator -->
                 <div class="speaker-indicator primary" id="speakerIndicator">
                     <span class="speaker-icon">👤</span>
-                    <span class="speaker-label">발표자</span>
+                    <span class="speaker-label">Speaker</span>
                 </div>
-                <button class="btn btn-settings" id="settingsBtn" title="설정">
+                <button class="btn btn-settings" id="settingsBtn" title="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
             </div>
         </header>
 
-        <!-- 메인 컨텐츠 -->
+        <!-- Main Content -->
         <main class="main-content">
-            <!-- 왼쪽: 음성인식 패널 -->
+            <!-- Left: Transcription Panel -->
             <section class="panel transcription-panel">
                 <div class="panel-header">
-                    <h2><i class="fas fa-comment-dots"></i> 실시간 음성인식</h2>
+                    <h2><i class="fas fa-comment-dots"></i> Real-time Transcription</h2>
                     <div class="status-indicator" id="statusIndicator">
                         <span class="status-dot"></span>
-                        <span class="status-text">대기 중</span>
+                        <span class="status-text">Waiting</span>
                     </div>
                 </div>
 
-                <!-- 음성 시각화 -->
+                <!-- Voice Visualizer -->
                 <div class="voice-visualizer" id="voiceVisualizer">
                     <div class="visualizer-bars">
                         <span></span><span></span><span></span><span></span><span></span>
@@ -68,162 +68,162 @@
                     </div>
                 </div>
 
-                <!-- 컨트롤 버튼 -->
+                <!-- Control Buttons -->
                 <div class="control-buttons">
                     <button class="btn btn-primary btn-large" id="startBtn">
                         <i class="fas fa-play"></i>
-                        <span>녹음 시작</span>
+                        <span>Start Recording</span>
                     </button>
                     <button class="btn btn-warning btn-large" id="pauseBtn" disabled>
                         <i class="fas fa-pause"></i>
-                        <span>일시정지</span>
+                        <span>Pause</span>
                     </button>
                     <button class="btn btn-danger btn-large" id="stopBtn" disabled>
                         <i class="fas fa-stop"></i>
-                        <span>녹음 중지</span>
+                        <span>Stop Recording</span>
                     </button>
                 </div>
 
-                <!-- 발화자 설정 버튼 -->
+                <!-- Speaker Settings -->
                 <div class="speaker-controls">
-                    <button class="btn btn-sm btn-outline" id="setPrimarySpeakerBtn" title="현재 발화자를 주발표자로 설정">
+                    <button class="btn btn-sm btn-outline" id="setPrimarySpeakerBtn" title="Set current speaker as primary">
                         <i class="fas fa-user-check"></i>
-                        <span>주발표자 설정</span>
+                        <span>Set Primary Speaker</span>
                     </button>
                 </div>
 
-                <!-- 실시간 텍스트 표시 -->
+                <!-- Real-time Text Display -->
                 <div class="transcript-container">
                     <div class="current-speech" id="currentSpeech">
-                        <p class="placeholder">녹음 버튼을 눌러 회의를 시작하세요...</p>
+                        <p class="placeholder">Press the record button to start the meeting...</p>
                     </div>
                     <div class="transcript-history" id="transcriptHistory">
-                        <!-- 인식된 텍스트가 여기에 표시됩니다 -->
+                        <!-- Transcribed text will appear here -->
                     </div>
                 </div>
             </section>
 
-            <!-- 중간: 질문 및 답변 패널 -->
+            <!-- Middle: Q&A Panel -->
             <section class="panel analysis-panel">
-                <!-- 질문 감지 영역 -->
+                <!-- Question Detection -->
                 <div class="sub-panel questions-panel">
                     <div class="panel-header">
-                        <h2><i class="fas fa-question-circle"></i> 감지된 질문</h2>
+                        <h2><i class="fas fa-question-circle"></i> Detected Questions</h2>
                         <span class="badge" id="questionCount">0</span>
                     </div>
                     <div class="questions-list" id="questionsList">
                         <div class="empty-state">
                             <i class="fas fa-comment-slash"></i>
-                            <p>감지된 질문이 없습니다</p>
+                            <p>No questions detected</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- AI 답변 영역 -->
+                <!-- AI Answers -->
                 <div class="sub-panel ai-answers-panel">
                     <div class="panel-header">
-                        <h2><i class="fas fa-robot"></i> AI 답변</h2>
+                        <h2><i class="fas fa-robot"></i> AI Answers</h2>
                         <span class="badge badge-ai" id="answerCount">0</span>
                     </div>
                     <div class="ai-answers-list" id="aiAnswersList">
                         <div class="empty-state">
                             <i class="fas fa-magic"></i>
-                            <p>질문이 감지되면 Gemini AI가 답변합니다</p>
+                            <p>Gemini AI will answer once a question is detected</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 오른쪽: 채팅 및 요약 패널 -->
+            <!-- Right: Chat & Summary Panel -->
             <section class="panel analysis-panel">
-                <!-- AI 채팅 영역 (신규) -->
+                <!-- AI Chat -->
                 <div class="sub-panel chat-panel">
                     <div class="panel-header">
-                        <h2><i class="fas fa-comments"></i> AI와 직접 대화</h2>
+                        <h2><i class="fas fa-comments"></i> Chat with AI</h2>
                     </div>
                     <div class="chat-history" id="chatHistory">
                         <div class="empty-state">
                             <i class="fas fa-comment-dots"></i>
-                            <p>Gemini에게 궁금한 점을 직접 물어보세요</p>
+                            <p>Ask Gemini anything you're curious about</p>
                         </div>
                     </div>
                     <div class="chat-mode-selector">
                         <button class="mode-btn active" data-mode="question">
-                            <i class="fas fa-question-circle"></i> 질문
+                            <i class="fas fa-question-circle"></i> Question
                         </button>
                         <button class="mode-btn" data-mode="memo">
-                            <i class="fas fa-sticky-note"></i> 메모
+                            <i class="fas fa-sticky-note"></i> Memo
                         </button>
                     </div>
                     <div class="chat-input-wrapper">
-                        <input type="text" id="chatInput" placeholder="질문을 입력하세요...">
+                        <input type="text" id="chatInput" placeholder="Type your question...">
                         <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
 
-                <!-- 회의 요약 영역 -->
+                <!-- Meeting Summary -->
                 <div class="sub-panel summary-panel">
                     <div class="panel-header">
-                        <h2><i class="fas fa-file-alt"></i> 회의 요약</h2>
-                        <span class="badge badge-summary" id="summaryStatus">대기</span>
+                        <h2><i class="fas fa-file-alt"></i> Meeting Summary</h2>
+                        <span class="badge badge-summary" id="summaryStatus">Waiting</span>
                     </div>
                     <div class="meeting-summary" id="meetingSummary">
                         <div class="empty-state">
                             <i class="fas fa-clipboard-list"></i>
-                            <p>회의가 진행되면 자동 요약됩니다</p>
+                            <p>Summaries will appear as the meeting progresses</p>
                         </div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- 하단 통계 바 -->
+        <!-- Stats Bar -->
         <footer class="stats-bar">
             <div class="stat-item">
                 <i class="fas fa-file-alt"></i>
-                <span>총 단어: <strong id="totalWords">0</strong></span>
+                <span>Total Words: <strong id="totalWords">0</strong></span>
             </div>
             <div class="stat-item">
                 <i class="fas fa-paragraph"></i>
-                <span>총 문장: <strong id="totalSentences">0</strong></span>
+                <span>Total Sentences: <strong id="totalSentences">0</strong></span>
             </div>
             <div class="stat-item">
                 <i class="fas fa-question"></i>
-                <span>질문 수: <strong id="totalQuestions">0</strong></span>
+                <span>Questions: <strong id="totalQuestions">0</strong></span>
             </div>
 
             <div class="export-buttons">
                 <button class="btn btn-secondary btn-sm" id="clearBtn">
                     <i class="fas fa-trash-alt"></i>
-                    <span>기록 삭제</span>
+                    <span>Clear Records</span>
                 </button>
                 <button class="btn btn-info btn-sm" id="exportAudioBtn" disabled>
                     <i class="fas fa-file-audio"></i>
-                    <span>음성 내보내기</span>
+                    <span>Export Audio</span>
                 </button>
                 <button class="btn btn-export" id="exportBtn">
                     <i class="fas fa-download"></i>
-                    <span>회의록 내보내기</span>
+                    <span>Export Minutes</span>
                 </button>
             </div>
         </footer>
     </div>
 
-    <!-- 설정 모달 -->
+    <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-cog"></i> 설정</h3>
+                <h3><i class="fas fa-cog"></i> Settings</h3>
                 <button class="btn-close" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Gemini API 설정 섹션 -->
+                <!-- Gemini AI Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-robot"></i> Gemini AI 설정</h4>
+                    <h4><i class="fas fa-robot"></i> Gemini AI Settings</h4>
                     <div class="setting-group">
-                        <label>Gemini API 키</label>
+                        <label>Gemini API Key</label>
                         <div class="api-key-input-wrapper">
-                            <input type="password" id="geminiApiKey" placeholder="API 키를 입력하세요">
+                            <input type="password" id="geminiApiKey" placeholder="Enter your API Key">
                             <button type="button" class="btn-toggle-visibility" id="toggleApiKeyVisibility">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -232,84 +232,84 @@
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="autoAnswer" checked>
-                            질문 감지 시 자동 AI 답변
+                            Auto AI Answer on Question Detection
                         </label>
                     </div>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableAutoSummary" checked>
-                            📝 주기적 회의 요약
+                            📝 Periodic Meeting Summary
                         </label>
                     </div>
                     <div class="api-status" id="apiStatus">
                         <span class="status-dot"></span>
-                        <span class="status-text">API 키 미설정</span>
+                        <span class="status-text">API Key Not Set</span>
                     </div>
                 </div>
 
                 <div class="setting-divider"></div>
 
-                <!-- 발화자 감지 설정 -->
+                <!-- Speaker Detection Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-users"></i> 발화자 감지 설정</h4>
+                    <h4><i class="fas fa-users"></i> Speaker Detection Settings</h4>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableSpeakerDetection" checked>
-                            👤 발화자 자동 구분
+                            👤 Auto Speaker Distinction
                         </label>
                     </div>
                 </div>
 
                 <div class="setting-divider"></div>
 
-                <!-- 회의 컨텍스트 설정 -->
+                <!-- Meeting Context Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-clipboard-list"></i> 회의 컨텍스트</h4>
+                    <h4><i class="fas fa-clipboard-list"></i> Meeting Context</h4>
                     <div class="setting-group">
-                        <label>회의 주제 / 프로젝트명</label>
+                        <label>Meeting Topic / Project Name</label>
                         <textarea id="meetingContext" rows="3"
-                            placeholder="예: 신제품 개발 회의&#10;주요 키워드: 시장분석, ROI, 출시일정"></textarea>
+                            placeholder="e.g.: New Product Development Meeting&#10;Keywords: Market Analysis, ROI, Launch Schedule"></textarea>
                     </div>
                     <div class="setting-group">
-                        <label>우선 인식 용어 (쉼표로 구분)</label>
-                        <input type="text" id="priorityTerms" placeholder="예: 프로젝트명, 제품코드, 전문용어">
+                        <label>Priority Terms (comma-separated)</label>
+                        <input type="text" id="priorityTerms" placeholder="e.g.: ProjectName, ProductCode, TechnicalTerms">
                     </div>
                     <div class="context-status" id="contextStatus">
                         <i class="fas fa-info-circle"></i>
-                        <span>컨텍스트 미설정</span>
+                        <span>Context Not Set</span>
                     </div>
                 </div>
 
                 <div class="setting-divider"></div>
 
-                <!-- 오디오 처리 설정 -->
+                <!-- Audio Processing Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-microphone-alt"></i> 오디오 처리 설정</h4>
-                    <p class="setting-hint" style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-dim);">대화 내용이 잘린다면 노이즈 억제를 꺼보세요.</p>
+                    <h4><i class="fas fa-microphone-alt"></i> Audio Processing Settings</h4>
+                    <p class="setting-hint" style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-dim);">If conversation is cut off, try turning off noise suppression.</p>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableNoiseSuppression" checked>
-                            🔇 노이즈 억제 (배경 소음 제거)
+                            🔇 Noise Suppression
                         </label>
                     </div>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="enableEchoCancellation" checked>
-                            🔊 에코 캔슬링 (울림 방지)
+                            🔊 Echo Cancellation
                         </label>
                     </div>
                 </div>
 
                 <div class="setting-divider"></div>
 
-                <!-- 언어 설정 섹션 -->
+                <!-- Language Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-globe"></i> 언어 설정</h4>
+                    <h4><i class="fas fa-globe"></i> Language Settings</h4>
                     <div class="setting-group">
-                        <label>인식 언어</label>
+                        <label>Recognition Language</label>
                         <select id="languageSelect">
                             <option value="ko-KR">🇰🇷 한국어</option>
-                            <option value="en-US">🇺🇸 English (US)</option>
+                            <option value="en-US" selected>🇺🇸 English (US)</option>
                             <option value="ja-JP">🇯🇵 日本語</option>
                             <option value="zh-CN">🇨🇳 中文 (简体)</option>
                         </select>
@@ -318,20 +318,20 @@
 
                 <div class="setting-divider"></div>
 
-                <!-- 기본 설정 섹션 -->
+                <!-- General Settings -->
                 <div class="setting-section">
-                    <h4><i class="fas fa-sliders-h"></i> 기본 설정</h4>
+                    <h4><i class="fas fa-sliders-h"></i> General Settings</h4>
                     <div class="setting-group">
-                        <label>질문 감지 민감도</label>
+                        <label>Question Detection Sensitivity</label>
                         <div class="slider-container">
                             <input type="range" id="sensitivityRange" min="1" max="5" value="3">
-                            <span id="sensitivityValue">보통</span>
+                            <span id="sensitivityValue">Normal</span>
                         </div>
                     </div>
                     <div class="setting-group">
                         <label>
                             <input type="checkbox" id="soundAlert" checked>
-                            질문 감지 시 알림음
+                            Sound Alert on Question Detection
                         </label>
                     </div>
                 </div>
@@ -339,10 +339,10 @@
         </div>
     </div>
 
-    <!-- 알림 토스트 -->
+    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- 스크립트 로드 -->
+    <!-- Load Scripts -->
     <script src="js/speech-recognition.js"></script>
     <script src="js/ai-analysis.js"></script>
     <script src="js/gemini-api.js"></script>
