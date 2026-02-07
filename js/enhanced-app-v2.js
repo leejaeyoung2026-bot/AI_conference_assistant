@@ -195,6 +195,7 @@ class EnhancedMeetingApp {
             enableSpeakerDetection: document.getElementById('enableSpeakerDetection'),
             enableNoiseSuppression: document.getElementById('enableNoiseSuppression'),
             enableEchoCancellation: document.getElementById('enableEchoCancellation'),
+            categorySelect: document.getElementById('categorySelect'),
             toastContainer: document.getElementById('toastContainer')
         };
     }
@@ -272,6 +273,15 @@ class EnhancedMeetingApp {
             el.priorityTerms.addEventListener('input', () => {
                 this.saveSettings();
                 this.updateContextStatusUI();
+            });
+        }
+        if (el.categorySelect) {
+            el.categorySelect.addEventListener('change', (e) => {
+                const category = e.target.value;
+                this.textCorrector.setPersona(category);
+                this.geminiAPI.setPersona(category);
+                this.saveSettings();
+                this.showToast(`회의 성격이 [${e.target.options[e.target.selectedIndex].text}]로 설정되었습니다.`, 'success');
             });
         }
 
@@ -570,7 +580,8 @@ class EnhancedMeetingApp {
             meetingContext: this.elements.meetingContext?.value || '',
             priorityTerms: this.elements.priorityTerms?.value || '',
             enableNoiseSuppression: this.state.enableNoiseSuppression,
-            enableEchoCancellation: this.state.enableEchoCancellation
+            enableEchoCancellation: this.state.enableEchoCancellation,
+            category: this.elements.categorySelect?.value || 'general'
         };
         localStorage.setItem('meetingAssistantSettings', JSON.stringify(s));
 
@@ -594,11 +605,15 @@ class EnhancedMeetingApp {
         
         this.state.enableNoiseSuppression = saved.enableNoiseSuppression !== undefined ? saved.enableNoiseSuppression : true;
         this.state.enableEchoCancellation = saved.enableEchoCancellation !== undefined ? saved.enableEchoCancellation : true;
+        const category = saved.category || 'general';
 
         if (this.elements.enableNoiseSuppression) this.elements.enableNoiseSuppression.checked = this.state.enableNoiseSuppression;
         if (this.elements.enableEchoCancellation) this.elements.enableEchoCancellation.checked = this.state.enableEchoCancellation;
+        if (this.elements.categorySelect) this.elements.categorySelect.value = category;
 
         // 매니저들에 설정 적용
+        this.textCorrector.setPersona(category);
+        this.geminiAPI.setPersona(category);
         if (this.speechManager.config) {
             this.speechManager.config.noiseSuppression = this.state.enableNoiseSuppression;
             this.speechManager.config.echoCancellation = this.state.enableEchoCancellation;
@@ -639,6 +654,42 @@ class EnhancedMeetingApp {
 
     escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
     scrollToBottom(el) { if (el) el.scrollTop = el.scrollHeight; }
+
+    clearAll() {
+        if (this.state.isRecording) {
+            this.showToast('녹음 중에는 기록을 삭제할 수 없습니다.', 'warning');
+            return;
+        }
+
+        if (!confirm('모든 회의 기록과 분석 데이터를 삭제하시겠습니까?')) return;
+
+        // 데이터 초기화
+        this.data = {
+            fullTranscript: [],
+            questions: [],
+            aiAnswers: [],
+            meetingSummaries: [],
+            speakerHistory: []
+        };
+
+        // UI 초기화
+        if (this.elements.transcriptHistory) this.elements.transcriptHistory.innerHTML = '';
+        if (this.elements.questionsList) this.elements.questionsList.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>감지된 질문이 없습니다</p></div>';
+        if (this.elements.aiAnswersList) this.elements.aiAnswersList.innerHTML = '<div class="empty-state"><i class="fas fa-magic"></i><p>질문이 감지되면 Gemini AI가 답변합니다</p></div>';
+        if (this.elements.chatHistory) this.elements.chatHistory.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Gemini에게 궁금한 점을 직접 물어보세요</p></div>';
+        if (this.elements.meetingSummary) this.elements.meetingSummary.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>회의가 진행되면 자동 요약됩니다</p></div>';
+        
+        // 통계 및 타이머 초기화
+        if (this.elements.timer) this.elements.timer.textContent = '00:00:00';
+        this.updateStats();
+        this.geminiAPI.clearHistory();
+        this.textCorrector.clearSession();
+        
+        // 버튼 상태
+        if (this.elements.exportAudioBtn) this.elements.exportAudioBtn.disabled = true;
+
+        this.showToast('모든 기록이 삭제되었습니다.', 'success');
+    }
 
     async handleChatSubmit() {
         const input = this.elements.chatInput;

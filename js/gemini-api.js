@@ -148,11 +148,28 @@ class GeminiAPI {
         return this.meetingContext || '';
     }
 
+    /**
+     * 회의 성격(페르소나) 설정
+     */
+    setPersona(persona) {
+        this.persona = persona || 'general';
+        console.log('[GeminiAPI] 페르소나 설정됨:', this.persona);
+    }
+
     getSystemPrompt() {
         const styleInstructions = {
             concise: '간결하고 핵심적인 답변을 2-3문장으로 제공해주세요.',
             detailed: '상세하고 풍부한 설명을 포함한 답변을 제공해주세요.',
             bullet: '핵심 포인트를 불릿 포인트로 정리해서 답변해주세요.'
+        };
+
+        const personaPrompts = {
+            pharma: '당신은 제약/바이오/의료 분야의 전문 지식을 갖춘 AI 어시스턴트입니다.',
+            chemistry: '당신은 화학/소재/에너지 분야의 전문 지식을 갖춘 AI 어시스턴트입니다.',
+            biotech: '당신은 생명공학/유전공학 분야의 전문 지식을 갖춘 AI 어시스턴트입니다.',
+            it: '당신은 IT/소프트웨어 개발/클라우드 분야의 전문 지식을 갖춘 AI 어시스턴트입니다.',
+            food: '당신은 식품공학/영양학/식품안전 분야의 전문 지식을 갖춘 AI 어시스턴트입니다.',
+            general: '당신은 비즈니스 회의를 지원하는 전문 AI 어시스턴트입니다.'
         };
 
         let summaryContext = '';
@@ -171,14 +188,15 @@ ${this.meetingSummary}`;
 ${this.meetingContext}`;
         }
 
-        return `당신은 회의 중 질문에 답변하는 전문 AI 어시스턴트입니다.
-특히 제약/바이오/화학 분야의 전문 지식을 갖추고 있습니다.
+        const basePersona = personaPrompts[this.persona] || personaPrompts.general;
+
+        return `${basePersona}
 ${meetingContextSection}
 
 역할:
 - 회의 중 나온 질문에 대해 정확하고 도움이 되는 답변을 제공합니다
 - 모든 답변에는 반드시 논리적 근거와 이유를 함께 제시합니다
-- 비즈니스 맥락과 과학적 맥락을 이해하고 실용적인 조언을 합니다
+- 해당 업종의 전문 비즈니스 맥락과 과학적/기술적 맥락을 이해하고 실용적인 조언을 합니다
 - 필요한 경우 추가로 고려할 점이나 관련 질문을 제안합니다
 
 응답 스타일: ${styleInstructions[this.responseStyle]}
@@ -188,10 +206,8 @@ ${summaryContext}
 - 한국어로 답변해주세요
 - 회의 상황에 맞는 전문적이고 도움이 되는 톤을 유지하세요
 - **답변의 근거**: 모든 주장에 대해 "왜 그런지"를 반드시 설명하세요
-- **논리적 추론**: 결론에 이르는 논리적 과정을 단계적으로 보여주세요
 - 확실하지 않은 내용은 "~로 추정됩니다" 등으로 신뢰도를 표시하세요
-- 가능하면 실행 가능한 제안을 포함해주세요
-- 전문 용어(LogP, Cmax, IC50 등)를 정확히 이해하고 답변하세요
+- 전문 용어를 해당 분야의 관례에 맞게 정확히 사용하세요
 
 답변 형식:
 1. [답변]: 질문에 대한 직접적인 답변
