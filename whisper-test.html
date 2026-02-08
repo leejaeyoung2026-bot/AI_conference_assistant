@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisper.wasm Accuracy Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background: #0f172a; color: white; padding: 40px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { margin-top: 0; color: #6366f1; }
+        .status { padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #6366f1; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        button { padding: 12px 24px; border-radius: 8px; border: none; background: #6366f1; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #4f46e5; transform: translateY(-2px); }
+        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
+        #progressContainer { display: none; margin-bottom: 20px; }
+        .progress-bar { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #10b981; transition: 0.1s; }
+        #result { white-space: pre-wrap; background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155; min-height: 100px; margin-top: 10px; }
+        .info { font-size: 0.9rem; color: #94a3b8; margin-top: 10px; }
+        .error-box { background: #fef2f2; color: #991b1b; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fecaca; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Whisper.wasm 정확도 테스트</h1>
+        
+        <div id="protocolWarning" class="error-box">
+            <strong>⚠️ 로컬 파일 실행 제한</strong><br>
+            브라우저 보안 정책상 <code>file://</code> 주소에서는 모델 로딩이 불가능합니다.<br>
+            터미널에서 <code>npx serve .</code> 또는 <code>python -m http.server</code>를 실행해 주세요.
+        </div>
+
+        <p>OpenAI의 Whisper 모델을 브라우저 로컬(WASM)에서 실행하여 음성 인식 성능을 확인합니다.</p>
+        
+        <div class="status" id="statusText">준비 완료. 모델 로드 버튼을 눌러주세요.</div>
+
+        <div id="progressContainer">
+            <div class="info" id="progressInfo">모델 로딩 중...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="modelSelect" style="display: block; margin-bottom: 8px; font-weight: bold;">모델 선택:</label>
+            <select id="modelSelect" style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569;">
+                <option value="Xenova/whisper-tiny">Whisper Tiny (~40MB) - 가장 빠름</option>
+                <option value="Xenova/whisper-base">Whisper Base (~75MB) - 균형</option>
+                <option value="Xenova/whisper-small">Whisper Small (~250MB) - 더 높은 정확도</option>
+                <option value="onnx-community/whisper-large-v3-turbo">Whisper Large v3 Turbo (~1.6GB) - 최고 성능 & Turbo 속도</option>
+            </select>
+            <p class="info">* 'small' 이상의 모델은 용량이 커서 로딩에 시간이 걸릴 수 있으며, 브라우저 메모리에 따라 실패할 수 있습니다.</p>
+        </div>
+
+        <div class="controls">
+            <button id="loadBtn">1. Whisper 모델 로드</button>
+            <input type="file" id="audioFile" accept="audio/*" style="display: none;">
+            <button id="fileBtn" disabled>2. 오디오 파일 선택 & 인식</button>
+        </div>
+
+        <h3>인식 결과:</h3>
+        <div id="result">인식 결과가 여기에 표시됩니다.</div>
+        
+        <div class="info">
+            * 'whisper-tiny' 모델을 사용하며 최초 실행 시 약 40MB 다운로드가 필요합니다.
+        </div>
+    </div>
+
+    <!-- import 문은 반드시 script 최상단에 위치해야 합니다 -->
+    <script type="module">
+        // v=3 을 붙여 캐시 문제를 방지합니다
+        import { WhisperTester } from './js/whisper-test.js?v=3';
+        
+        console.log('[TestPage] WhisperTester 로드 시작');
+
+        const tester = new WhisperTester();
+        const statusText = document.getElementById('statusText');
+        const loadBtn = document.getElementById('loadBtn');
+        const fileBtn = document.getElementById('fileBtn');
+        const audioFileInput = document.getElementById('audioFile');
+        const resultDiv = document.getElementById('result');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressInfo = document.getElementById('progressInfo');
+        const modelSelect = document.getElementById('modelSelect');
+
+        // 프로토콜 체크
+        if (window.location.protocol === 'file:') {
+            document.getElementById('protocolWarning').style.display = 'block';
+            loadBtn.disabled = true;
+        }
+
+        loadBtn.onclick = async () => {
+            const selectedModel = modelSelect.value;
+            console.log(`[TestPage] 로드 시작: ${selectedModel}`);
+            loadBtn.disabled = true;
+            modelSelect.disabled = true;
+            statusText.textContent = `${selectedModel} 모델 다운로드 및 초기화 중...`;
+            
+            try {
+                await tester.initModel((progress) => {
+                    progressContainer.style.display = 'block';
+                    if (progress.status === 'progress') {
+                        progressFill.style.width = `${progress.progress}%`;
+                        progressInfo.textContent = `모델 다운로드 중: ${progress.file} (${progress.progress.toFixed(1)}%)`;
+                    }
+                }, selectedModel);
+                
+                statusText.textContent = `모델(${selectedModel}) 로드 완료! 오디오 파일을 선택해 주세요.`;
+                statusText.style.color = '#10b981';
+                fileBtn.disabled = false;
+                progressContainer.style.display = 'none';
+            } catch (err) {
+                console.error('[TestPage] 초기화 실패:', err);
+                statusText.textContent = '에러: ' + err.message;
+                statusText.style.color = '#ef4444';
+                loadBtn.disabled = false;
+                modelSelect.disabled = false;
+            }
+        };
+
+        fileBtn.onclick = () => audioFileInput.click();
+
+        audioFileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            resultDiv.textContent = '분석 중... 잠시만 기다려 주세요.';
+            fileBtn.disabled = true;
+
+            try {
+                const url = URL.createObjectURL(file);
+                const audioData = await tester.prepareAudio(url);
+                const result = await tester.transcribe(audioData);
+                
+                resultDiv.innerHTML = `<strong>인식 성공:</strong>\n${result.text}\n\n<small>(소요 시간: ${result.duration.toFixed(2)}초)</small>`;
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('[TestPage] 인식 에러:', err);
+                resultDiv.textContent = '인식 에러: ' + (err.message || err.toString() || '알 수 없는 오류');
+            } finally {
+                fileBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

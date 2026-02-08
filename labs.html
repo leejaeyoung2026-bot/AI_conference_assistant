@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORA Labs - AI 모델 실험실</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --bg-main: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.85);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg-main); color: var(--text-main); line-height: 1.7; overflow-x: hidden; }
+
+        /* Header */
+        header { padding: 20px 40px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; }
+        nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { text-decoration:none; color:white; font-weight:900; font-size:1.8rem; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-start-nav { background: var(--primary); color: white !important; padding: 8px 20px; border-radius: 8px; font-weight: 700; }
+
+        /* Hero */
+        .hero { padding: 100px 20px 60px; text-align: center; position: relative; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; margin-bottom: 20px; }
+        .hero h1 span { color: var(--accent); }
+        .hero p { max-width: 700px; margin: 0 auto; color: var(--text-muted); font-size: 1.1rem; }
+
+        /* Lab Grid */
+        .section { padding: 60px 20px 120px; max-width: 1200px; margin: 0 auto; }
+        .lab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+        .lab-card { background: var(--bg-panel); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .lab-card:hover { border-color: var(--accent); transform: translateY(-5px); background: rgba(30, 41, 59, 0.95); }
+        .lab-icon { width: 60px; height: 60px; background: rgba(6, 182, 212, 0.1); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--accent); margin-bottom: 25px; }
+        .lab-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: white; }
+        .lab-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; flex-grow: 1; }
+        .lab-tags { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tag { padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
+        .tag-new { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
+
+        .btn-lab { padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; text-align: center; transition: 0.3s; background: var(--accent); color: white; }
+        .btn-lab:hover { background: #0891b2; box-shadow: 0 10px 20px rgba(6, 182, 212, 0.2); }
+
+        /* Footer */
+        footer { padding: 80px 20px 40px; background: #070b1a; border-top: 1px solid rgba(255,255,255,0.05); }
+        .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+        .footer-links h5 { color: white; margin-bottom: 25px; font-size: 1.1rem; }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .footer-links a:hover { color: white; }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">VORA</a>
+            <div class="nav-links">
+                <a href="index.html#services">제공 서비스</a>
+                <a href="blog.html">기술 블로그</a>
+                <a href="labs.html" style="color: var(--accent); font-weight: 700;"><i class="fas fa-flask"></i> 실험실</a>
+                <a href="terms.html">이용약관</a>
+                <a href="labs_en.html" class="lang-switch"><i class="fas fa-globe"></i> EN</a>
+                <a href="app.html" class="btn-start-nav">지금 시작하기</a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>VORA <span>AI Labs</span></h1>
+        <p>최신 음성 인식 기술과 AI 모델을 브라우저에서 직접 테스트해 보세요. <br>모든 모델은 사용자 기기에서 로컬로 실행되어 데이터 보안이 유지됩니다.</p>
+    </section>
+
+    <section class="section">
+        <div class="lab-grid">
+            <!-- Whisper Accuracy Test -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-bullseye"></i></div>
+                <div class="lab-tags">
+                    <span class="tag">OpenAI Whisper</span>
+                    <span class="tag">WASM</span>
+                    <span class="tag">파일 분석</span>
+                </div>
+                <h3>Whisper 정확도 테스트</h3>
+                <p>OpenAI의 Whisper 모델을 활용한 음성 전사 정확도를 테스트합니다. Tiny부터 Large v3 Turbo까지 다양한 크기의 모델을 선택하여 성능을 비교할 수 있습니다.</p>
+                <a href="whisper-test.html" class="btn-lab">테스트 시작</a>
+            </div>
+
+            <!-- Whisper Real-time Test -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-bolt"></i></div>
+                <div class="lab-tags">
+                    <span class="tag">실시간</span>
+                    <span class="tag">Moonshine</span>
+                    <span class="tag">저지연</span>
+                </div>
+                <h3>실시간 인식 실험실</h3>
+                <p>마이크 입력을 즉각적으로 텍스트로 변환하는 실시간 엔진을 테스트합니다. 실시간성에 최적화된 Moonshine 모델과 Whisper Tiny 모델을 경험해 보세요.</p>
+                <a href="whisper-live-test.html" class="btn-lab">테스트 시작</a>
+            </div>
+
+            <!-- SenseVoice Test -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-brain"></i></div>
+                <div class="lab-tags">
+                    <span class="tag tag-new">SenseVoice</span>
+                    <span class="tag">감정 분석</span>
+                    <span class="tag">이벤트 감지</span>
+                </div>
+                <h3>SenseVoice 멀티모달 테스트</h3>
+                <p>단순 전사를 넘어 말하는 사람의 감정(행복, 분노 등)과 현장 이벤트(박수, 웃음)를 함께 감지하는 차세대 모델 SenseVoice-Small을 테스트합니다.</p>
+                <a href="sherpa-onnx-test.html" class="btn-lab">테스트 시작</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-info">
+                <h4 class="logo" style="font-size: 1.5rem; display:block; margin-bottom:20px;">VORA</h4>
+                <p>Beyond Transcription, Towards Insight.<br>보라는 회의의 본질을 꿰뚫어 보는 지능형 솔루션입니다.</p>
+            </div>
+            <div class="footer-links">
+                <h5>Product</h5>
+                <ul>
+                    <li><a href="app.html">실시간 인식</a></li>
+                    <li><a href="blog.html">기술 가이드</a></li>
+                    <li><a href="faq.html">자주 묻는 질문(FAQ)</a></li>
+                    <li><a href="admin.html">시스템 상태</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h5>Company</h5>
+                <ul>
+                    <li><a href="blog.html">기술 블로그</a></li>
+                    <li><a href="index.html#services">서비스 안내</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h5>Legal</h5>
+                <ul>
+                    <li><a href="terms.html">이용약관</a></li>
+                    <li><a href="privacy.html">개인정보처리방침</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:60px; padding-top:30px; border-top:1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size:0.8rem;">
+            © 2026 VORA. Empowering professional communication with intelligent AI solutions.
+        </div>
+    </footer>
+</body>
+</html>

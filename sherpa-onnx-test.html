@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sherpa-onnx (SenseVoice) 실시간 테스트</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background: #0f172a; color: white; padding: 40px; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { margin-top: 0; color: #f59e0b; }
+        .status { padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #f59e0b; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        button { padding: 12px 24px; border-radius: 8px; border: none; background: #f59e0b; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #d97706; transform: translateY(-2px); }
+        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
+        button.recording { background: #ef4444; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        #resultArea { background: #0f172a; padding: 25px; border-radius: 15px; border: 1px solid #334155; min-height: 200px; margin-top: 20px; }
+        .log-entry { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; display: flex; flex-direction: column; }
+        .log-text { font-size: 1.1rem; color: #f8fafc; }
+        .log-meta { font-size: 0.85rem; margin-top: 5px; display: flex; gap: 10px; }
+        .tag { padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .tag-emotion { background: #6366f1; color: white; }
+        .tag-event { background: #10b981; color: white; }
+        .tag-lang { background: #64748b; color: white; }
+        .info { font-size: 0.9rem; color: #94a3b8; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sherpa-onnx (SenseVoice-Small) 실시간 테스트</h1>
+        
+        <p>SenseVoice-Small 모델을 사용하여 다국어 인식, 감정 분석, 이벤트 감지를 로컬에서 실행합니다.</p>
+        
+        <div class="status" id="statusText">라이브러리 초기화 대기 중...</div>
+
+        <div class="controls">
+            <button id="startBtn" disabled>실시간 인식 시작</button>
+            <button id="stopBtn" disabled>중지</button>
+        </div>
+
+        <div id="resultArea">
+            <div id="liveText" style="color: #94a3b8; font-style: italic;">마이크를 켜고 말씀해 보세요...</div>
+            <div id="history"></div>
+        </div>
+        
+        <div class="info">
+            * <strong>SenseVoice-Small:</strong> Whisper보다 훨씬 빠르면서 감정(행복, 분노 등)과 이벤트(웃음, 박수 등)를 함께 감지합니다.<br>
+            * 최초 실행 시 약 80MB의 모델 파일 다운로드가 필요합니다.
+        </div>
+    </div>
+
+    <!-- Sherpa-onnx WASM 라이브러리 로드 전 전역 객체 설정 -->
+    <script>
+        window.sherpaOnnxInitialized = false;
+        window.Module = {
+            onRuntimeInitialized: function() {
+                console.log('Sherpa-onnx Runtime Initialized');
+                window.sherpaOnnxInitialized = true;
+                // 커스텀 이벤트 발생시켜 모듈에 알림
+                window.dispatchEvent(new CustomEvent('sherpa-onnx-ready'));
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sherpa-onnx@1.10.42/dist/sherpa-onnx-wasm.js"></script>
+    <script type="module">
+        import { SherpaOnnxManager } from './js/sherpa-onnx-test.js?v=1';
+
+        const manager = new SherpaOnnxManager();
+        const statusText = document.getElementById('statusText');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const liveText = document.getElementById('liveText');
+        const history = document.getElementById('history');
+
+        // 초기화
+        window.addEventListener('load', async () => {
+            statusText.textContent = '모델 다운로드 및 초기화 중 (약 80MB)...';
+            try {
+                await manager.init((progress) => {
+                    statusText.textContent = `모델 로딩 중: ${progress.toFixed(1)}%`;
+                });
+                statusText.textContent = 'SenseVoice-Small 준비 완료!';
+                statusText.style.color = '#10b981';
+                startBtn.disabled = false;
+            } catch (err) {
+                statusText.textContent = '초기화 실패: ' + err.message;
+                statusText.style.color = '#ef4444';
+            }
+        });
+
+        startBtn.onclick = async () => {
+            try {
+                await manager.startStreaming((result) => {
+                    if (result.isFinal) {
+                        addHistoryEntry(result);
+                        liveText.textContent = '';
+                    } else {
+                        liveText.textContent = result.text + '...';
+                    }
+                });
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                startBtn.classList.add('recording');
+                statusText.textContent = '음성 인식 중 (감정/이벤트 감지 활성)';
+            } catch (err) {
+                alert('마이크 접근 실패: ' + err.message);
+            }
+        };
+
+        stopBtn.onclick = () => {
+            manager.stopStreaming();
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.classList.remove('recording');
+            statusText.textContent = '중지됨.';
+        };
+
+        function addHistoryEntry(result) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            // 감정/이벤트 태그 추출 (SenseVoice 특유의 형식: <|EMO|>, <|EVENT|>)
+            const emotion = result.emotion || '감지 불가';
+            const event = result.event || '일반';
+            
+            entry.innerHTML = `
+                <div class="log-text">${result.text}</div>
+                <div class="log-meta">
+                    <span class="tag tag-emotion">😊 ${emotion}</span>
+                    <span class="tag tag-event">🔔 ${event}</span>
+                    <span class="tag tag-lang">🌐 ${result.lang || 'auto'}</span>
+                </div>
+            `;
+            history.prepend(entry);
+        }
+    </script>
+</body>
+</html>
